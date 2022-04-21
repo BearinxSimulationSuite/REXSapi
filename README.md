@@ -4,11 +4,11 @@
 
 # REXSapi
 
-C++ implementation of the REXS Spezification.
+C++ implementation of the REXS spezification.
 
 ## Supported REXS Versions
 
-The implementaion currently supports versions 1.0 to 1.4.
+The implementation currently supports versions 1.0 to 1.4.
 
 ## Supported Platforms
 
