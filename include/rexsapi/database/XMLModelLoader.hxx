@@ -46,7 +46,6 @@ namespace rexsapi::database
         }
 
         for (const auto& node : doc.select_nodes("/rexsModel/attributes/attribute")) {
-          auto id = convertToUint64(node.node().attribute("numericId").value());
           const auto* attributeId = node.node().attribute("attributeId").value();
           const auto* name = node.node().attribute("name").value();
           auto valueType = model.findValueTypeById(convertToUint64(node.node().attribute("valueType").value()));
@@ -69,7 +68,7 @@ namespace rexsapi::database
             }
           }
 
-          model.addAttribute(TAttribute{id, attributeId, name, valueType, model.findUnitById(unit), symbol, {}, enumValues});
+          model.addAttribute(TAttribute{attributeId, name, valueType, model.findUnitById(unit), symbol, {}, enumValues});
         }
 
         std::vector<std::pair<std::string, std::string>> attributeMappings;
