@@ -1,0 +1,25 @@
+name: CMake Build Matrix
+
+on:
+  push:
+  pull_request:
+  release:
+    branches:
+      - master
+
+env:
+  CMAKE_VERSION: 3.16.9
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: sudo apt-get install g++ ninja-build
+      - name: Configure
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: cd build && ctest --output-on-failure
