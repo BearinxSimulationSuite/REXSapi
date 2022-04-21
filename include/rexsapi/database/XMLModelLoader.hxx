@@ -7,6 +7,7 @@
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
 #include <rexsapi/database/ModelLoader.hxx>
 
+#include <cstring>
 
 namespace rexsapi::database
 {
