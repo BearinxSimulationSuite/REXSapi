@@ -1,0 +1,32 @@
+@startuml loader
+
+class TExtensionMapper
+
+class TModelLoader
+
+class TXMLModelLoader
+
+class TJsonModelLoader
+
+class TBufferModelLoader
+
+TModelLoader <|-- TXMLModelLoader
+TModelLoader <|-- TJsonModelLoader
+TModelLoader <|-- TBufferModelLoader
+
+class ILoaderFactory
+
+class TFileLoaderFactory
+class TTestLoaderFactory
+
+ILoaderFactory <|-- TFileLoaderFactory
+ILoaderFactory <|-- TTestLoaderFactory
+ILoaderFactory --> TModelLoader
+
+TFileLoaderFactory --> TExtensionMapper
+TFileLoaderFactory ..> TXMLModelLoader
+TFileLoaderFactory ..> TJsonModelLoader
+
+TTestLoaderFactory ..> TBufferModelLoader
+
+@enduml

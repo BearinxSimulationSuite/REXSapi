@@ -1,0 +1,70 @@
+@startuml database
+
+namespace database {
+class TUnit
+enum TValueType
+class TEnumValue
+class TEnumValues
+class Interval
+class TAttribute {
+  m_Id : uint64
+  m_AttributeId : string
+  m_Name : string
+}
+
+class TComponent
+
+enum TStatus {
+  RELEASED
+}
+
+class TModel {
+  version : string
+  language : string
+  date : string
+}
+
+class TModelRegistry
+
+TEnumValues *-- TEnumValue
+TAttribute *-- TEnumValues
+TAttribute *-- Interval
+TAttribute o-- TUnit
+TAttribute o-- TValueType
+TComponent o-- TAttribute
+
+TModel *- TStatus : status
+TModel *-- TValueTypeRegistry : types
+TModel *-- TUnitRegistry : units
+TModel *-- TComponent : components
+TModel *-- TAttributeRegistry : attributes
+
+TModelRegistry *-- TModel : models
+
+class TUnitRegistry
+TUnitRegistry *-- TUnit
+
+class TValueTypeRegistry
+TValueTypeRegistry *-- TValueType
+
+class TAttributeRegistry
+TAttributeRegistry *-- TAttribute
+
+class TModelLoader
+
+class TXMLModelLoader
+
+class TResouceLoader
+
+class TFileResourceLoader
+
+
+TResouceLoader <|-- TFileResourceLoader
+TModelLoader <|-- TXMLModelLoader
+
+TModelLoader --> TModel
+TXMLModelLoader --> TResouceLoader
+
+}
+
+@enduml

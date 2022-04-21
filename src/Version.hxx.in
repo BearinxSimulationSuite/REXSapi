@@ -1,0 +1,10 @@
+
+#ifndef REXSCXX_VERSION_HXX
+#define REXSCXX_VERSION_HXX
+
+#include <cstdint>
+
+constexpr const char *REXSCXX_VERSION_STRING = "${PROJECT_VERSION}";
+constexpr uint64_t REXSCXX_VERSION = ((((${PROJECT_VERSION_MAJOR} << 8) | ${PROJECT_VERSION_MINOR}) << 8) | ${PROJECT_VERSION_PATCH});
+
+#endif

@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.16)
+project(rexscxx VERSION 0.1.0 LANGUAGES CXX)
+
+if(POLICY CMP0110)
+  cmake_policy(SET CMP0110 OLD)
+endif()
+
+enable_testing()
+
+include(FetchContent)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  add_definitions(-DDEBUG)
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  message("Setting up rexscxx ${PROJECT_VERSION} for a debug build")
+elseif(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+  message("Setting up rexscxx ${PROJECT_VERSION} for a release with debug info build")
+elseif(CMAKE_BUILD_TYPE MATCHES "Release")
+  message("Setting up rexscxx ${PROJECT_VERSION} for a release build")
+else()
+  message(FATAL_ERROR "Unknown build type ${CMAKE_BUILD_TYPE} specified")
+endif()
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/archive)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+
+find_package(Threads REQUIRED)
+
+include(cmake/fetch_pugixml.cmake)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT APPLE AND UNIX)
+  set(SYSTEM_NAME "linux")
+  set(REXSCXX_COMPILE_OPTIONS -g -Wall -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wmissing-declarations -Woverlength-strings -Wshadow -Wunreachable-code -Wextra -Wnon-virtual-dtor -Werror -Wno-psabi -Wignored-qualifiers -Wpedantic)
+  set(REXSCXX_PLATFORM_LIBS ${REXSCXX_PLATFORM_LIBS} dl pthread)
+elseif(WIN32)
+  set(SYSTEM_NAME "windows")
+  set(REXSCXX_COMPILE_OPTIONS )
+elseif(APPLE)
+  set(SYSTEM_NAME "macos")
+  set(REXSCXX_COMPILE_OPTIONS -g -Wall -Wheader-hygiene -Wcast-align -Wconversion -Wfloat-equal -Wformat=2 -Wmissing-declarations -Woverlength-strings -Wshadow -Wunreachable-code -Wextra -Wpedantic -Wnon-virtual-dtor -Werror -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wdelete-non-virtual-dtor -Wdeprecated -Wfloat-conversion -Wfloat-overflow-conversion -Wmove -Wredundant-move -Wshadow-all -Wsign-compare -Wsign-conversion -Wunreachable-code -Wunused-value -Wignored-qualifiers)
+else()
+  message(FATAL_ERROR "unknown platform")
+endif()
+
+add_subdirectory(src)
+add_subdirectory(test)

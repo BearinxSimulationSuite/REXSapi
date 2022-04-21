@@ -1,0 +1,13 @@
+
+#ifndef TEST_TEST_HELPER_HXX
+#define TEST_TEST_HELPER_HXX
+
+#include <filesystem>
+
+
+inline static std::filesystem::path projectDir()
+{
+  return "${PROJECT_SOURCE_DIR}";
+}
+
+#endif
