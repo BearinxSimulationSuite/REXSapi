@@ -50,9 +50,9 @@ jobs:
         if: ${{ env.COVERAGE }} == 'ON'
         uses: imciner2/run-lcov@v1
         with:
-          input_directory: '${{ runner.workspace }}/build'
+          input_directory: '.'
           exclude: '"test/*" "_deps/*" "/usr/include/*"'
-          output_file: '${{ runner.workspace }}/coverage.info'
+          output_file: './coverage.info'
       - name: generate coverage report
         if: ${{ env.COVERAGE }} == 'ON'
         run: |
