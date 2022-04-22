@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install g++ ninja-build
       - name: Configure
-        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ build_type }} ..
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
       - name: Build
         run: cmake --build build
       - name: Test
@@ -43,6 +43,6 @@ jobs:
       - name: configure
         run: mkdir build && cd build && cmake ..
       - name: build
-        run: cmake --build build --config ${{ build_type }}
+        run: cmake --build build --config ${{ matrix.build_type }}
       - name: test
         run: cd build && ctest -C ${{ build_type }}
