@@ -16,8 +16,10 @@ namespace rexsapi
         if (pos == s.length()) {
           return val;
         }
-      } catch (const std::exception& ex) {
-        throw Exception{"cannot convert string '" + s + "' to unsigned integer: " + ex.what()};
+      } catch (const std::invalid_argument&) {
+        throw Exception{"cannot convert string '" + s + "' to unsigned integer: invalid argument"};
+      } catch (const std::out_of_range&) {
+        throw Exception{"cannot convert string '" + s + "' to unsigned integer: out of range"};
       }
     }
 
