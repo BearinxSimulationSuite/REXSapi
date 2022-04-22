@@ -31,7 +31,7 @@ jobs:
           else
             echo "COVERAGE=OFF" >> "$GITHUB_ENV"
           fi
-          echo "Running with coverage ${{ env.COVERAGE }}"
+          echo "Running with coverage $COVERAGE"
       - name: Configure
         env:
           CXX: ${{ matrix.cxx }}
@@ -40,6 +40,29 @@ jobs:
         run: cmake --build build
       - name: Test
         run: cd build && ctest --output-on-failure
+      - name: Coverage
+        if: ${{ env.COVERAGE }} == 'ON'
+        run: |
+          cd build && ctest --output-on-failure
+          files=`find . -name "*.gcda" | xargs`
+          gcov -f -b $files
+      - name: lcov-action
+        if: ${{ env.COVERAGE }} == 'ON'
+        uses: danielealbano/lcov-action@v1
+        with:
+          remove_patterns: usr/include,test,_deps
+          output_lcov_info: ./coverage.info
+      - name: generate coverage report
+        if: ${{ env.COVERAGE }} == 'ON'
+        run: |
+          cat coverage.info | c++filt >coverage_filtered.info
+          genhtml coverage_filtered.info --output-directory html
+      - name: Archive code coverage results
+        if: ${{ env.COVERAGE }} == 'ON'
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: html
 
   build-windows:
     name: ${{ matrix.os }} ${{ matrix.build_type }}
