@@ -41,25 +41,24 @@ jobs:
       - name: Test
         run: cd build && ctest --output-on-failure
       - name: Coverage
-        if: ${{ env.COVERAGE }} == 'ON'
+        if: ${{ env.COVERAGE == 'ON' }}
         run: |
-          cd build && ctest --output-on-failure
           files=`find . -name "*.gcda" | xargs`
           gcov -f -b $files
       - name: lcov-action
-        if: ${{ env.COVERAGE }} == 'ON'
+        if: ${{ env.COVERAGE == 'ON' }}
         uses: imciner2/run-lcov@v1
         with:
           input_directory: '.'
           exclude: '"test/*" "_deps/*" "/usr/include/*"'
           output_file: './coverage.info'
       - name: generate coverage report
-        if: ${{ env.COVERAGE }} == 'ON'
+        if: ${{ env.COVERAGE == 'ON' }}
         run: |
           cat coverage.info | c++filt >coverage_filtered.info
           genhtml coverage_filtered.info --output-directory html
       - name: Archive code coverage results
-        if: ${{ env.COVERAGE }} == 'ON'
+        if: ${{ env.COVERAGE == 'ON' }}
         uses: actions/upload-artifact@v2
         with:
           name: code-coverage-report
