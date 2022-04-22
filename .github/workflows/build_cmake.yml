@@ -8,7 +8,7 @@ on:
       - master
 
 env:
-  CMAKE_VERSION: 3.16.9
+  CMAKE_VERSION: 3.16.3
 
 jobs:
   build-ubuntu:
@@ -18,8 +18,19 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install g++ ninja-build
       - name: Configure
-        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=Release ..
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ..
       - name: Build
         run: cmake --build build
       - name: Test
         run: cd build && ctest --output-on-failure
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: configure
+        run: mkdir build && cd build && cmake ..
+      - name: build
+        run: cmake --build build --config Debug
+      - name: test
+        run: cd build && ctest -C Debug
