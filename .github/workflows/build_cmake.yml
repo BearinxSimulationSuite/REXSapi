@@ -17,17 +17,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-latest]
         build_type: [Debug, Release]
         cxx: [g++, g++-10]
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: sudo apt-get install ${{ matrix.cxx }} ninja-build
+        run: sudo apt-get install ${{ matrix.cxx }} ninja-build lcov
+      - name: Check Coverage
+        if: ${{ matrix.build_type }} == 'Debug' && ${{ matrix.os }} == 'g++'
+        env:
+          COVERAGE: -DCOVERAGE=ON
       - name: Configure
         env:
           CXX: ${{ matrix.cxx }}
-        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ env.COVERAGE }} ..
       - name: Build
         run: cmake --build build
       - name: Test
