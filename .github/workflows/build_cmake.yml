@@ -12,18 +12,21 @@ env:
 
 jobs:
   build-ubuntu:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.build_type }} ${{ matrix.cxx }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         build_type: [Debug, Release]
+        cxx: [g++, g++-10]
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: sudo apt-get install g++ ninja-build
+        run: sudo apt-get install ${{ matrix.cxx }} ninja-build
       - name: Configure
+        env:
+          CXX: ${{ matrix.cxx }}
         run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ..
       - name: Build
         run: cmake --build build
@@ -31,7 +34,7 @@ jobs:
         run: cd build && ctest --output-on-failure
 
   build-windows:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -45,4 +48,4 @@ jobs:
       - name: build
         run: cmake --build build --config ${{ matrix.build_type }}
       - name: test
-        run: cd build && ctest -C ${{ matrix.build_type }}
+        run: cd build && ctest --output-on-failure -C ${{ matrix.build_type }}
