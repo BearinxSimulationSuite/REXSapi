@@ -12,25 +12,37 @@ env:
 
 jobs:
   build-ubuntu:
-    runs-on: ubuntu-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        build_type: [Debug, Release]
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: sudo apt-get install g++ ninja-build
       - name: Configure
-        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ..
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ build_type }} ..
       - name: Build
         run: cmake --build build
       - name: Test
         run: cd build && ctest --output-on-failure
 
   build-windows:
-    runs-on: windows-latest
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Debug, Release]
     steps:
       - uses: actions/checkout@v1
       - name: configure
         run: mkdir build && cd build && cmake ..
       - name: build
-        run: cmake --build build --config Debug
+        run: cmake --build build --config ${{ build_type }}
       - name: test
-        run: cd build && ctest -C Debug
+        run: cd build && ctest -C ${{ build_type }}
