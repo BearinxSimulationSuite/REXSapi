@@ -45,4 +45,4 @@ jobs:
       - name: build
         run: cmake --build build --config ${{ matrix.build_type }}
       - name: test
-        run: cd build && ctest -C ${{ build_type }}
+        run: cd build && ctest -C ${{ matrix.build_type }}
