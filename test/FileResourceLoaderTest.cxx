@@ -5,7 +5,6 @@
 
 #include <doctest.h>
 
-
 namespace
 {
   void checkBuffer(const std::vector<uint8_t>& buffer)
