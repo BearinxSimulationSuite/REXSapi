@@ -25,9 +25,8 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install ${{ matrix.cxx }} ninja-build lcov
       - name: Check Coverage
-        if: ${{ matrix.build_type }} == 'Debug' && ${{ matrix.cxx }} == 'g++'
         run: |
-          if [[ ${{ matrix.build_type }} == 'Debug' && ${{ matrix.os }} == 'g++' ]]; then
+          if [[ ${{ matrix.build_type }} == 'Debug' && ${{ matrix.cxx }} == 'g++' ]]; then
             echo "COVERAGE=ON" >> "$GITHUB_ENV"
           else
             echo "COVERAGE=OFF" >> "$GITHUB_ENV"
