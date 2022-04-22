@@ -8,6 +8,7 @@ add_executable(rexsapi_test
   FileResourceLoaderTest.cxx
   ModelRegistryTest.cxx
   XMLModelLoaderTest.cxx
+  ValueTypeTest.cxx
 )
 
 include(${PROJECT_SOURCE_DIR}/cmake/fetch_doctest.cmake)
