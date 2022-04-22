@@ -48,10 +48,11 @@ jobs:
           gcov -f -b $files
       - name: lcov-action
         if: ${{ env.COVERAGE }} == 'ON'
-        uses: danielealbano/lcov-action@v1
+        uses: imciner2/run-lcov@v1
         with:
-          remove_patterns: usr/include,test,_deps
-          output_lcov_info: ./coverage.info
+          input_directory: '${{ runner.workspace }}/build'
+          exclude: '"test/*" "_deps/*" "/usr/include/*"'
+          output_file: '${{ runner.workspace }}/coverage.info'
       - name: generate coverage report
         if: ${{ env.COVERAGE }} == 'ON'
         run: |
