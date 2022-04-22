@@ -28,8 +28,8 @@ jobs:
         if: ${{ matrix.build_type }} == 'Debug' && ${{ matrix.os }} == 'g++'
         env:
           COVERAGE: -DCOVERAGE=ON
-          run: |
-            echo "Running with coverage"
+        run: |
+          echo "Running with coverage"
       - name: Configure
         env:
           CXX: ${{ matrix.cxx }}
