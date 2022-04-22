@@ -6,6 +6,8 @@ configure_file (
 add_library(rexsapi INTERFACE)
 
 target_sources(rexsapi INTERFACE
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/compatibility/Defines.hxx
+
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Component.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/FileResourceLoader.hxx

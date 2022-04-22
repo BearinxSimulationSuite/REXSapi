@@ -6,15 +6,42 @@
 
 C++ implementation of the REXS spezification.
 
-## Supported REXS Versions
+# Supported REXS Versions
 
 The implementation currently supports versions 1.0 to 1.4.
 
-## Supported Platforms
+# Supported Platforms
 
 The library can be used on
-* Linux
-* Windows
+- Linux
+- Windows
 
-## Build Instructions
+# Build Instructions
 
+## Linux
+
+- You will need the following software packages
+  - g++ 9.3.0 or higher
+  - cmake 3.16.3 or higher
+- To install the dependencies on ubuntu
+  - Call `sudo apt-get install cmake g++`
+- Create a build directory in the source directory of REXSapi and change to it
+- Call `cmake -DCMAKE_BUILD_TYPE=Release ..`
+- Call `cmake --build . --config Release`
+- To run the tests
+  - Call `ctest -VV -C Release`
+
+## Windows
+
+- You will need the following software packages
+  - Visual Studio 2019 or higher
+- CMake support is build into Visual Studio 2019
+- Open the local folder of the REXSapi project
+- Visual Studio will configure the project automatically
+
+## Thirdparty Software
+
+RESTapi uses the following thirdparty open source software
+
+- [pugixml](https://github.com/zeux/pugixml/)
+- [doctest](https://github.com/doctest/doctest)
