@@ -26,14 +26,17 @@ jobs:
         run: sudo apt-get install ${{ matrix.cxx }} ninja-build lcov
       - name: Check Coverage
         if: ${{ matrix.build_type }} == 'Debug' && ${{ matrix.os }} == 'g++'
-        env:
-          COVERAGE: -DCOVERAGE=ON
         run: |
-          echo "Running with coverage"
+          if [[ ${{ matrix.build_type }} == 'Debug' && ${{ matrix.os }} == 'g++' ]]; then
+            echo "COVERAGE=ON" >> "$GITHUB_ENV"
+          else
+            echo "COVERAGE=OFF" >> "$GITHUB_ENV"
+          fi
+          echo "Running with coverage ${{ env.COVERAGE }}"
       - name: Configure
         env:
           CXX: ${{ matrix.cxx }}
-        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} ${{ env.COVERAGE }} ..
+        run: mkdir build && cd build && cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCOVERAGE=${{ env.COVERAGE }} ..
       - name: Build
         run: cmake --build build
       - name: Test
