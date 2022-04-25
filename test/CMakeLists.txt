@@ -3,8 +3,10 @@ configure_file(TestHelper.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx)
 add_executable(rexsapi_test
   main.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
+  TestModelLoader.hxx
 
   AttributeTest.cxx
+  ComponentAttributeMapperTest.cxx
   ComponentTest.cxx
   ConversionHelperTest.cxx
   EnumValuesTest.cxx
