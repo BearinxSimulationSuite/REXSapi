@@ -21,22 +21,27 @@ namespace rexsapi::database
     TComponent(const TComponent&) = delete;
     TComponent(TComponent&&) = default;
     TComponent& operator=(const TComponent&) = delete;
-    TComponent& operator=(TComponent&&) = default;
-
-    [[nodiscard]] const std::string& getName() const
-    {
-      return m_Name;
-    }
+    TComponent& operator=(TComponent&&) = delete;
 
     [[nodiscard]] const std::string& getId() const
     {
       return m_Id;
     }
 
+    [[nodiscard]] const std::string& getName() const
+    {
+      return m_Name;
+    }
+
+    [[nodiscard]] std::vector<std::reference_wrapper<const TAttribute>> getAttributes() const
+    {
+      return m_Attributes;
+    }
+
   private:
-    std::string m_Id;
-    std::string m_Name;
-    std::vector<std::reference_wrapper<const TAttribute>> m_Attributes;
+    const std::string m_Id;
+    const std::string m_Name;
+    const std::vector<std::reference_wrapper<const TAttribute>> m_Attributes;
   };
 }
 

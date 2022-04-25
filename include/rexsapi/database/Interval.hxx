@@ -56,9 +56,9 @@ namespace rexsapi::database
     }
 
   private:
-    bool m_Set{false};
-    TIntervalType m_Type{TIntervalType::OPEN};
-    double m_Value{0.0};
+    const bool m_Set{false};
+    const TIntervalType m_Type{TIntervalType::OPEN};
+    const double m_Value{0.0};
   };
 
   class TInterval
@@ -78,8 +78,8 @@ namespace rexsapi::database
     }
 
   private:
-    TValue m_Min;
-    TValue m_Max;
+    const TValue m_Min{};
+    const TValue m_Max{};
   };
 }
 

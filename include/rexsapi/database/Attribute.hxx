@@ -29,6 +29,14 @@ namespace rexsapi::database
       }
     }
 
+
+    ~TAttribute() = default;
+
+    TAttribute(const TAttribute&) = delete;
+    TAttribute(TAttribute&&) = default;
+    TAttribute& operator=(const TAttribute&) = delete;
+    TAttribute& operator=(TAttribute&&) = delete;
+
     [[nodiscard]] const std::string& getAttributeId() const
     {
       return m_AttributeId;
@@ -65,13 +73,13 @@ namespace rexsapi::database
     }
 
   private:
-    std::string m_AttributeId;
-    std::string m_Name;
-    TValueType m_Type;
+    const std::string m_AttributeId;
+    const std::string m_Name;
+    const TValueType m_Type;
     const Unit& m_Unit;
     const std::string m_Symbol;
-    std::optional<const TInterval> m_Interval;
-    std::optional<const TEnumValues> m_EnumValues;
+    const std::optional<const TInterval> m_Interval;
+    const std::optional<const TEnumValues> m_EnumValues;
   };
 }
 
