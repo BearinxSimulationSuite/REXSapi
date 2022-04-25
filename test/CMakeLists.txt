@@ -12,7 +12,9 @@ add_executable(rexsapi_test
   EnumValuesTest.cxx
   FileResourceLoaderTest.cxx
   IntervalTest.cxx
+  LoaderResultTest.cxx
   ModelRegistryTest.cxx
+  ModelTest.cxx
   XMLModelLoaderTest.cxx
   ValueTypeTest.cxx
 )

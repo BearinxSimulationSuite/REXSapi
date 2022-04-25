@@ -20,6 +20,11 @@ TEST_CASE("Test rexs model registry")
     const auto& model = registry.getModel("1.4", "de");
     CHECK(model.getVersion() == "1.4");
     CHECK(model.getLanguage() == "de");
+
+    const auto& component = model.findComponentById("side_plate");
+    CHECK(component.getId() == "side_plate");
+    CHECK(component.getName() == "Wange");
+    CHECK(component.getAttributes().size() == 9);
   }
 
   SUBCASE("Get non existing models")
