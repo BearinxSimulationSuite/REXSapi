@@ -28,7 +28,7 @@ namespace rexsapi::database
     }
 
   private:
-    std::vector<TModel> m_Models;
+    const std::vector<TModel> m_Models;
   };
 
   template<typename ResourceLoader, typename ModelLoader>

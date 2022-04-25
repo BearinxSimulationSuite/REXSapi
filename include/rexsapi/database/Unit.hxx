@@ -26,8 +26,8 @@ namespace rexsapi::database
     }
 
   private:
-    uint64_t m_Id;
-    std::string m_Name;
+    const uint64_t m_Id;
+    const std::string m_Name;
   };
 }
 

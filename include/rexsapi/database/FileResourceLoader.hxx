@@ -56,7 +56,7 @@ namespace rexsapi::database
       return std::vector<uint8_t>{buffer.begin(), buffer.end()};
     }
 
-    std::filesystem::path m_Path;
+    const std::filesystem::path m_Path;
   };
 }
 
