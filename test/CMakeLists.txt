@@ -11,6 +11,7 @@ add_executable(rexsapi_test
   ConversionHelperTest.cxx
   EnumValuesTest.cxx
   FileResourceLoaderTest.cxx
+  IntervalTest.cxx
   ModelRegistryTest.cxx
   XMLModelLoaderTest.cxx
   ValueTypeTest.cxx

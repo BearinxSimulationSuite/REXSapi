@@ -64,7 +64,7 @@ namespace rexsapi::database
 
       std::ifstream file{path};
       if (!file.good()) {
-        throw Exception{"Resource '" + path.string() + "' cannot be loaded"};
+        result.addError(TResourceError{"Resource '" + path.string() + "' cannot be loaded"});
       }
       std::stringstream ss;
       ss << file.rdbuf();
