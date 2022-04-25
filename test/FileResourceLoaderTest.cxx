@@ -32,4 +32,11 @@ TEST_CASE("File resource loader test")
       checkBuffer(buf);
     });
   }
+
+  SUBCASE("Load not existing path")
+  {
+    rexsapi::database::TFileResourceLoader loader{projectDir() / "non-existing-models"};
+    CHECK_THROWS(loader.load([](const rexsapi::database::TLoaderResult&, std::vector<uint8_t>&) {
+    }));
+  }
 }
