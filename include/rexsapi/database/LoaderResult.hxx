@@ -2,7 +2,6 @@
 #ifndef REXSCXX_DATABASE_RESOURCE_LOADER_HXX
 #define REXSCXX_DATABASE_RESOURCE_LOADER_HXX
 
-#include <rexsapi/Exception.hxx>
 #include <rexsapi/compatibility/Defines.hxx>
 
 #include <algorithm>

@@ -2,7 +2,7 @@
 #include <rexsapi/database/Interval.hxx>
 
 #include <doctest.h>
-#include <limits>
+
 
 TEST_CASE("Endpoint test")
 {
