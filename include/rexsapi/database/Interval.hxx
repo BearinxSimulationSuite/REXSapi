@@ -64,15 +64,17 @@ namespace rexsapi::database
   class TInterval
   {
   public:
+    TInterval() = default;
+
     TInterval(TValue min, TValue max)
     : m_Min{min}
     , m_Max{max}
     {
     }
 
-    [[nodiscard]] bool checkValue(double value) const
+    [[nodiscard]] bool check(double value) const
     {
-      return m_Max <= value && m_Min >= value;
+      return m_Max >= value && m_Min <= value;
     }
 
   private:

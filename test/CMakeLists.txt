@@ -4,6 +4,7 @@ add_executable(rexsapi_test
   main.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
 
+  AttributeTest.cxx
   ConversionHelperTest.cxx
   EnumValuesTest.cxx
   FileResourceLoaderTest.cxx
