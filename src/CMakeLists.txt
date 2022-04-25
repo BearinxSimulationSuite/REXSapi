@@ -13,7 +13,6 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/FileResourceLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Interval.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Model.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ModelRegistry.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ResourceLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Unit.hxx
