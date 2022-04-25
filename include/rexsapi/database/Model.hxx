@@ -38,7 +38,7 @@ namespace rexsapi::database
     TModel(const TModel&) = delete;
     TModel(TModel&&) = default;
     TModel& operator=(const TModel&) = delete;
-    TModel& operator=(TModel&&) = default;
+    TModel& operator=(TModel&&) = delete;
 
     [[nodiscard]] const std::string& getVersion() const
     {
@@ -125,10 +125,10 @@ namespace rexsapi::database
     }
 
   private:
-    std::string m_Version;
-    std::string m_Language;
-    std::string m_Date;
-    TStatus m_Status;
+    const std::string m_Version;
+    const std::string m_Language;
+    const std::string m_Date;
+    const TStatus m_Status;
     std::unordered_map<uint64_t, Unit> m_Units;
     std::unordered_map<uint64_t, TValueType> m_Types;
     std::unordered_map<std::string, TAttribute> m_Attributes;

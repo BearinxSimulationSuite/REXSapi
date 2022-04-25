@@ -21,7 +21,11 @@ namespace rexsapi::database
 
       std::for_each(m_AttributeMappings.begin(), m_AttributeMappings.end(), [this, &id, &attributes](const auto& element) {
         if (id == element.first) {
-          attributes.emplace_back(m_Model.findAttributetById(element.second));
+          try {
+            attributes.emplace_back(m_Model.findAttributetById(element.second));
+          } catch (const Exception&) {
+            throw Exception{"attribute '" + element.second + "' not found for component '" + id + "'"};
+          }
         }
       });
 
@@ -30,7 +34,7 @@ namespace rexsapi::database
 
   private:
     const TModel& m_Model;
-    std::vector<std::pair<std::string, std::string>> m_AttributeMappings;
+    const std::vector<std::pair<std::string, std::string>> m_AttributeMappings;
   };
 
 }

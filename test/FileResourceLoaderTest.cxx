@@ -10,9 +10,9 @@ namespace
   void checkBuffer(const std::vector<uint8_t>& buffer)
   {
     std::string v{buffer.begin(), buffer.end()};
-    CHECK(v.find("<?xml") != std::string_view::npos);
-    CHECK(v.find("<rexsModel") != std::string_view::npos);
-    CHECK(v.find("</rexsModel>") != std::string_view::npos);
+    CHECK(v.find("<?xml") != std::string::npos);
+    CHECK(v.find("<rexsModel") != std::string::npos);
+    CHECK(v.find("</rexsModel>") != std::string::npos);
   }
 }
 
@@ -31,5 +31,12 @@ TEST_CASE("File resource loader test")
     std::for_each(buffers.begin(), buffers.end(), [](const auto& buf) {
       checkBuffer(buf);
     });
+  }
+
+  SUBCASE("Load not existing path")
+  {
+    rexsapi::database::TFileResourceLoader loader{projectDir() / "non-existing-models"};
+    CHECK_THROWS(loader.load([](const rexsapi::database::TLoaderResult&, std::vector<uint8_t>&) {
+    }));
   }
 }

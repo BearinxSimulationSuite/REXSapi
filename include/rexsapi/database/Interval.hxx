@@ -6,12 +6,12 @@ namespace rexsapi::database
 {
   enum class TIntervalType { OPEN, CLOSED };
 
-  class TValue
+  class TIntervalEndpoint
   {
   public:
-    TValue() = default;
+    TIntervalEndpoint() = default;
 
-    TValue(double value, TIntervalType type)
+    TIntervalEndpoint(double value, TIntervalType type)
     : m_Set{true}
     , m_Type{type}
     , m_Value{value}
@@ -56,28 +56,30 @@ namespace rexsapi::database
     }
 
   private:
-    bool m_Set{false};
-    TIntervalType m_Type{TIntervalType::OPEN};
-    double m_Value{0.0};
+    const bool m_Set{false};
+    const TIntervalType m_Type{TIntervalType::OPEN};
+    const double m_Value{0.0};
   };
 
   class TInterval
   {
   public:
-    TInterval(TValue min, TValue max)
+    TInterval() = default;
+
+    TInterval(TIntervalEndpoint min, TIntervalEndpoint max)
     : m_Min{min}
     , m_Max{max}
     {
     }
 
-    [[nodiscard]] bool checkValue(double value) const
+    [[nodiscard]] bool check(double value) const
     {
-      return m_Max <= value && m_Min >= value;
+      return m_Min <= value && m_Max >= value;
     }
 
   private:
-    TValue m_Min;
-    TValue m_Max;
+    const TIntervalEndpoint m_Min{};
+    const TIntervalEndpoint m_Max{};
   };
 }
 

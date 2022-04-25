@@ -5,13 +5,14 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
-#include <rexsapi/database/ModelLoader.hxx>
+#include <rexsapi/database/LoaderResult.hxx>
 
 #include <cstring>
 
 namespace rexsapi::database
 {
-  class TXmlModelLoader : public TModelLoader
+  template<typename TResourceLoader>
+  class TXmlModelLoader
   {
   public:
     explicit TXmlModelLoader(const TResourceLoader& loader)
@@ -19,13 +20,13 @@ namespace rexsapi::database
     {
     }
 
-  private:
-    TLoaderResult doLoad(const std::function<void(TModel)>& callback) override
+    TLoaderResult load(const std::function<void(TModel)>& callback) const
     {
-      return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) {
+      return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
         pugi::xml_document doc;
         if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
           result.addError(TResourceError{parseResult.description(), parseResult.offset});
+          return;
         }
 
         // TODO (lcf): check document with schema
@@ -51,25 +52,28 @@ namespace rexsapi::database
           const auto* name = node.node().attribute("name").value();
           auto valueType = model.findValueTypeById(convertToUint64(node.node().attribute("valueType").value()));
           auto unit = convertToUint64(node.node().attribute("unit").value());
-          std::optional<std::string> symbol;
+          std::string symbol;
           if (const auto& symNode = node.node().attribute("symbol"); !symNode.empty()) {
             symbol = symNode.value();
           }
           // TODO (lcf): get interval
+          std::optional<TInterval> interval;
+
           std::optional<TEnumValues> enumValues;
           if (valueType == TValueType::ENUM || valueType == TValueType::ENUM_ARRAY) {
             if (const auto& enums = node.node().first_child();
-                !enums.empty() && std::strncmp(enums.value(), "enumValues", 10) == 0) {
+                !enums.empty() && std::strncmp(enums.name(), "enumValues", 10) == 0) {
               std::vector<TEnumValue> values;
               for (const auto& value : enums.children()) {
                 const auto* enumValue = value.attribute("value").value();
                 const auto* enumName = value.attribute("name").value();
                 values.emplace_back(TEnumValue{enumValue, enumName});
               }
+              enumValues = TEnumValues{std::move(values)};
             }
           }
 
-          model.addAttribute(TAttribute{attributeId, name, valueType, model.findUnitById(unit), symbol, {}, enumValues});
+          model.addAttribute(TAttribute{attributeId, name, valueType, model.findUnitById(unit), symbol, interval, enumValues});
         }
 
         std::vector<std::pair<std::string, std::string>> attributeMappings;
