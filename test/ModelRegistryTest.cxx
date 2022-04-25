@@ -11,7 +11,9 @@ TEST_CASE("Test rexs model registry")
 {
   rexsapi::database::TFileResourceLoader resourceLoader{projectDir() / "models"};
   rexsapi::database::TXmlModelLoader modelLoader{resourceLoader};
-  rexsapi::database::TModelRegistry registry = rexsapi::database::TModelRegistry::createModelRegistry(modelLoader);
+  auto createResult = rexsapi::database::TModelRegistry::createModelRegistry(modelLoader);
+  const auto& registry = createResult.first;
+  REQUIRE(createResult.second);
 
   SUBCASE("Get existing models")
   {
