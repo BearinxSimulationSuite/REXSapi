@@ -3,7 +3,7 @@
 #define REXSCXX_DATABASE_FILE_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Exception.hxx>
-#include <rexsapi/database/ResourceLoader.hxx>
+#include <rexsapi/database/LoaderResult.hxx>
 
 #include <filesystem>
 #include <fstream>
@@ -12,7 +12,7 @@
 
 namespace rexsapi::database
 {
-  class TFileResourceLoader : public TResourceLoader
+  class TFileResourceLoader
   {
   public:
     explicit TFileResourceLoader(std::filesystem::path path)
@@ -20,8 +20,25 @@ namespace rexsapi::database
     {
     }
 
+    TLoaderResult load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
+    {
+      if (!callback) {
+        throw Exception{"callback not set for resource loader"};
+      }
+
+      TLoaderResult result;
+
+      auto resources = findResources();
+      std::for_each(resources.begin(), resources.end(), [this, &callback, &result](std::string_view resource) {
+        auto buffer = load(result, resource);
+        callback(result, buffer);
+      });
+
+      return result;
+    }
+
   private:
-    [[nodiscard]] std::vector<std::string> doFindResources() const override
+    [[nodiscard]] std::vector<std::string> findResources() const
     {
       if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
         throw Exception{"Resource '" + m_Path.string() + "' does not exist or is not a directory"};
@@ -38,7 +55,7 @@ namespace rexsapi::database
       return resources;
     }
 
-    [[nodiscard]] std::vector<uint8_t> doLoad(TLoaderResult& result, std::string_view resource) const override
+    [[nodiscard]] std::vector<uint8_t> load(TLoaderResult& result, std::string_view resource) const
     {
       auto path = m_Path / resource;
       if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {

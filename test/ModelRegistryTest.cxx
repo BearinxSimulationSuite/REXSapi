@@ -9,13 +9,20 @@
 
 TEST_CASE("Test rexs model registry")
 {
+  rexsapi::database::TFileResourceLoader resourceLoader{projectDir() / "models"};
+  rexsapi::database::TXmlModelLoader modelLoader{resourceLoader};
+  rexsapi::database::TModelRegistry registry = rexsapi::database::TModelRegistry::createModelRegistry(modelLoader);
+
   SUBCASE("Get existing models")
   {
-    rexsapi::database::TModelRegistry registry =
-      rexsapi::database::createModelRegistry<rexsapi::database::TFileResourceLoader, rexsapi::database::TXmlModelLoader>(
-        projectDir() / "models");
     const auto& model = registry.getModel("1.4", "de");
     CHECK(model.getVersion() == "1.4");
     CHECK(model.getLanguage() == "de");
+  }
+
+  SUBCASE("Get non existing models")
+  {
+    CHECK_THROWS_WITH((void)registry.getModel("1.4", "es"), "cannot find a model for version '1.4' and locale 'es'");
+    CHECK_THROWS_WITH((void)registry.getModel("1.99", "en"), "cannot find a model for version '1.99' and locale 'en'");
   }
 }

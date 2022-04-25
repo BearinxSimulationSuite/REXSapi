@@ -5,11 +5,13 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
+#include <rexsapi/database/LoaderResult.hxx>
 
 #include <cstring>
 
 namespace rexsapi::database
 {
+  template<typename TResourceLoader>
   class TXmlModelLoader
   {
   public:
@@ -18,7 +20,7 @@ namespace rexsapi::database
     {
     }
 
-    TLoaderResult load(const std::function<void(TModel)>& callback)
+    TLoaderResult load(const std::function<void(TModel)>& callback) const
     {
       return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) {
         pugi::xml_document doc;

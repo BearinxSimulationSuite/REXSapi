@@ -9,11 +9,6 @@ namespace rexsapi::database
   class TModelRegistry
   {
   public:
-    explicit TModelRegistry(std::vector<TModel>&& models)
-    : m_Models{std::move(models)}
-    {
-    }
-
     [[nodiscard]] const TModel& getModel(const std::string& version, const std::string& language) const
     {
       auto it = std::find_if(m_Models.begin(), m_Models.end(), [&version, &language](const auto& model) {
@@ -27,22 +22,25 @@ namespace rexsapi::database
       return *it;
     }
 
+    template<typename TModelLoader>
+    static TModelRegistry createModelRegistry(const TModelLoader& loader)
+    {
+      std::vector<rexsapi::database::TModel> models;
+      auto result = loader.load([&models](rexsapi::database::TModel model) {
+        models.emplace_back(std::move(model));
+      });
+
+      return rexsapi::database::TModelRegistry{std::move(models)};
+    }
+
   private:
+    explicit TModelRegistry(std::vector<TModel>&& models)
+    : m_Models{std::move(models)}
+    {
+    }
+
     const std::vector<TModel> m_Models;
   };
-
-  template<typename ResourceLoader, typename ModelLoader>
-  static inline TModelRegistry createModelRegistry(const std::filesystem::path& directory)
-  {
-    ResourceLoader loader{directory};
-    std::vector<rexsapi::database::TModel> models;
-    ModelLoader modelLoader{loader};
-    auto result = modelLoader.load([&models](rexsapi::database::TModel model) {
-      models.emplace_back(std::move(model));
-    });
-
-    return rexsapi::database::TModelRegistry{std::move(models)};
-  }
 }
 
 #endif
