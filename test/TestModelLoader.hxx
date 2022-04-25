@@ -16,3 +16,16 @@ static inline std::vector<rexsapi::database::TModel> loadModels()
 
   return models;
 }
+
+static inline rexsapi::database::TModel loadModel(const std::string& version)
+{
+  auto models = loadModels();
+  auto it = std::find_if(models.begin(), models.end(), [&version](const auto& model) {
+    return version == model.getVersion();
+  });
+
+  if (it == models.end()) {
+    throw rexsapi::Exception{"no model with version '" + version + "' found"};
+  }
+  return std::move(*it);
+}
