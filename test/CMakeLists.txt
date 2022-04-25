@@ -5,6 +5,7 @@ add_executable(rexsapi_test
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
 
   ConversionHelperTest.cxx
+  EnumValuesTest.cxx
   FileResourceLoaderTest.cxx
   ModelRegistryTest.cxx
   XMLModelLoaderTest.cxx
