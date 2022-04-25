@@ -22,10 +22,11 @@ namespace rexsapi::database
 
     TLoaderResult load(const std::function<void(TModel)>& callback) const
     {
-      return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) {
+      return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
         pugi::xml_document doc;
         if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
           result.addError(TResourceError{parseResult.description(), parseResult.offset});
+          return;
         }
 
         // TODO (lcf): check document with schema
