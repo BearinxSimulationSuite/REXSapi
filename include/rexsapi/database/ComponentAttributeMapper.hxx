@@ -2,7 +2,6 @@
 #ifndef REXSCXX_DATABASE_COMPONENT_ATTRIBUTE_MAPPER_HXX
 #define REXSCXX_DATABASE_COMPONENT_ATTRIBUTE_MAPPER_HXX
 
-#include <rexsapi/Format.h>
 #include <rexsapi/database/Model.hxx>
 
 namespace rexsapi::database

@@ -2,7 +2,6 @@
 #ifndef REXSCXX_DATABASE_MODEL_REGISTRY_HXX
 #define REXSCXX_DATABASE_MODEL_REGISTRY_HXX
 
-#include <rexsapi/Format.h>
 #include <rexsapi/database/Model.hxx>
 
 namespace rexsapi::database

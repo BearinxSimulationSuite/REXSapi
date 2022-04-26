@@ -3,7 +3,7 @@
 #define REXSCXX_DATABASE_VALUE_TYPES_HXX
 
 #include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.h>
+#include <rexsapi/Format.hxx>
 
 namespace rexsapi::database
 {

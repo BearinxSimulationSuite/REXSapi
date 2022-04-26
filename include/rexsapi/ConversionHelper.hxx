@@ -3,7 +3,7 @@
 #define REXSCXX_CONVERSION_HELPER_HXX
 
 #include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.h>
+#include <rexsapi/Format.hxx>
 
 namespace rexsapi
 {

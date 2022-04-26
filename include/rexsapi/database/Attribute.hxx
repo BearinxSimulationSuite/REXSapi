@@ -2,7 +2,7 @@
 #ifndef REXSCXX_DATABASE_ATTRIBUTE_HXX
 #define REXSCXX_DATABASE_ATTRIBUTE_HXX
 
-#include <rexsapi/Format.h>
+#include <rexsapi/Format.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 #include <rexsapi/database/Interval.hxx>
 #include <rexsapi/database/Unit.hxx>

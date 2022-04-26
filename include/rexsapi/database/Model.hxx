@@ -3,7 +3,7 @@
 #define REXSCXX_DATABASE_MODEL_HXX
 
 #include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.h>
+#include <rexsapi/Format.hxx>
 #include <rexsapi/database/Attribute.hxx>
 #include <rexsapi/database/Component.hxx>
 #include <rexsapi/database/Unit.hxx>
