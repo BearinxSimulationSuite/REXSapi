@@ -3,7 +3,7 @@
 #define REXSCXX_CONVERSION_HELPER_HXX
 
 #include <rexsapi/Exception.hxx>
-
+#include <rexsapi/Format.h>
 
 namespace rexsapi
 {
@@ -17,13 +17,13 @@ namespace rexsapi
           return val;
         }
       } catch (const std::invalid_argument&) {
-        throw Exception{"cannot convert string '" + s + "' to unsigned integer: invalid argument"};
+        throw Exception{fmt::format("cannot convert string '{}' to unsigned integer: invalid argument", s)};
       } catch (const std::out_of_range&) {
-        throw Exception{"cannot convert string '" + s + "' to unsigned integer: out of range"};
+        throw Exception{fmt::format("cannot convert string '{}' to unsigned integer: out of range", s)};
       }
     }
 
-    throw Exception{"cannot convert string to unsigned integer: " + s};
+    throw Exception{fmt::format("cannot convert string to unsigned integer: {}", s)};
   }
 }
 

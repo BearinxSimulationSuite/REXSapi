@@ -26,5 +26,6 @@ target_sources(rexsapi INTERFACE
 
 target_include_directories(rexsapi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>)
 target_include_directories(rexsapi SYSTEM INTERFACE "${pugixml_SOURCE_DIR}/src")
+target_include_directories(rexsapi SYSTEM INTERFACE "${fmt_SOURCE_DIR}/include")
 target_include_directories(rexsapi INTERFACE ${PROJECT_BINARY_DIR})
 target_compile_options(rexsapi INTERFACE ${REXSAPI_COMPILE_OPTIONS})
