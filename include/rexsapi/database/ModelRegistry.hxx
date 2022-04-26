@@ -2,6 +2,7 @@
 #ifndef REXSCXX_DATABASE_MODEL_REGISTRY_HXX
 #define REXSCXX_DATABASE_MODEL_REGISTRY_HXX
 
+#include <rexsapi/Format.h>
 #include <rexsapi/database/Model.hxx>
 
 namespace rexsapi::database
@@ -23,7 +24,7 @@ namespace rexsapi::database
       });
 
       if (it == m_Models.end()) {
-        throw Exception{"cannot find a model for version '" + version + "' and locale '" + language + "'"};
+        throw Exception{fmt::format("cannot find a model for version '{}' and locale '{}'", version, language)};
       }
 
       return *it;

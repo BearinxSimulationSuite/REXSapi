@@ -2,6 +2,7 @@
 #ifndef REXSCXX_DATABASE_ATTRIBUTE_HXX
 #define REXSCXX_DATABASE_ATTRIBUTE_HXX
 
+#include <rexsapi/Format.h>
 #include <rexsapi/database/EnumValues.hxx>
 #include <rexsapi/database/Interval.hxx>
 #include <rexsapi/database/Unit.hxx>
@@ -25,10 +26,9 @@ namespace rexsapi::database
     , m_EnumValues{std::move(enumValues)}
     {
       if (m_Type == TValueType::ENUM && !m_EnumValues) {
-        throw Exception{"enum with id '" + m_AttributeId + "' does not have any enum values"};
+        throw Exception{fmt::format("enum with id '{}' does not have any enum values", m_AttributeId)};
       }
     }
-
 
     ~TAttribute() = default;
 

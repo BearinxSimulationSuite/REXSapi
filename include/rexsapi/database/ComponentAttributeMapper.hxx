@@ -2,6 +2,7 @@
 #ifndef REXSCXX_DATABASE_COMPONENT_ATTRIBUTE_MAPPER_HXX
 #define REXSCXX_DATABASE_COMPONENT_ATTRIBUTE_MAPPER_HXX
 
+#include <rexsapi/Format.h>
 #include <rexsapi/database/Model.hxx>
 
 namespace rexsapi::database
@@ -24,7 +25,7 @@ namespace rexsapi::database
           try {
             attributes.emplace_back(m_Model.findAttributetById(element.second));
           } catch (const Exception&) {
-            throw Exception{"attribute '" + element.second + "' not found for component '" + id + "'"};
+            throw Exception{fmt::format("attribute '{}' not found for component '{}'", element.second, id)};
           }
         }
       });
@@ -34,7 +35,7 @@ namespace rexsapi::database
 
   private:
     const TModel& m_Model;
-    const std::vector<std::pair<std::string, std::string>> m_AttributeMappings;
+    const std::vector<std::pair<std::string, std::string>> m_AttributeMappings{};
   };
 
 }

@@ -39,9 +39,10 @@ The library can be used on
 - Open the local folder of the REXSapi project
 - Visual Studio will configure the project automatically
 
-## Thirdparty Software
+## External Dependencies
 
 RESTapi uses the following thirdparty open source software
 
-- [pugixml](https://github.com/zeux/pugixml/)
+- [fmt](https://github.com/fmtlib/fmt)
+- [pugixml](https://github.com/zeux/pugixml)
 - [doctest](https://github.com/doctest/doctest)

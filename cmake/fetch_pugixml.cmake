@@ -4,4 +4,6 @@ FetchContent_Declare(
   GIT_TAG        v1.12.1
 )
 
-FetchContent_MakeAvailable(pugixml)
+if(NOT pugixml_POPULATED)
+  FetchContent_Populate(pugixml)
+endif()

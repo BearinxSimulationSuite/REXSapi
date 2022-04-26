@@ -3,6 +3,7 @@
 #define REXSCXX_DATABASE_VALUE_TYPES_HXX
 
 #include <rexsapi/Exception.hxx>
+#include <rexsapi/Format.h>
 
 namespace rexsapi::database
 {
@@ -65,7 +66,7 @@ namespace rexsapi::database
       return TValueType::ARRAY_OF_INTEGER_ARRAYS;
     }
 
-    throw Exception{"unknown value type '" + type + "'"};
+    throw Exception{fmt::format("unknown value type '{}'", type)};
   }
 }
 

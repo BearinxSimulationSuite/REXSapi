@@ -3,6 +3,7 @@
 #define REXSCXX_DATABASE_MODEL_HXX
 
 #include <rexsapi/Exception.hxx>
+#include <rexsapi/Format.h>
 #include <rexsapi/database/Attribute.hxx>
 #include <rexsapi/database/Component.hxx>
 #include <rexsapi/database/Unit.hxx>
@@ -19,7 +20,7 @@ namespace rexsapi::database
     if (status == "RELEASED") {
       return TStatus::RELEASED;
     }
-    throw Exception{"status '" + status + "' unkown"};
+    throw Exception{fmt::format("status '{}' unkown", status)};
   }
 
   class TModel
@@ -70,7 +71,7 @@ namespace rexsapi::database
     {
       auto it = m_Units.find(id);
       if (it == m_Units.end()) {
-        throw Exception{"unit '" + std::to_string(id) + "' not found"};
+        throw Exception{fmt::format("unit '{}' not found", std::to_string(id))};
       }
 
       return it->second;
@@ -86,7 +87,7 @@ namespace rexsapi::database
     {
       auto it = m_Types.find(id);
       if (it == m_Types.end()) {
-        throw Exception{"value type '" + std::to_string(id) + "' not found"};
+        throw Exception{fmt::format("value type '{}' not found", std::to_string(id))};
       }
 
       return it->second;
@@ -102,7 +103,7 @@ namespace rexsapi::database
     {
       auto it = m_Attributes.find(id);
       if (it == m_Attributes.end()) {
-        throw Exception{"attribute '" + id + "' not found"};
+        throw Exception{fmt::format("attribute '{}' not found", id)};
       }
 
       return it->second;
@@ -118,7 +119,7 @@ namespace rexsapi::database
     {
       auto it = m_Components.find(id);
       if (it == m_Components.end()) {
-        throw Exception{"component '" + id + "' not found"};
+        throw Exception{fmt::format("component '{}' not found", id)};
       }
 
       return it->second;
