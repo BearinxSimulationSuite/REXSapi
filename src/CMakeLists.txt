@@ -21,6 +21,7 @@ target_sources(rexsapi INTERFACE
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
 )
 

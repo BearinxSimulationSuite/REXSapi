@@ -3,7 +3,7 @@
 #define REXSCXX_DATABASE_FILE_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.h>
+#include <rexsapi/Format.hxx>
 #include <rexsapi/database/LoaderResult.hxx>
 
 #include <filesystem>
