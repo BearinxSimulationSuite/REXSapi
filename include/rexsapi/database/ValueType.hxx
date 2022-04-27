@@ -66,7 +66,7 @@ namespace rexsapi::database
       return TValueType::ARRAY_OF_INTEGER_ARRAYS;
     }
 
-    throw Exception{fmt::format("unknown value type '{}'", type)};
+    throw TException{fmt::format("unknown value type '{}'", type)};
   }
 }
 

@@ -415,11 +415,11 @@ namespace rexsapi::xml
     explicit TXSDSchemaValidator(const std::filesystem::path& xsdFile)
     {
       if (pugi::xml_parse_result parseResult = m_Doc.load_file(xsdFile.string().c_str()); !parseResult) {
-        throw Exception{fmt::format("cannot open xsd schema '{}'", xsdFile.string())};
+        throw TException{fmt::format("cannot open xsd schema '{}'", xsdFile.string())};
       }
 
       if (auto root = m_Doc.select_node("/xsd:schema"); !root) {
-        throw Exception{fmt::format("'{}' is not an xsd schema", xsdFile.string())};
+        throw TException{fmt::format("'{}' is not an xsd schema", xsdFile.string())};
       }
 
       initTypes();
@@ -495,7 +495,7 @@ namespace rexsapi::xml
 
       auto node = m_Doc.select_node(fmt::format("/xsd:schema/xsd:element[@name='{}']", name).c_str());
       if (!node) {
-        throw Exception{fmt::format("no element node '{}' found", name)};
+        throw TException{fmt::format("no element node '{}' found", name)};
       }
 
       auto element = parseElement(node.node());
@@ -507,7 +507,7 @@ namespace rexsapi::xml
     {
       auto it = m_Types.find(name);
       if (it == m_Types.end()) {
-        throw Exception{fmt::format("no type '{}' found", name)};
+        throw TException{fmt::format("no type '{}' found", name)};
       }
       return *it->second;
     }

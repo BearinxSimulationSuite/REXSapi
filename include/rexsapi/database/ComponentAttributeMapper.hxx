@@ -23,8 +23,8 @@ namespace rexsapi::database
         if (id == element.first) {
           try {
             attributes.emplace_back(m_Model.findAttributetById(element.second));
-          } catch (const Exception&) {
-            throw Exception{fmt::format("attribute '{}' not found for component '{}'", element.second, id)};
+          } catch (const TException&) {
+            throw TException{fmt::format("attribute '{}' not found for component '{}'", element.second, id)};
           }
         }
       });

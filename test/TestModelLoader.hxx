@@ -25,7 +25,7 @@ static inline rexsapi::database::TModel loadModel(const std::string& version)
   });
 
   if (it == models.end()) {
-    throw rexsapi::Exception{"no model with version '" + version + "' found"};
+    throw rexsapi::TException{"no model with version '" + version + "' found"};
   }
   return std::move(*it);
 }

@@ -17,13 +17,13 @@ namespace rexsapi
           return val;
         }
       } catch (const std::invalid_argument&) {
-        throw Exception{fmt::format("cannot convert string '{}' to unsigned integer: invalid argument", s)};
+        throw TException{fmt::format("cannot convert string '{}' to unsigned integer: invalid argument", s)};
       } catch (const std::out_of_range&) {
-        throw Exception{fmt::format("cannot convert string '{}' to unsigned integer: out of range", s)};
+        throw TException{fmt::format("cannot convert string '{}' to unsigned integer: out of range", s)};
       }
     }
 
-    throw Exception{fmt::format("cannot convert string to unsigned integer: {}", s)};
+    throw TException{fmt::format("cannot convert string to unsigned integer: {}", s)};
   }
 }
 

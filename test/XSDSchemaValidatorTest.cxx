@@ -12,7 +12,7 @@ TEST_CASE("XSD schema validator test")
     pugi::xml_document doc;
     if (pugi::xml_parse_result parseResult = doc.load_file((projectDir() / "models" / "rexs_model_1.4_en.xml").string().c_str());
         !parseResult) {
-      throw rexsapi::Exception{
+      throw rexsapi::TException{
         fmt::format("cannot open xml file '{}'", (projectDir() / "models" / "rexs_model_1.4_en.xml").string())};
     }
 

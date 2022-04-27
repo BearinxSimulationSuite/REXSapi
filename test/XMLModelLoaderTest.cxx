@@ -22,7 +22,7 @@ namespace
     load(const std::function<void(rexsapi::database::TLoaderResult&, std::vector<uint8_t>&)>& callback) const
     {
       if (!callback) {
-        throw rexsapi::Exception{"callback not set for resource loader"};
+        throw rexsapi::TException{"callback not set for resource loader"};
       }
 
       rexsapi::database::TLoaderResult result;

@@ -23,7 +23,7 @@ namespace rexsapi::database
       });
 
       if (it == m_Models.end()) {
-        throw Exception{fmt::format("cannot find a model for version '{}' and locale '{}'", version, language)};
+        throw TException{fmt::format("cannot find a model for version '{}' and locale '{}'", version, language)};
       }
 
       return *it;

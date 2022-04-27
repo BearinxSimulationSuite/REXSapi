@@ -24,7 +24,7 @@ namespace rexsapi::database
     TLoaderResult load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
     {
       if (!callback) {
-        throw Exception{"callback not set for resource loader"};
+        throw TException{"callback not set for resource loader"};
       }
 
       TLoaderResult result;
@@ -44,7 +44,7 @@ namespace rexsapi::database
     [[nodiscard]] std::vector<std::filesystem::path> findResources(TLoaderResult& result) const
     {
       if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
-        throw Exception{fmt::format("Directory '{}' does not exist or is not a directory", m_Path.string())};
+        throw TException{fmt::format("Directory '{}' does not exist or is not a directory", m_Path.string())};
       }
 
       std::vector<std::filesystem::path> resources;

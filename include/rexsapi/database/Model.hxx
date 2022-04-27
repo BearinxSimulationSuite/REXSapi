@@ -20,7 +20,7 @@ namespace rexsapi::database
     if (status == "RELEASED") {
       return TStatus::RELEASED;
     }
-    throw Exception{fmt::format("status '{}' unkown", status)};
+    throw TException{fmt::format("status '{}' unkown", status)};
   }
 
   class TModel
@@ -71,7 +71,7 @@ namespace rexsapi::database
     {
       auto it = m_Units.find(id);
       if (it == m_Units.end()) {
-        throw Exception{fmt::format("unit '{}' not found", std::to_string(id))};
+        throw TException{fmt::format("unit '{}' not found", std::to_string(id))};
       }
 
       return it->second;
@@ -87,7 +87,7 @@ namespace rexsapi::database
     {
       auto it = m_Types.find(id);
       if (it == m_Types.end()) {
-        throw Exception{fmt::format("value type '{}' not found", std::to_string(id))};
+        throw TException{fmt::format("value type '{}' not found", std::to_string(id))};
       }
 
       return it->second;
@@ -103,7 +103,7 @@ namespace rexsapi::database
     {
       auto it = m_Attributes.find(id);
       if (it == m_Attributes.end()) {
-        throw Exception{fmt::format("attribute '{}' not found", id)};
+        throw TException{fmt::format("attribute '{}' not found", id)};
       }
 
       return it->second;
@@ -119,7 +119,7 @@ namespace rexsapi::database
     {
       auto it = m_Components.find(id);
       if (it == m_Components.end()) {
-        throw Exception{fmt::format("component '{}' not found", id)};
+        throw TException{fmt::format("component '{}' not found", id)};
       }
 
       return it->second;
