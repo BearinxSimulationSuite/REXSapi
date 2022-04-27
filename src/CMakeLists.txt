@@ -19,6 +19,8 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ValueType.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/XMLModelLoader.hxx
 
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/xml/XSDSchemaValidator.hxx
+
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
