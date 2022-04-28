@@ -68,9 +68,9 @@ namespace rexsapi::xml
     {
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const;
+    [[nodiscard]] const std::string& getName() const;
 
-    void dump(std::ostream& out) const;
+    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const;
 
   private:
     const TXSDElement& m_Element;
@@ -90,8 +90,10 @@ namespace rexsapi::xml
     {
       for (const auto& child : node.children()) {
         const auto* element = context.findElement(child.name());
-        if (!element) {
+        if (element == nullptr) {
           context.addError(fmt::format("unkown element '{}'", child.name()));
+        } else if (!checkContainsElement(child.name())) {
+          context.addError(fmt::format("element '{}' is not allowed here", child.name()));
         }
       }
       for (const auto& element : m_Elements) {
@@ -100,6 +102,15 @@ namespace rexsapi::xml
     }
 
   private:
+    bool checkContainsElement(const std::string& child) const
+    {
+      auto it = std::find_if(m_Elements.begin(), m_Elements.end(), [&child](const auto& element) {
+        return child == element.getName();
+      });
+
+      return it != m_Elements.end();
+    }
+
     std::vector<TXSDElementRef> m_Elements;
   };
 
@@ -271,18 +282,22 @@ namespace rexsapi::xml
     const TXSDComplexType m_Type;
   };
 
+  const std::string& TXSDElementRef::getName() const
+  {
+    return m_Element.getName();
+  }
+
   void TXSDElementRef::validate(const pugi::xml_node& node, IXSDValidationContext& context) const
   {
     auto nodes = node.select_nodes(m_Element.getName().c_str());
 
-    if (nodes.empty() && m_Min != 0) {
-      context.addError(fmt::format("missing element '{}'", m_Element.getName()));
-    }
     if (nodes.size() < m_Min) {
-      context.addError(fmt::format("too few '{}' elements, found {} instead of {}", m_Element.getName(), nodes.size(), m_Min));
+      context.addError(
+        fmt::format("too few '{}' elements, found {} instead of at least {}", m_Element.getName(), nodes.size(), m_Min));
     }
     if (nodes.size() > m_Max) {
-      context.addError(fmt::format("too many '{}' elements, found {} instead of {}", m_Element.getName(), nodes.size(), m_Max));
+      context.addError(
+        fmt::format("too many '{}' elements, found {} instead of at most {}", m_Element.getName(), nodes.size(), m_Max));
     }
 
     for (const auto& child : nodes) {
@@ -384,7 +399,7 @@ namespace rexsapi::xml
       for (const auto& node : doc.children()) {
         const auto* element = context.findElement(node.name());
         if (!element) {
-          context.addError(fmt::format("element '{}' not found", node.name()));
+          context.addError(fmt::format("unknown element '{}'", node.name()));
           continue;
         }
 

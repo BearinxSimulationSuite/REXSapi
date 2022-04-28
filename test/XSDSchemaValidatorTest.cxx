@@ -13,7 +13,7 @@ namespace
         <xsd:element name="TestCases">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element ref="Suites" maxOccurs="1" minOccurs="0"/>
+              <xsd:element ref="Suites" maxOccurs="1" minOccurs="1"/>
               <xsd:element ref="Tests" maxOccurs="1" minOccurs="0"/>
             </xsd:sequence>
             <xsd:attribute name="version" type="xsd:string" use="required"/>
@@ -23,14 +23,14 @@ namespace
         <xsd:element name="Suites">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element ref="Suite" maxOccurs="unbounded" minOccurs="0"/>
+              <xsd:element ref="Suite" maxOccurs="unbounded" minOccurs="1"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
         <xsd:element name="Suite">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element ref="Tests" maxOccurs="1" minOccurs="0"/>
+              <xsd:element ref="Tests" maxOccurs="1" minOccurs="1"/>
             </xsd:sequence>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
           </xsd:complexType>
@@ -38,7 +38,7 @@ namespace
         <xsd:element name="Tests">
           <xsd:complexType>
             <xsd:sequence>
-              <xsd:element ref="Test" maxOccurs="unbounded" minOccurs="0"/>
+              <xsd:element ref="Test" maxOccurs="unbounded" minOccurs="2"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>        
@@ -49,11 +49,22 @@ namespace
         </xsd:element>        
       </xsd:schema>
     )";
+
+  bool validate(const char* document, std::vector<std::string>& errors)
+  {
+    pugi::xml_document doc;
+    pugi::xml_parse_result parseResult = doc.load_string(document);
+    CHECK(parseResult);
+
+    rexsapi::xml::TBufferXsdSchemaLoader loader{schema};
+    rexsapi::xml::TXSDSchemaValidator val{loader};
+    return val.validate(doc, errors);
+  }
 }
 
 TEST_CASE("XSD schema validator test")
 {
-  SUBCASE("Validate schema from file")
+  SUBCASE("Validate db model schema from file")
   {
     pugi::xml_document doc;
     pugi::xml_parse_result parseResult = doc.load_file((projectDir() / "models" / "rexs_model_1.4_en.xml").string().c_str());
@@ -88,24 +99,103 @@ TEST_CASE("XSD schema validator test")
           </Suite>
         </Suites>
         <Tests>
-            <Tests>
-              <Test name="1" />
-              <Test name="2" />
-              <Test name="3" />
-            </Tests>
+          <Test name="1" />
+          <Test name="2" />
+          <Test name="3" />
         </Tests>
       </TestCases>
     )";
 
-    pugi::xml_document doc;
-    pugi::xml_parse_result parseResult = doc.load_string(xml);
-    CHECK(parseResult);
+    std::vector<std::string> errors;
+    CHECK(validate(xml, errors));
+    CHECK(errors.empty());
+  }
+}
 
-    rexsapi::xml::TBufferXsdSchemaLoader loader{schema};
-    rexsapi::xml::TXSDSchemaValidator val{loader};
+TEST_CASE("XSD schema validator failure test")
+{
+  SUBCASE("Missing required attribute")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases date="2022-04-28T11:10">
+        <Suites />
+      </TestCases>
+    )";
 
     std::vector<std::string> errors;
-    CHECK(val.validate(doc, errors));
-    CHECK(errors.empty());
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 2);
+    CHECK(errors[0] == "[/TestCases/] missing required attribute 'version'");
+    CHECK(errors[1] == "[/TestCases/Suites/] too few 'Suite' elements, found 0 instead of at least 1");
+  }
+
+  SUBCASE("Missing required elements")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Tests />
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 2);
+    CHECK(errors[0] == "[/TestCases/] too few 'Suites' elements, found 0 instead of at least 1");
+    CHECK(errors[1] == "[/TestCases/Tests/] too few 'Test' elements, found 0 instead of at least 2");
+  }
+
+  SUBCASE("Wrong element")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Suites>
+          <Tests />
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/Suites/] element 'Tests' is not allowed here");
+  }
+
+  SUBCASE("Too much elements")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
+          </Suite>
+        </Suites>
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/] too many 'Suites' elements, found 2 instead of at most 1");
   }
 }
