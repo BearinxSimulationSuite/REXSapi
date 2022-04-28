@@ -16,7 +16,7 @@
 
 namespace rexsapi::xml
 {
-  static constexpr const char* xsdSchema = "xsd";
+  static constexpr const char* xsdSchemaNS = "xsd";
 
   class TXSDElement;
 
@@ -173,7 +173,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDStringType()
-    : TXSDType{fmt::format("{}:string", xsdSchema)}
+    : TXSDType{fmt::format("{}:string", xsdSchemaNS)}
     {
     }
 
@@ -189,7 +189,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDIntegerType()
-    : TXSDType{fmt::format("{}:integer", xsdSchema)}
+    : TXSDType{fmt::format("{}:integer", xsdSchemaNS)}
     {
     }
 
@@ -211,7 +211,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDDecimalType()
-    : TXSDType{fmt::format("{}:decimal", xsdSchema)}
+    : TXSDType{fmt::format("{}:decimal", xsdSchemaNS)}
     {
     }
 
@@ -233,7 +233,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDBooleanType()
-    : TXSDType{fmt::format("{}:boolean", xsdSchema)}
+    : TXSDType{fmt::format("{}:boolean", xsdSchemaNS)}
     {
     }
 
@@ -351,28 +351,26 @@ namespace rexsapi::xml
     std::vector<std::string> m_Errors;
   };
 
+  template<typename TXsdSchemaLoader>
   class TXSDSchemaValidator
   {
   public:
-    explicit TXSDSchemaValidator(const std::filesystem::path& xsdFile)
+    explicit TXSDSchemaValidator(const TXsdSchemaLoader& loader)
+    : m_Doc{loader.load()}
     {
-      if (pugi::xml_parse_result parseResult = m_Doc.load_file(xsdFile.string().c_str()); !parseResult) {
-        throw TException{fmt::format("cannot open xsd schema '{}'", xsdFile.string())};
-      }
-
-      if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchema).c_str()); !root) {
-        throw TException{fmt::format("'{}' is not an xsd schema", xsdFile.string())};
+      if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchemaNS).c_str()); !root) {
+        throw TException{fmt::format("{}:schema node not found", xsdSchemaNS)};
       }
 
       initTypes();
 
-      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchema).c_str())) {
+      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchemaNS).c_str())) {
         // TODO (lcf): check for duplicates
         auto type = std::make_unique<TXSDSimpleType>(elements.node().attribute("name").as_string());
         m_Types.try_emplace(type->getName(), std::move(type));
       }
 
-      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:element", xsdSchema).c_str())) {
+      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:element", xsdSchemaNS).c_str())) {
         // TODO (lcf): check for duplicates
         auto element = parseElement(elements.node());
         m_Elements.try_emplace(element.getName(), std::move(element));
@@ -423,7 +421,7 @@ namespace rexsapi::xml
         return *p;
       }
 
-      auto node = m_Doc.select_node(fmt::format("/{0}:schema/{0}:element[@name='{1}']", xsdSchema, name).c_str());
+      auto node = m_Doc.select_node(fmt::format("/{0}:schema/{0}:element[@name='{1}']", xsdSchemaNS, name).c_str());
       if (!node) {
         throw TException{fmt::format("no element node '{}' found", name)};
       }
@@ -446,7 +444,8 @@ namespace rexsapi::xml
     {
       TXSDSequence sequence;
 
-      for (const auto& element : node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchema).c_str())) {
+      for (const auto& element :
+           node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
         const TXSDElement& ref = findOrRegisterElement(element.node().attribute("ref").as_string());
         auto min = convertToUint64(element.node().attribute("minOccurs").as_string());
         auto maxString = std::string(element.node().attribute("maxOccurs").as_string());
@@ -455,7 +454,7 @@ namespace rexsapi::xml
       }
 
       std::vector<TXSDAttribute> attributes;
-      for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchema).c_str())) {
+      for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchemaNS).c_str())) {
         auto use = attribute.node().attribute("use");
         auto typeName = attribute.node().attribute("type").as_string();
         const auto& type = findType(typeName);
@@ -472,6 +471,50 @@ namespace rexsapi::xml
     pugi::xml_document m_Doc;
     TXSDTypes m_Types;
     TXSDElements m_Elements;
+  };
+
+  class TFileXsdSchemaLoader
+  {
+  public:
+    explicit TFileXsdSchemaLoader(std::filesystem::path xsdFile)
+    : m_XsdFile{std::move(xsdFile)}
+    {
+    }
+
+    pugi::xml_document load() const
+    {
+      pugi::xml_document doc;
+      if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
+        throw TException{fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
+      }
+
+      return doc;
+    }
+
+  private:
+    std::filesystem::path m_XsdFile;
+  };
+
+  class TBufferXsdSchemaLoader
+  {
+  public:
+    explicit TBufferXsdSchemaLoader(std::string xsdSchema)
+    : m_XsdSchema{std::move(xsdSchema)}
+    {
+    }
+
+    pugi::xml_document load() const
+    {
+      pugi::xml_document doc;
+      if (pugi::xml_parse_result parseResult = doc.load_string(m_XsdSchema.c_str()); !parseResult) {
+        throw TException{fmt::format("cannot parse xsd schema: {}", parseResult.description())};
+      }
+
+      return doc;
+    }
+
+  private:
+    std::string m_XsdSchema;
   };
 }
 
