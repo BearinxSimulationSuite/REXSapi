@@ -46,6 +46,7 @@ namespace
         <xsd:element name="Test">
           <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:anyAttribute processContents="skip"/>
           </xsd:complexType>
         </xsd:element>
         <xsd:simpleType name="Status">
@@ -106,7 +107,8 @@ TEST_CASE("XSD schema validator test")
           </Suite>
         </Suites>
         <Tests>
-          <Test name="1" />
+          <!-- tests anyAttribute feature -->
+          <Test name="1" puschel="check" />
           <Test name="2" />
           <Test name="3" />
         </Tests>

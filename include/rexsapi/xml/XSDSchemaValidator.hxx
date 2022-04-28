@@ -154,9 +154,16 @@ namespace rexsapi::xml
     const bool m_Required;
   };
 
+  enum class TXSDAttributeMode { STRICT, RELAXED };
+
   class TXSDAttributes
   {
   public:
+    void setRelaxed()
+    {
+      m_Relaxed = TXSDAttributeMode::RELAXED;
+    }
+
     void addAttribute(const TXSDAttribute& attribute)
     {
       m_Attributes.emplace_back(attribute);
@@ -164,9 +171,11 @@ namespace rexsapi::xml
 
     void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
     {
-      for (const auto& attribute : node.attributes()) {
-        if (!containsAttribute(attribute.name())) {
-          context.addError(fmt::format("unknown attribute '{}'", attribute.name()));
+      if (m_Relaxed == TXSDAttributeMode::STRICT) {
+        for (const auto& attribute : node.attributes()) {
+          if (!containsAttribute(attribute.name())) {
+            context.addError(fmt::format("unknown attribute '{}'", attribute.name()));
+          }
         }
       }
 
@@ -183,6 +192,8 @@ namespace rexsapi::xml
       });
       return it != m_Attributes.end();
     }
+
+    TXSDAttributeMode m_Relaxed{TXSDAttributeMode::STRICT};
     std::vector<TXSDAttribute> m_Attributes;
   };
 
@@ -553,7 +564,10 @@ namespace rexsapi::xml
         attributes.addAttribute(TXSDAttribute{attribute.node().attribute("name").as_string(), type,
                                               use ? std::string(use.as_string()) == "required" : false});
       }
-
+      auto anyAttribute = node.select_node(fmt::format("{0}:complexType/{0}:anyAttribute", xsdSchemaNS).c_str());
+      if (!anyAttribute.node().empty()) {
+        attributes.setRelaxed();
+      }
 
       TXSDComplexType complexType{std::move(sequence), std::move(attributes)};
       return TXSDElement{node.attribute("name").as_string(), std::move(complexType)};
