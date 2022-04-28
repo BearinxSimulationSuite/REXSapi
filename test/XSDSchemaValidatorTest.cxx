@@ -274,3 +274,112 @@ TEST_CASE("XSD schema validator failure test")
     CHECK(errors[0] == "[/TestCases/status/] unknown enum value 'BAD' for type 'Status'");
   }
 }
+
+namespace
+{
+  template<typename Type>
+  bool check(const std::string& value)
+  {
+    rexsapi::xml::TXSDElements elements;
+    rexsapi::xml::TXSDValidationContext context{elements};
+
+    Type t;
+    t.validate(value, context);
+    return !context.hasErrors();
+  }
+
+  template<typename Type>
+  bool check(const Type& t, const std::string& value)
+  {
+    rexsapi::xml::TXSDElements elements;
+    rexsapi::xml::TXSDValidationContext context{elements};
+
+    t.validate(value, context);
+    return !context.hasErrors();
+  }
+}
+
+
+TEST_CASE("XSD schema validator types test")
+{
+  SUBCASE("Test string type")
+  {
+    CHECK(check<rexsapi::xml::TXSDStringType>("Puschel"));
+    CHECK(check<rexsapi::xml::TXSDStringType>("4711 und 0815"));
+  }
+
+  SUBCASE("Test boolean type")
+  {
+    CHECK(check<rexsapi::xml::TXSDBooleanType>("0"));
+    CHECK(check<rexsapi::xml::TXSDBooleanType>("1"));
+    CHECK(check<rexsapi::xml::TXSDBooleanType>("true"));
+    CHECK(check<rexsapi::xml::TXSDBooleanType>("false"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("puschel"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("t"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("f"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("TRUE"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("FALSE"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>(""));
+  }
+
+  SUBCASE("Test integer type")
+  {
+    CHECK(check<rexsapi::xml::TXSDIntegerType>("0"));
+    CHECK(check<rexsapi::xml::TXSDIntegerType>("4711"));
+    CHECK(check<rexsapi::xml::TXSDIntegerType>("-4711"));
+    CHECK(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::max())));
+    CHECK(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::max()) + "1"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("test"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("47.11"));
+  }
+
+  SUBCASE("Test non negative integer type")
+  {
+    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>("0"));
+    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>("4711"));
+    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max())));
+    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max()) + "1"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("-4711"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("test"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("47.11"));
+  }
+
+  SUBCASE("Test decimal type")
+  {
+    CHECK(check<rexsapi::xml::TXSDDecimalType>("0"));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>("4590845908"));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>("-4590845908"));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>("47.11"));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>("-47.11"));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>(std::to_string(std::numeric_limits<double>::max())));
+    CHECK(check<rexsapi::xml::TXSDDecimalType>(std::to_string(std::numeric_limits<double>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>("test"));
+  }
+}
+
+TEST_CASE("XSD schema validator simple type test")
+{
+  std::vector<std::string> enumValues{"one", "two", "three"};
+  rexsapi::xml::TXSDSimpleEnumType enumeration{"numbers", enumValues};
+
+  SUBCASE("Test enum valid")
+  {
+    CHECK(check(enumeration, "one"));
+    CHECK(check(enumeration, "two"));
+    CHECK(check(enumeration, "three"));
+  }
+
+  SUBCASE("Test enum not valid")
+  {
+    CHECK_FALSE(check(enumeration, "nine"));
+    CHECK_FALSE(check(enumeration, ""));
+  }
+}

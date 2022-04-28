@@ -138,11 +138,11 @@ namespace rexsapi::xml
     void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
     {
       auto attribute = node.attribute(m_Name.c_str());
-      if (!attribute && m_Required) {
+      if (attribute.empty() && m_Required) {
         context.addError(fmt::format("missing required attribute '{}'", m_Name));
       }
       context.pushElement(m_Name);
-      if (attribute) {
+      if (!attribute.empty()) {
         m_Type.validate(attribute.value(), context);
       }
       context.popElement();
@@ -263,6 +263,24 @@ namespace rexsapi::xml
         }
       } catch (const std::exception&) {
         context.addError(fmt::format("cannot convert '{}' to integer", value));
+      }
+    }
+  };
+
+  class TXSDNonNegativeIntegerType : public TXSDType
+  {
+  public:
+    TXSDNonNegativeIntegerType()
+    : TXSDType{fmt::format("{}:nonNegativeInteger", xsdSchemaNS)}
+    {
+    }
+
+    void validate(const std::string& value, IXSDValidationContext& context) const override
+    {
+      try {
+        convertToUint64(value);
+      } catch (const std::exception&) {
+        context.addError(fmt::format("cannot convert '{}' to non negative integer", value));
       }
     }
   };
@@ -478,6 +496,8 @@ namespace rexsapi::xml
       m_Types.try_emplace(type3->getName(), std::move(type3));
       auto type4 = std::make_unique<TXSDBooleanType>();
       m_Types.try_emplace(type4->getName(), std::move(type4));
+      auto type5 = std::make_unique<TXSDNonNegativeIntegerType>();
+      m_Types.try_emplace(type5->getName(), std::move(type5));
     }
 
     [[nodiscard]] const TXSDElement* findElement(const std::string& name) const
