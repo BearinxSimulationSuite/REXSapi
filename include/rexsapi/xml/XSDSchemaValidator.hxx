@@ -240,6 +240,24 @@ namespace rexsapi::xml
     std::vector<std::string> m_EnumValues;
   };
 
+  class TXSDSimpleRestrictedType : public TXSDType
+  {
+  public:
+    explicit TXSDSimpleRestrictedType(std::string name, const TXSDType& type)
+    : TXSDType{std::move(name)}
+    , m_Type{type}
+    {
+    }
+
+    void validate(const std::string& value, IXSDValidationContext& context) const override
+    {
+      m_Type.validate(value, context);
+    }
+
+  private:
+    const TXSDType& m_Type;
+  };
+
   class TXSDStringType : public TXSDType
   {
   public:
@@ -460,14 +478,24 @@ namespace rexsapi::xml
 
       for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchemaNS).c_str())) {
         // ATTENTION: this is a strong simplification of simple types
-        std::vector<std::string> enumValues;
-        for (const auto& enums :
-             elements.node().select_nodes(fmt::format("{0}:restriction/{0}:enumeration", xsdSchemaNS).c_str())) {
-          enumValues.emplace_back(enums.node().attribute("value").as_string());
+        auto restriction = elements.node().select_nodes(fmt::format("{0}:restriction", xsdSchemaNS).c_str());
+        if (!restriction.empty()) {
+          auto children = restriction.first().node().children();
+          if (!children.empty()) {
+            std::vector<std::string> enumValues;
+            for (const auto& enums : children) {
+              enumValues.emplace_back(enums.attribute("value").as_string());
+            }
+            auto type = std::make_unique<TXSDSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
+            // TODO (lcf): check for duplicates
+            m_Types.try_emplace(type->getName(), std::move(type));
+          } else {
+            const auto& baseType = findType(restriction.first().node().attribute("base").as_string());
+            auto type = std::make_unique<TXSDSimpleRestrictedType>(elements.node().attribute("name").as_string(), baseType);
+            // TODO (lcf): check for duplicates
+            m_Types.try_emplace(type->getName(), std::move(type));
+          }
         }
-        auto type = std::make_unique<TXSDSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
-        // TODO (lcf): check for duplicates
-        m_Types.try_emplace(type->getName(), std::move(type));
       }
 
       for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:element", xsdSchemaNS).c_str())) {

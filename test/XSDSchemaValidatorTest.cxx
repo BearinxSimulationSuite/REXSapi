@@ -46,6 +46,7 @@ namespace
         <xsd:element name="Test">
           <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="number" type="Number" use="optional"/>
             <xsd:anyAttribute processContents="skip"/>
           </xsd:complexType>
         </xsd:element>
@@ -54,6 +55,9 @@ namespace
             <xsd:enumeration value="COOL"/>
             <xsd:enumeration value="OH NO"/>
           </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:simpleType name="Number">
+          <xsd:restriction base="xsd:integer"/>
         </xsd:simpleType>
       </xsd:schema>
     )";
@@ -274,6 +278,28 @@ TEST_CASE("XSD schema validator failure test")
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
     CHECK(errors[0] == "[/TestCases/status/] unknown enum value 'BAD' for type 'Status'");
+  }
+
+  SUBCASE("Wrong restriction value")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="41">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" number="4711" />
+              <Test name="1.2" number="no number" />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Test/number/] cannot convert 'no number' to intege");
   }
 }
 
