@@ -16,6 +16,7 @@
 
 namespace rexsapi::xml
 {
+  static constexpr const char* xsdSchema = "xsd";
 
   class TXSDElement;
 
@@ -28,7 +29,7 @@ namespace rexsapi::xml
     virtual void pushElement(std::string element) = 0;
     virtual void popElement() = 0;
     virtual std::string getElementPath() const = 0;
-    virtual void addError(const std::string& error) = 0;
+    virtual void addError(std::string error) = 0;
     virtual bool hasErrors() const = 0;
     virtual void swap(std::vector<std::string>& errors) = 0;
   };
@@ -172,7 +173,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDStringType()
-    : TXSDType{"xsd:string"}
+    : TXSDType{fmt::format("{}:string", xsdSchema)}
     {
     }
 
@@ -188,7 +189,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDIntegerType()
-    : TXSDType{"xsd:integer"}
+    : TXSDType{fmt::format("{}:integer", xsdSchema)}
     {
     }
 
@@ -210,7 +211,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDDecimalType()
-    : TXSDType{"xsd:decimal"}
+    : TXSDType{fmt::format("{}:decimal", xsdSchema)}
     {
     }
 
@@ -232,7 +233,7 @@ namespace rexsapi::xml
   {
   public:
     TXSDBooleanType()
-    : TXSDType{"xsd:boolean"}
+    : TXSDType{fmt::format("{}:boolean", xsdSchema)}
     {
     }
 
@@ -269,11 +270,6 @@ namespace rexsapi::xml
     const std::string m_Name;
     const TXSDComplexType m_Type;
   };
-
-  void TXSDElementRef::dump(std::ostream& out) const
-  {
-    out << "\tElementRef " << m_Element.getName() << " " << m_Min << " - " << m_Max << std::endl;
-  }
 
   void TXSDElementRef::validate(const pugi::xml_node& node, IXSDValidationContext& context) const
   {
@@ -334,9 +330,9 @@ namespace rexsapi::xml
       return stream.str();
     }
 
-    void addError(const std::string& error) override
+    void addError(std::string error) override
     {
-      m_Errors.emplace_back(fmt::format("[{}] {}", getElementPath(), error));
+      m_Errors.emplace_back(fmt::format("[{}] {}", getElementPath(), std::move(error)));
     }
 
     bool hasErrors() const override
@@ -364,19 +360,19 @@ namespace rexsapi::xml
         throw TException{fmt::format("cannot open xsd schema '{}'", xsdFile.string())};
       }
 
-      if (auto root = m_Doc.select_node("/xsd:schema"); !root) {
+      if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchema).c_str()); !root) {
         throw TException{fmt::format("'{}' is not an xsd schema", xsdFile.string())};
       }
 
       initTypes();
 
-      for (const auto& elements : m_Doc.select_nodes("/xsd:schema/xsd:simpleType")) {
+      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchema).c_str())) {
         // TODO (lcf): check for duplicates
         auto type = std::make_unique<TXSDSimpleType>(elements.node().attribute("name").as_string());
         m_Types.try_emplace(type->getName(), std::move(type));
       }
 
-      for (const auto& elements : m_Doc.select_nodes("/xsd:schema/xsd:element")) {
+      for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:element", xsdSchema).c_str())) {
         // TODO (lcf): check for duplicates
         auto element = parseElement(elements.node());
         m_Elements.try_emplace(element.getName(), std::move(element));
@@ -427,7 +423,7 @@ namespace rexsapi::xml
         return *p;
       }
 
-      auto node = m_Doc.select_node(fmt::format("/xsd:schema/xsd:element[@name='{}']", name).c_str());
+      auto node = m_Doc.select_node(fmt::format("/{0}:schema/{0}:element[@name='{1}']", xsdSchema, name).c_str());
       if (!node) {
         throw TException{fmt::format("no element node '{}' found", name)};
       }
@@ -450,7 +446,7 @@ namespace rexsapi::xml
     {
       TXSDSequence sequence;
 
-      for (const auto& element : node.select_nodes("xsd:complexType/xsd:sequence/xsd:element")) {
+      for (const auto& element : node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchema).c_str())) {
         const TXSDElement& ref = findOrRegisterElement(element.node().attribute("ref").as_string());
         auto min = convertToUint64(element.node().attribute("minOccurs").as_string());
         auto maxString = std::string(element.node().attribute("maxOccurs").as_string());
@@ -459,7 +455,7 @@ namespace rexsapi::xml
       }
 
       std::vector<TXSDAttribute> attributes;
-      for (const auto& attribute : node.select_nodes("xsd:complexType/xsd:attribute")) {
+      for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchema).c_str())) {
         auto use = attribute.node().attribute("use");
         auto typeName = attribute.node().attribute("type").as_string();
         const auto& type = findType(typeName);
