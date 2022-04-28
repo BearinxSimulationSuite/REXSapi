@@ -52,8 +52,6 @@ namespace rexsapi::xml
       return m_Name;
     }
 
-    virtual void dump(std::ostream& out) const = 0;
-
   private:
     const std::string m_Name;
   };
@@ -100,13 +98,6 @@ namespace rexsapi::xml
       }
     }
 
-    void dump(std::ostream& out) const
-    {
-      for (const auto& element : m_Elements) {
-        element.dump(out);
-      }
-    }
-
   private:
     std::vector<TXSDElementRef> m_Elements;
   };
@@ -134,11 +125,6 @@ namespace rexsapi::xml
       context.popElement();
     }
 
-    void dump(std::ostream& out) const
-    {
-      out << "\tAttribute " << m_Name << " " << m_Type.getName() << (m_Required ? " required" : "");
-    }
-
   private:
     const std::string m_Name;
     const TXSDType& m_Type;
@@ -162,15 +148,6 @@ namespace rexsapi::xml
       m_Sequence.validate(node, context);
     }
 
-    void dump(std::ostream& out) const
-    {
-      m_Sequence.dump(out);
-      for (const auto& attribute : m_Attributes) {
-        attribute.dump(out);
-        out << std::endl;
-      }
-    }
-
   private:
     TXSDSequence m_Sequence;
     std::vector<TXSDAttribute> m_Attributes;
@@ -189,11 +166,6 @@ namespace rexsapi::xml
       (void)value;
       (void)context;
     }
-
-    void dump(std::ostream& out) const override
-    {
-      out << "SimpleType " << getName() << std::endl;
-    }
   };
 
   class TXSDStringType : public TXSDType
@@ -208,11 +180,6 @@ namespace rexsapi::xml
     {
       (void)value;
       (void)context;
-    }
-
-    void dump(std::ostream& out) const override
-    {
-      out << "StringType " << getName() << std::endl;
     }
   };
 
@@ -237,11 +204,6 @@ namespace rexsapi::xml
         context.addError(fmt::format("cannot convert '{}' to integer", value));
       }
     }
-
-    void dump(std::ostream& out) const override
-    {
-      out << "IntegerType " << getName() << std::endl;
-    }
   };
 
   class TXSDDecimalType : public TXSDType
@@ -264,11 +226,6 @@ namespace rexsapi::xml
         context.addError(fmt::format("cannot convert '{}' to decimal", value));
       }
     }
-
-    void dump(std::ostream& out) const override
-    {
-      out << "DecimalType " << getName() << std::endl;
-    }
   };
 
   class TXSDBooleanType : public TXSDType
@@ -284,11 +241,6 @@ namespace rexsapi::xml
       if (value != "true" && value != "false" && value != "1" && value != "0") {
         context.addError(fmt::format("cannot convert '{}' to bool", value));
       }
-    }
-
-    void dump(std::ostream& out) const override
-    {
-      out << "BooleanType " << getName() << std::endl;
     }
   };
 
@@ -311,12 +263,6 @@ namespace rexsapi::xml
       context.pushElement(getName());
       m_Type.validate(node, context);
       context.popElement();
-    }
-
-    void dump(std::ostream& out) const
-    {
-      out << "Element " << getName() << std::endl;
-      m_Type.dump(out);
     }
 
   private:
@@ -454,18 +400,6 @@ namespace rexsapi::xml
       context.swap(errors);
 
       return !result;
-    }
-
-    void dump(std::ostream& out) const
-    {
-      out << "Types:\n";
-      for (const auto& [_, type] : m_Types) {
-        type->dump(out);
-      }
-      out << "\nElements:\n";
-      for (const auto& [_, element] : m_Elements) {
-        element.dump(out);
-      }
     }
 
   private:
