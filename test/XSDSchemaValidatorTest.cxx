@@ -16,7 +16,7 @@ namespace
               <xsd:element ref="Suites" maxOccurs="1" minOccurs="1"/>
               <xsd:element ref="Tests" maxOccurs="1" minOccurs="0"/>
             </xsd:sequence>
-            <xsd:attribute name="version" type="xsd:string" use="required"/>
+            <xsd:attribute name="version" type="xsd:integer" use="required"/>
             <xsd:attribute name="date" type="xsd:string" use="optional"/>
           </xsd:complexType>
         </xsd:element>
@@ -158,6 +158,30 @@ TEST_CASE("XSD schema validator failure test")
               <Test name="1.1" />
               <Test name="1.2" />
             </Tests>
+            <Püschel />
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 2);
+    CHECK(errors[0] == "[/TestCases/Suites/] element 'Tests' is not allowed here");
+    CHECK(errors[1] == "[/TestCases/Suites/Suite/] unkown element 'Püschel'");
+  }
+
+  SUBCASE("Wrong attribute")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42" timestamp="2022-04-28T12:28">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
           </Suite>
         </Suites>
       </TestCases>
@@ -166,7 +190,7 @@ TEST_CASE("XSD schema validator failure test")
     std::vector<std::string> errors;
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
-    CHECK(errors[0] == "[/TestCases/Suites/] element 'Tests' is not allowed here");
+    CHECK(errors[0] == "[/TestCases/] unknown attribute 'timestamp'");
   }
 
   SUBCASE("Too much elements")
@@ -197,5 +221,27 @@ TEST_CASE("XSD schema validator failure test")
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
     CHECK(errors[0] == "[/TestCases/] too many 'Suites' elements, found 2 instead of at most 1");
+  }
+
+  SUBCASE("Wrong attribute type")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="püschel">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/version/] cannot convert 'püschel' to integer");
   }
 }

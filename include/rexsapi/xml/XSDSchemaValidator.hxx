@@ -23,15 +23,21 @@ namespace rexsapi::xml
   class IXSDValidationContext
   {
   public:
+    IXSDValidationContext() = default;
     virtual ~IXSDValidationContext() = default;
 
-    virtual const TXSDElement* findElement(const std::string& name) const = 0;
+    IXSDValidationContext(const IXSDValidationContext&) = default;
+    IXSDValidationContext(IXSDValidationContext&&) = default;
+    IXSDValidationContext& operator=(const IXSDValidationContext&) = default;
+    IXSDValidationContext& operator=(IXSDValidationContext&&) = default;
+
+    [[nodiscard]] virtual const TXSDElement* findElement(const std::string& name) const = 0;
     virtual void pushElement(std::string element) = 0;
     virtual void popElement() = 0;
-    virtual std::string getElementPath() const = 0;
+    [[nodiscard]] virtual std::string getElementPath() const = 0;
     virtual void addError(std::string error) = 0;
-    virtual bool hasErrors() const = 0;
-    virtual void swap(std::vector<std::string>& errors) = 0;
+    [[nodiscard]] virtual bool hasErrors() const = 0;
+    virtual void swap(std::vector<std::string>& errors) noexcept = 0;
   };
 
   class TXSDType
@@ -102,7 +108,7 @@ namespace rexsapi::xml
     }
 
   private:
-    bool checkContainsElement(const std::string& child) const
+    [[nodiscard]] bool checkContainsElement(const std::string& child) const
     {
       auto it = std::find_if(m_Elements.begin(), m_Elements.end(), [&child](const auto& element) {
         return child == element.getName();
@@ -124,6 +130,11 @@ namespace rexsapi::xml
     {
     }
 
+    [[nodiscard]] const std::string& getName() const
+    {
+      return m_Name;
+    }
+
     void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
     {
       auto attribute = node.attribute(m_Name.c_str());
@@ -143,10 +154,42 @@ namespace rexsapi::xml
     const bool m_Required;
   };
 
+  class TXSDAttributes
+  {
+  public:
+    void addAttribute(const TXSDAttribute& attribute)
+    {
+      m_Attributes.emplace_back(attribute);
+    }
+
+    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    {
+      for (const auto& attribute : node.attributes()) {
+        if (!containsAttribute(attribute.name())) {
+          context.addError(fmt::format("unknown attribute '{}'", attribute.name()));
+        }
+      }
+
+      for (const auto& attribute : m_Attributes) {
+        attribute.validate(node, context);
+      }
+    }
+
+  private:
+    [[nodiscard]] bool containsAttribute(const std::string& attribute) const
+    {
+      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attribute](const auto& att) {
+        return att.getName() == attribute;
+      });
+      return it != m_Attributes.end();
+    }
+    std::vector<TXSDAttribute> m_Attributes;
+  };
+
   class TXSDComplexType
   {
   public:
-    TXSDComplexType(TXSDSequence&& sequence, std::vector<TXSDAttribute>&& attributes)
+    TXSDComplexType(TXSDSequence&& sequence, TXSDAttributes&& attributes)
     : m_Sequence{std::move(sequence)}
     , m_Attributes{std::move(attributes)}
     {
@@ -154,15 +197,13 @@ namespace rexsapi::xml
 
     void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
     {
-      for (const auto& attribute : m_Attributes) {
-        attribute.validate(node, context);
-      }
+      m_Attributes.validate(node, context);
       m_Sequence.validate(node, context);
     }
 
   private:
     TXSDSequence m_Sequence;
-    std::vector<TXSDAttribute> m_Attributes;
+    TXSDAttributes m_Attributes;
   };
 
   class TXSDSimpleType : public TXSDType
@@ -265,7 +306,7 @@ namespace rexsapi::xml
     {
     }
 
-    const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const
     {
       return m_Name;
     }
@@ -282,7 +323,7 @@ namespace rexsapi::xml
     const TXSDComplexType m_Type;
   };
 
-  const std::string& TXSDElementRef::getName() const
+  [[nodiscard]] const std::string& TXSDElementRef::getName() const
   {
     return m_Element.getName();
   }
@@ -312,11 +353,12 @@ namespace rexsapi::xml
   {
   public:
     explicit TXSDValidationContext(const TXSDElements& elements)
-    : m_Elements{elements}
+    : IXSDValidationContext{}
+    , m_Elements{elements}
     {
     }
 
-    const TXSDElement* findElement(const std::string& name) const override
+    [[nodiscard]] const TXSDElement* findElement(const std::string& name) const override
     {
       auto it = m_Elements.find(name);
       if (it == m_Elements.end()) {
@@ -335,7 +377,7 @@ namespace rexsapi::xml
       m_ElementStack.pop_back();
     }
 
-    std::string getElementPath() const override
+    [[nodiscard]] std::string getElementPath() const override
     {
       std::stringstream stream;
       stream << "/";
@@ -350,12 +392,12 @@ namespace rexsapi::xml
       m_Errors.emplace_back(fmt::format("[{}] {}", getElementPath(), std::move(error)));
     }
 
-    bool hasErrors() const override
+    [[nodiscard]] bool hasErrors() const override
     {
       return !m_Errors.empty();
     }
 
-    void swap(std::vector<std::string>& errors) override
+    void swap(std::vector<std::string>& errors) noexcept override
     {
       errors.swap(m_Errors);
     }
@@ -392,7 +434,7 @@ namespace rexsapi::xml
       }
     }
 
-    bool validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
+    [[nodiscard]] bool validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
     {
       TXSDValidationContext context{m_Elements};
 
@@ -424,13 +466,13 @@ namespace rexsapi::xml
       m_Types.try_emplace(type4->getName(), std::move(type4));
     }
 
-    const TXSDElement* findElement(const std::string& name) const
+    [[nodiscard]] const TXSDElement* findElement(const std::string& name) const
     {
       auto it = m_Elements.find(name);
       return it == m_Elements.end() ? nullptr : &(it->second);
     }
 
-    const TXSDElement& findOrRegisterElement(const std::string& name)
+    [[nodiscard]] const TXSDElement& findOrRegisterElement(const std::string& name)
     {
       if (const auto* p = findElement(name); p) {
         return *p;
@@ -446,7 +488,7 @@ namespace rexsapi::xml
       return it->second;
     }
 
-    const TXSDType& findType(const std::string& name) const
+    [[nodiscard]] const TXSDType& findType(const std::string& name) const
     {
       auto it = m_Types.find(name);
       if (it == m_Types.end()) {
@@ -455,7 +497,7 @@ namespace rexsapi::xml
       return *it->second;
     }
 
-    TXSDElement parseElement(const pugi::xml_node& node)
+    [[nodiscard]] TXSDElement parseElement(const pugi::xml_node& node)
     {
       TXSDSequence sequence;
 
@@ -468,14 +510,14 @@ namespace rexsapi::xml
         sequence.addElementRef(ref, min, max);
       }
 
-      std::vector<TXSDAttribute> attributes;
+      TXSDAttributes attributes;
       for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchemaNS).c_str())) {
         auto use = attribute.node().attribute("use");
         auto typeName = attribute.node().attribute("type").as_string();
         const auto& type = findType(typeName);
-        TXSDAttribute att{attribute.node().attribute("name").as_string(), type,
-                          use ? std::string(use.as_string()) == "required" : false};
-        attributes.emplace_back(att);
+
+        attributes.addAttribute(TXSDAttribute{attribute.node().attribute("name").as_string(), type,
+                                              use ? std::string(use.as_string()) == "required" : false});
       }
 
 
@@ -496,7 +538,7 @@ namespace rexsapi::xml
     {
     }
 
-    pugi::xml_document load() const
+    [[nodiscard]] pugi::xml_document load() const
     {
       pugi::xml_document doc;
       if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
@@ -518,7 +560,7 @@ namespace rexsapi::xml
     {
     }
 
-    pugi::xml_document load() const
+    [[nodiscard]] pugi::xml_document load() const
     {
       pugi::xml_document doc;
       if (pugi::xml_parse_result parseResult = doc.load_string(m_XsdSchema.c_str()); !parseResult) {
