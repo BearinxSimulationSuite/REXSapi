@@ -18,6 +18,7 @@ namespace
             </xsd:sequence>
             <xsd:attribute name="version" type="xsd:integer" use="required"/>
             <xsd:attribute name="date" type="xsd:string" use="optional"/>
+            <xsd:attribute name="status" type="Status" use="optional"/>
           </xsd:complexType>
         </xsd:element>
         <xsd:element name="Suites">
@@ -46,7 +47,13 @@ namespace
           <xsd:complexType>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
           </xsd:complexType>
-        </xsd:element>        
+        </xsd:element>
+        <xsd:simpleType name="Status">
+          <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="COOL"/>
+            <xsd:enumeration value="OH NO"/>
+          </xsd:restriction>
+        </xsd:simpleType>
       </xsd:schema>
     )";
 
@@ -82,7 +89,7 @@ TEST_CASE("XSD schema validator test")
   {
     const auto* xml = R"(
       <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-      <TestCases version="42" date="2022-04-28T11:10">
+      <TestCases version="42" status="COOL" date="2022-04-28T11:10">
         <Suites>
           <Suite name="suite 1">
             <Tests>
@@ -243,5 +250,27 @@ TEST_CASE("XSD schema validator failure test")
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
     CHECK(errors[0] == "[/TestCases/version/] cannot convert 'püschel' to integer");
+  }
+
+  SUBCASE("Unkown enum value")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="41" status="BAD">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/status/] unknown enum value 'BAD' for type 'Status'");
   }
 }

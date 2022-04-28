@@ -206,19 +206,27 @@ namespace rexsapi::xml
     TXSDAttributes m_Attributes;
   };
 
-  class TXSDSimpleType : public TXSDType
+  class TXSDSimpleEnumType : public TXSDType
   {
   public:
-    explicit TXSDSimpleType(std::string name)
+    explicit TXSDSimpleEnumType(std::string name, std::vector<std::string> enumValues)
     : TXSDType{std::move(name)}
+    , m_EnumValues{std::move(enumValues)}
     {
     }
 
     void validate(const std::string& value, IXSDValidationContext& context) const override
     {
-      (void)value;
-      (void)context;
+      auto it = std::find_if(m_EnumValues.begin(), m_EnumValues.end(), [&value](const auto& item) {
+        return item == value;
+      });
+      if (it == m_EnumValues.end()) {
+        context.addError(fmt::format("unknown enum value '{}' for type '{}'", value, getName()));
+      }
     }
+
+  private:
+    std::vector<std::string> m_EnumValues;
   };
 
   class TXSDStringType : public TXSDType
@@ -422,8 +430,14 @@ namespace rexsapi::xml
       initTypes();
 
       for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchemaNS).c_str())) {
+        // ATTENTION: this is a strong simplification of simple types
+        std::vector<std::string> enumValues;
+        for (const auto& enums :
+             elements.node().select_nodes(fmt::format("{0}:restriction/{0}:enumeration", xsdSchemaNS).c_str())) {
+          enumValues.emplace_back(enums.node().attribute("value").as_string());
+        }
+        auto type = std::make_unique<TXSDSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
         // TODO (lcf): check for duplicates
-        auto type = std::make_unique<TXSDSimpleType>(elements.node().attribute("name").as_string());
         m_Types.try_emplace(type->getName(), std::move(type));
       }
 
