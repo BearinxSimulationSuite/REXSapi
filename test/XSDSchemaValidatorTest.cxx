@@ -299,7 +299,7 @@ TEST_CASE("XSD schema validator failure test")
     std::vector<std::string> errors;
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
-    CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Test/number/] cannot convert 'no number' to intege");
+    CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Test/number/] cannot convert 'no number' to integer");
   }
 }
 
