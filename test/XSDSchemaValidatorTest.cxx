@@ -69,7 +69,7 @@ namespace
     CHECK(parseResult);
 
     rexsapi::xml::TBufferXsdSchemaLoader loader{schema};
-    rexsapi::xml::TXSDSchemaValidator val{loader};
+    rexsapi::xml::TSchemaValidator val{loader};
     return val.validate(doc, errors);
   }
 }
@@ -83,7 +83,7 @@ TEST_CASE("XSD schema validator test")
     CHECK(parseResult);
 
     rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-dbmodel.xsd"};
-    rexsapi::xml::TXSDSchemaValidator val{loader};
+    rexsapi::xml::TSchemaValidator val{loader};
 
     std::vector<std::string> errors;
     CHECK(val.validate(doc, errors));
@@ -308,8 +308,8 @@ namespace
   template<typename Type>
   bool check(const std::string& value)
   {
-    rexsapi::xml::TXSDElements elements;
-    rexsapi::xml::TXSDValidationContext context{elements};
+    rexsapi::xml::TElements elements;
+    rexsapi::xml::TValidationContext context{elements};
 
     Type t;
     t.validate(value, context);
@@ -319,8 +319,8 @@ namespace
   template<typename Type>
   bool check(const Type& t, const std::string& value)
   {
-    rexsapi::xml::TXSDElements elements;
-    rexsapi::xml::TXSDValidationContext context{elements};
+    rexsapi::xml::TElements elements;
+    rexsapi::xml::TValidationContext context{elements};
 
     t.validate(value, context);
     return !context.hasErrors();
@@ -332,71 +332,71 @@ TEST_CASE("XSD schema validator types test")
 {
   SUBCASE("Test string type")
   {
-    CHECK(check<rexsapi::xml::TXSDStringType>("Puschel"));
-    CHECK(check<rexsapi::xml::TXSDStringType>("4711 und 0815"));
+    CHECK(check<rexsapi::xml::TStringType>("Puschel"));
+    CHECK(check<rexsapi::xml::TStringType>("4711 und 0815"));
   }
 
   SUBCASE("Test boolean type")
   {
-    CHECK(check<rexsapi::xml::TXSDBooleanType>("0"));
-    CHECK(check<rexsapi::xml::TXSDBooleanType>("1"));
-    CHECK(check<rexsapi::xml::TXSDBooleanType>("true"));
-    CHECK(check<rexsapi::xml::TXSDBooleanType>("false"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("puschel"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("t"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("f"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("TRUE"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>("FALSE"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDBooleanType>(""));
+    CHECK(check<rexsapi::xml::TBooleanType>("0"));
+    CHECK(check<rexsapi::xml::TBooleanType>("1"));
+    CHECK(check<rexsapi::xml::TBooleanType>("true"));
+    CHECK(check<rexsapi::xml::TBooleanType>("false"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>("puschel"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>("t"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>("f"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>("TRUE"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>("FALSE"));
+    CHECK_FALSE(check<rexsapi::xml::TBooleanType>(""));
   }
 
   SUBCASE("Test integer type")
   {
-    CHECK(check<rexsapi::xml::TXSDIntegerType>("0"));
-    CHECK(check<rexsapi::xml::TXSDIntegerType>("4711"));
-    CHECK(check<rexsapi::xml::TXSDIntegerType>("-4711"));
-    CHECK(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::max())));
-    CHECK(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::min())));
-    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>(std::to_string(std::numeric_limits<int64_t>::max()) + "1"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>(""));
-    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("47LL"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("test"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDIntegerType>("47.11"));
+    CHECK(check<rexsapi::xml::TIntegerType>("0"));
+    CHECK(check<rexsapi::xml::TIntegerType>("4711"));
+    CHECK(check<rexsapi::xml::TIntegerType>("-4711"));
+    CHECK(check<rexsapi::xml::TIntegerType>(std::to_string(std::numeric_limits<int64_t>::max())));
+    CHECK(check<rexsapi::xml::TIntegerType>(std::to_string(std::numeric_limits<int64_t>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TIntegerType>(std::to_string(std::numeric_limits<int64_t>::max()) + "1"));
+    CHECK_FALSE(check<rexsapi::xml::TIntegerType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TIntegerType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TIntegerType>("test"));
+    CHECK_FALSE(check<rexsapi::xml::TIntegerType>("47.11"));
   }
 
   SUBCASE("Test non negative integer type")
   {
-    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>("0"));
-    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>("4711"));
-    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max())));
-    CHECK(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::min())));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max()) + "1"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>(""));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("-4711"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("47LL"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("test"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDNonNegativeIntegerType>("47.11"));
+    CHECK(check<rexsapi::xml::TNonNegativeIntegerType>("0"));
+    CHECK(check<rexsapi::xml::TNonNegativeIntegerType>("4711"));
+    CHECK(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max())));
+    CHECK(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max()) + "1"));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("-4711"));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("test"));
+    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("47.11"));
   }
 
   SUBCASE("Test decimal type")
   {
-    CHECK(check<rexsapi::xml::TXSDDecimalType>("0"));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>("4590845908"));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>("-4590845908"));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>("47.11"));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>("-47.11"));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>(std::to_string(std::numeric_limits<double>::max())));
-    CHECK(check<rexsapi::xml::TXSDDecimalType>(std::to_string(std::numeric_limits<double>::min())));
-    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>(""));
-    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>("47LL"));
-    CHECK_FALSE(check<rexsapi::xml::TXSDDecimalType>("test"));
+    CHECK(check<rexsapi::xml::TDecimalType>("0"));
+    CHECK(check<rexsapi::xml::TDecimalType>("4590845908"));
+    CHECK(check<rexsapi::xml::TDecimalType>("-4590845908"));
+    CHECK(check<rexsapi::xml::TDecimalType>("47.11"));
+    CHECK(check<rexsapi::xml::TDecimalType>("-47.11"));
+    CHECK(check<rexsapi::xml::TDecimalType>(std::to_string(std::numeric_limits<double>::max())));
+    CHECK(check<rexsapi::xml::TDecimalType>(std::to_string(std::numeric_limits<double>::min())));
+    CHECK_FALSE(check<rexsapi::xml::TDecimalType>(""));
+    CHECK_FALSE(check<rexsapi::xml::TDecimalType>("47LL"));
+    CHECK_FALSE(check<rexsapi::xml::TDecimalType>("test"));
   }
 }
 
 TEST_CASE("XSD schema validator simple type test")
 {
   std::vector<std::string> enumValues{"one", "two", "three"};
-  rexsapi::xml::TXSDSimpleEnumType enumeration{"numbers", enumValues};
+  rexsapi::xml::TSimpleEnumType enumeration{"numbers", enumValues};
 
   SUBCASE("Test enum valid")
   {

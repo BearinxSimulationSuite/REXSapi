@@ -18,20 +18,20 @@ namespace rexsapi::xml
 {
   static constexpr const char* xsdSchemaNS = "xsd";
 
-  class TXSDElement;
+  class TElement;
 
-  class IXSDValidationContext
+  class IValidationContext
   {
   public:
-    IXSDValidationContext() = default;
-    virtual ~IXSDValidationContext() = default;
+    IValidationContext() = default;
+    virtual ~IValidationContext() = default;
 
-    IXSDValidationContext(const IXSDValidationContext&) = default;
-    IXSDValidationContext(IXSDValidationContext&&) = default;
-    IXSDValidationContext& operator=(const IXSDValidationContext&) = default;
-    IXSDValidationContext& operator=(IXSDValidationContext&&) = default;
+    IValidationContext(const IValidationContext&) = default;
+    IValidationContext(IValidationContext&&) = default;
+    IValidationContext& operator=(const IValidationContext&) = default;
+    IValidationContext& operator=(IValidationContext&&) = default;
 
-    [[nodiscard]] virtual const TXSDElement* findElement(const std::string& name) const = 0;
+    [[nodiscard]] virtual const TElement* findElement(const std::string& name) const = 0;
     virtual void pushElement(std::string element) = 0;
     virtual void popElement() = 0;
     [[nodiscard]] virtual std::string getElementPath() const = 0;
@@ -40,19 +40,19 @@ namespace rexsapi::xml
     virtual void swap(std::vector<std::string>& errors) noexcept = 0;
   };
 
-  class TXSDType
+  class TType
   {
   public:
-    using Ptr = std::unique_ptr<TXSDType>;
+    using Ptr = std::unique_ptr<TType>;
 
-    explicit TXSDType(std::string name)
+    explicit TType(std::string name)
     : m_Name{std::move(name)}
     {
     }
 
-    virtual ~TXSDType() = default;
+    virtual ~TType() = default;
 
-    virtual void validate(const std::string& value, IXSDValidationContext& context) const = 0;
+    virtual void validate(const std::string& value, IValidationContext& context) const = 0;
 
     const std::string& getName() const
     {
@@ -64,10 +64,10 @@ namespace rexsapi::xml
   };
 
 
-  class TXSDElementRef
+  class TElementRef
   {
   public:
-    explicit TXSDElementRef(const TXSDElement& element, uint64_t min, uint64_t max)
+    explicit TElementRef(const TElement& element, uint64_t min, uint64_t max)
     : m_Element{element}
     , m_Min{min}
     , m_Max{max}
@@ -76,23 +76,23 @@ namespace rexsapi::xml
 
     [[nodiscard]] const std::string& getName() const;
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const;
+    void validate(const pugi::xml_node& node, IValidationContext& context) const;
 
   private:
-    const TXSDElement& m_Element;
+    const TElement& m_Element;
     uint64_t m_Min;
     uint64_t m_Max;
   };
 
-  class TXSDSequence
+  class TSequence
   {
   public:
-    void addElementRef(const TXSDElement& element, uint64_t min, uint64_t max)
+    void addElementRef(const TElement& element, uint64_t min, uint64_t max)
     {
-      m_Elements.emplace_back(TXSDElementRef{element, min, max});
+      m_Elements.emplace_back(TElementRef{element, min, max});
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    void validate(const pugi::xml_node& node, IValidationContext& context) const
     {
       for (const auto& child : node.children()) {
         const auto* element = context.findElement(child.name());
@@ -117,13 +117,13 @@ namespace rexsapi::xml
       return it != m_Elements.end();
     }
 
-    std::vector<TXSDElementRef> m_Elements;
+    std::vector<TElementRef> m_Elements;
   };
 
-  class TXSDAttribute
+  class TAttribute
   {
   public:
-    explicit TXSDAttribute(std::string name, const TXSDType& type, bool required)
+    explicit TAttribute(std::string name, const TType& type, bool required)
     : m_Name{std::move(name)}
     , m_Type{type}
     , m_Required{required}
@@ -135,7 +135,7 @@ namespace rexsapi::xml
       return m_Name;
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    void validate(const pugi::xml_node& node, IValidationContext& context) const
     {
       auto attribute = node.attribute(m_Name.c_str());
       if (attribute.empty() && m_Required) {
@@ -150,28 +150,28 @@ namespace rexsapi::xml
 
   private:
     const std::string m_Name;
-    const TXSDType& m_Type;
+    const TType& m_Type;
     const bool m_Required;
   };
 
-  enum class TXSDAttributeMode { STRICT, RELAXED };
+  enum class TAttributeMode { STRICT, RELAXED };
 
-  class TXSDAttributes
+  class TAttributes
   {
   public:
     void setRelaxed()
     {
-      m_Relaxed = TXSDAttributeMode::RELAXED;
+      m_Relaxed = TAttributeMode::RELAXED;
     }
 
-    void addAttribute(const TXSDAttribute& attribute)
+    void addAttribute(const TAttribute& attribute)
     {
       m_Attributes.emplace_back(attribute);
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    void validate(const pugi::xml_node& node, IValidationContext& context) const
     {
-      if (m_Relaxed == TXSDAttributeMode::STRICT) {
+      if (m_Relaxed == TAttributeMode::STRICT) {
         for (const auto& attribute : node.attributes()) {
           if (!containsAttribute(attribute.name())) {
             context.addError(fmt::format("unknown attribute '{}'", attribute.name()));
@@ -193,40 +193,59 @@ namespace rexsapi::xml
       return it != m_Attributes.end();
     }
 
-    TXSDAttributeMode m_Relaxed{TXSDAttributeMode::STRICT};
-    std::vector<TXSDAttribute> m_Attributes;
+    TAttributeMode m_Relaxed{TAttributeMode::STRICT};
+    std::vector<TAttribute> m_Attributes;
   };
 
-  class TXSDComplexType
+  class TSXDComplexTypeMode
   {
   public:
-    TXSDComplexType(TXSDSequence&& sequence, TXSDAttributes&& attributes)
+    virtual ~TSXDComplexTypeMode() = default;
+
+    virtual void validate(const pugi::xml_node& node, IValidationContext& context) const = 0;
+  };
+
+  class TEmptyMode : TSXDComplexTypeMode
+  {
+  public:
+    void validate(const pugi::xml_node& node, IValidationContext& context) const override
+    {
+      // nothing to do
+      (void)node;
+      (void)context;
+    }
+  };
+
+  class TComplexType
+  {
+  public:
+    TComplexType(TSequence&& sequence, TAttributes&& attributes)
     : m_Sequence{std::move(sequence)}
     , m_Attributes{std::move(attributes)}
     {
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    void validate(const pugi::xml_node& node, IValidationContext& context) const
     {
       m_Attributes.validate(node, context);
       m_Sequence.validate(node, context);
     }
 
   private:
-    TXSDSequence m_Sequence;
-    TXSDAttributes m_Attributes;
+    TSequence m_Sequence;
+    TAttributes m_Attributes;
   };
 
-  class TXSDSimpleEnumType : public TXSDType
+  class TSimpleEnumType : public TType
   {
   public:
-    explicit TXSDSimpleEnumType(std::string name, std::vector<std::string> enumValues)
-    : TXSDType{std::move(name)}
+    explicit TSimpleEnumType(std::string name, std::vector<std::string> enumValues)
+    : TType{std::move(name)}
     , m_EnumValues{std::move(enumValues)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       auto it = std::find_if(m_EnumValues.begin(), m_EnumValues.end(), [&value](const auto& item) {
         return item == value;
@@ -240,33 +259,33 @@ namespace rexsapi::xml
     std::vector<std::string> m_EnumValues;
   };
 
-  class TXSDSimpleRestrictedType : public TXSDType
+  class TSimpleRestrictedType : public TType
   {
   public:
-    explicit TXSDSimpleRestrictedType(std::string name, const TXSDType& type)
-    : TXSDType{std::move(name)}
+    explicit TSimpleRestrictedType(std::string name, const TType& type)
+    : TType{std::move(name)}
     , m_Type{type}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       m_Type.validate(value, context);
     }
 
   private:
-    const TXSDType& m_Type;
+    const TType& m_Type;
   };
 
-  class TXSDStringType : public TXSDType
+  class TStringType : public TType
   {
   public:
-    TXSDStringType()
-    : TXSDType{fmt::format("{}:string", xsdSchemaNS)}
+    TStringType()
+    : TType{fmt::format("{}:string", xsdSchemaNS)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       (void)value;
       (void)context;
@@ -274,15 +293,15 @@ namespace rexsapi::xml
   };
 
 
-  class TXSDIntegerType : public TXSDType
+  class TIntegerType : public TType
   {
   public:
-    TXSDIntegerType()
-    : TXSDType{fmt::format("{}:integer", xsdSchemaNS)}
+    TIntegerType()
+    : TType{fmt::format("{}:integer", xsdSchemaNS)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       try {
         std::size_t pos{};
@@ -296,15 +315,15 @@ namespace rexsapi::xml
     }
   };
 
-  class TXSDNonNegativeIntegerType : public TXSDType
+  class TNonNegativeIntegerType : public TType
   {
   public:
-    TXSDNonNegativeIntegerType()
-    : TXSDType{fmt::format("{}:nonNegativeInteger", xsdSchemaNS)}
+    TNonNegativeIntegerType()
+    : TType{fmt::format("{}:nonNegativeInteger", xsdSchemaNS)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       try {
         convertToUint64(value);
@@ -314,15 +333,15 @@ namespace rexsapi::xml
     }
   };
 
-  class TXSDDecimalType : public TXSDType
+  class TDecimalType : public TType
   {
   public:
-    TXSDDecimalType()
-    : TXSDType{fmt::format("{}:decimal", xsdSchemaNS)}
+    TDecimalType()
+    : TType{fmt::format("{}:decimal", xsdSchemaNS)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       try {
         std::size_t pos{};
@@ -336,15 +355,15 @@ namespace rexsapi::xml
     }
   };
 
-  class TXSDBooleanType : public TXSDType
+  class TBooleanType : public TType
   {
   public:
-    TXSDBooleanType()
-    : TXSDType{fmt::format("{}:boolean", xsdSchemaNS)}
+    TBooleanType()
+    : TType{fmt::format("{}:boolean", xsdSchemaNS)}
     {
     }
 
-    void validate(const std::string& value, IXSDValidationContext& context) const override
+    void validate(const std::string& value, IValidationContext& context) const override
     {
       if (value != "true" && value != "false" && value != "1" && value != "0") {
         context.addError(fmt::format("cannot convert '{}' to bool", value));
@@ -352,10 +371,10 @@ namespace rexsapi::xml
     }
   };
 
-  class TXSDElement
+  class TElement
   {
   public:
-    explicit TXSDElement(std::string name, TXSDComplexType type)
+    explicit TElement(std::string name, TComplexType type)
     : m_Name{std::move(name)}
     , m_Type{std::move(type)}
     {
@@ -366,7 +385,7 @@ namespace rexsapi::xml
       return m_Name;
     }
 
-    void validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+    void validate(const pugi::xml_node& node, IValidationContext& context) const
     {
       context.pushElement(getName());
       m_Type.validate(node, context);
@@ -375,15 +394,15 @@ namespace rexsapi::xml
 
   private:
     const std::string m_Name;
-    const TXSDComplexType m_Type;
+    const TComplexType m_Type;
   };
 
-  [[nodiscard]] const std::string& TXSDElementRef::getName() const
+  [[nodiscard]] inline const std::string& TElementRef::getName() const
   {
     return m_Element.getName();
   }
 
-  void TXSDElementRef::validate(const pugi::xml_node& node, IXSDValidationContext& context) const
+  inline void TElementRef::validate(const pugi::xml_node& node, IValidationContext& context) const
   {
     auto nodes = node.select_nodes(m_Element.getName().c_str());
 
@@ -401,19 +420,19 @@ namespace rexsapi::xml
     }
   }
 
-  using TXSDTypes = std::unordered_map<std::string, TXSDType::Ptr>;
-  using TXSDElements = std::unordered_map<std::string, TXSDElement>;
+  using TTypes = std::unordered_map<std::string, TType::Ptr>;
+  using TElements = std::unordered_map<std::string, TElement>;
 
-  class TXSDValidationContext : public IXSDValidationContext
+  class TValidationContext : public IValidationContext
   {
   public:
-    explicit TXSDValidationContext(const TXSDElements& elements)
-    : IXSDValidationContext{}
+    explicit TValidationContext(const TElements& elements)
+    : IValidationContext{}
     , m_Elements{elements}
     {
     }
 
-    [[nodiscard]] const TXSDElement* findElement(const std::string& name) const override
+    [[nodiscard]] const TElement* findElement(const std::string& name) const override
     {
       auto it = m_Elements.find(name);
       if (it == m_Elements.end()) {
@@ -458,16 +477,16 @@ namespace rexsapi::xml
     }
 
   private:
-    const TXSDElements& m_Elements;
+    const TElements& m_Elements;
     std::vector<std::string> m_ElementStack;
     std::vector<std::string> m_Errors;
   };
 
   template<typename TXsdSchemaLoader>
-  class TXSDSchemaValidator
+  class TSchemaValidator
   {
   public:
-    explicit TXSDSchemaValidator(const TXsdSchemaLoader& loader)
+    explicit TSchemaValidator(const TXsdSchemaLoader& loader)
     : m_Doc{loader.load()}
     {
       if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchemaNS).c_str()); !root) {
@@ -486,12 +505,12 @@ namespace rexsapi::xml
             for (const auto& enums : children) {
               enumValues.emplace_back(enums.attribute("value").as_string());
             }
-            auto type = std::make_unique<TXSDSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
+            auto type = std::make_unique<TSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
             // TODO (lcf): check for duplicates
             m_Types.try_emplace(type->getName(), std::move(type));
           } else {
             const auto& baseType = findType(restriction.first().node().attribute("base").as_string());
-            auto type = std::make_unique<TXSDSimpleRestrictedType>(elements.node().attribute("name").as_string(), baseType);
+            auto type = std::make_unique<TSimpleRestrictedType>(elements.node().attribute("name").as_string(), baseType);
             // TODO (lcf): check for duplicates
             m_Types.try_emplace(type->getName(), std::move(type));
           }
@@ -507,7 +526,7 @@ namespace rexsapi::xml
 
     [[nodiscard]] bool validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
     {
-      TXSDValidationContext context{m_Elements};
+      TValidationContext context{m_Elements};
 
       for (const auto& node : doc.children()) {
         const auto* element = context.findElement(node.name());
@@ -527,25 +546,25 @@ namespace rexsapi::xml
   private:
     void initTypes()
     {
-      auto type1 = std::make_unique<TXSDStringType>();
+      auto type1 = std::make_unique<TStringType>();
       m_Types.try_emplace(type1->getName(), std::move(type1));
-      auto type2 = std::make_unique<TXSDIntegerType>();
+      auto type2 = std::make_unique<TIntegerType>();
       m_Types.try_emplace(type2->getName(), std::move(type2));
-      auto type3 = std::make_unique<TXSDDecimalType>();
+      auto type3 = std::make_unique<TDecimalType>();
       m_Types.try_emplace(type3->getName(), std::move(type3));
-      auto type4 = std::make_unique<TXSDBooleanType>();
+      auto type4 = std::make_unique<TBooleanType>();
       m_Types.try_emplace(type4->getName(), std::move(type4));
-      auto type5 = std::make_unique<TXSDNonNegativeIntegerType>();
+      auto type5 = std::make_unique<TNonNegativeIntegerType>();
       m_Types.try_emplace(type5->getName(), std::move(type5));
     }
 
-    [[nodiscard]] const TXSDElement* findElement(const std::string& name) const
+    [[nodiscard]] const TElement* findElement(const std::string& name) const
     {
       auto it = m_Elements.find(name);
       return it == m_Elements.end() ? nullptr : &(it->second);
     }
 
-    [[nodiscard]] const TXSDElement& findOrRegisterElement(const std::string& name)
+    [[nodiscard]] const TElement& findOrRegisterElement(const std::string& name)
     {
       if (const auto* p = findElement(name); p) {
         return *p;
@@ -561,7 +580,7 @@ namespace rexsapi::xml
       return it->second;
     }
 
-    [[nodiscard]] const TXSDType& findType(const std::string& name) const
+    [[nodiscard]] const TType& findType(const std::string& name) const
     {
       auto it = m_Types.find(name);
       if (it == m_Types.end()) {
@@ -570,40 +589,40 @@ namespace rexsapi::xml
       return *it->second;
     }
 
-    [[nodiscard]] TXSDElement parseElement(const pugi::xml_node& node)
+    [[nodiscard]] TElement parseElement(const pugi::xml_node& node)
     {
-      TXSDSequence sequence;
+      TSequence sequence;
 
       for (const auto& element :
            node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
-        const TXSDElement& ref = findOrRegisterElement(element.node().attribute("ref").as_string());
+        const TElement& ref = findOrRegisterElement(element.node().attribute("ref").as_string());
         auto min = convertToUint64(element.node().attribute("minOccurs").as_string());
         auto maxString = std::string(element.node().attribute("maxOccurs").as_string());
         auto max = maxString == "unbounded" ? std::numeric_limits<uint64_t>::max() : convertToUint64(maxString);
         sequence.addElementRef(ref, min, max);
       }
 
-      TXSDAttributes attributes;
+      TAttributes attributes;
       for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchemaNS).c_str())) {
         auto use = attribute.node().attribute("use");
         auto typeName = attribute.node().attribute("type").as_string();
         const auto& type = findType(typeName);
 
-        attributes.addAttribute(TXSDAttribute{attribute.node().attribute("name").as_string(), type,
-                                              use ? std::string(use.as_string()) == "required" : false});
+        attributes.addAttribute(TAttribute{attribute.node().attribute("name").as_string(), type,
+                                           use ? std::string(use.as_string()) == "required" : false});
       }
       auto anyAttribute = node.select_node(fmt::format("{0}:complexType/{0}:anyAttribute", xsdSchemaNS).c_str());
       if (!anyAttribute.node().empty()) {
         attributes.setRelaxed();
       }
 
-      TXSDComplexType complexType{std::move(sequence), std::move(attributes)};
-      return TXSDElement{node.attribute("name").as_string(), std::move(complexType)};
+      TComplexType complexType{std::move(sequence), std::move(attributes)};
+      return TElement{node.attribute("name").as_string(), std::move(complexType)};
     }
 
     pugi::xml_document m_Doc;
-    TXSDTypes m_Types;
-    TXSDElements m_Elements;
+    TTypes m_Types;
+    TElements m_Elements;
   };
 
   class TFileXsdSchemaLoader

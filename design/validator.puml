@@ -1,0 +1,82 @@
+@startuml Schema Validator
+
+namespace xml {
+
+interface IXSDValidationContext
+
+class TXSDValidationContext
+
+IXSDValidationContext <|-- TXSDValidationContext
+
+interface TType {
+  {abstract} void validate(const pugi::xml_node&, IXSDValidationContext&) const
+}
+
+class TPodType<T> {
+  void validate(const pugi::xml_node&, IXSDValidationContext&) const
+}
+
+interface TValueExtractor
+
+TPodType o-- TValueExtractor
+
+class TAttributeValueExtractor
+
+TValueExtractor <|-- TAttributeValueExtractor
+
+class "TPodType<TIntegerType>" as ATIntegerType
+class "TPodType<TNonNegativeIntegerType>" as ATNonNegativeIntegerType
+class "TPodType<TBooleanType>" as ATBooleanType
+class "TPodType<TStringType>" as ATStringType
+class "TPodType<TDecimalType>" as ATDecimalType
+
+TPodType <|.. ATIntegerType
+TPodType <|.. ATNonNegativeIntegerType
+TPodType <|.. ATBooleanType
+TPodType <|.. ATStringType
+TPodType <|.. ATDecimalType
+
+class TSimpleType
+class TComplexType
+class TSimpleContentType
+
+TType <|-- TPodType
+TType <|-- TSimpleType
+TType <|-- TComplexType
+TType <|-- TSimpleContentType
+
+class TAttribute
+class TSequence
+class TText
+class TAttributes
+
+TComplexType o-- TSequence
+TComplexType o-- TAttributes
+TComplexType o-- TText
+
+TAttributes o-- TAttribute
+
+class TElement {
+  void validate(const pugi::xml_node&, IXSDValidationContext&) const
+}
+
+TElement o-- TType
+
+class TElementRef
+
+TElementRef o-- TElement
+
+TSequence o-- TElementRef
+
+class TRestriction
+
+TRestriction o-- TType
+TSimpleType o-- TRestriction
+
+class TEnumeration
+
+TRestriction o-- TEnumeration
+
+}
+
+@enduml
