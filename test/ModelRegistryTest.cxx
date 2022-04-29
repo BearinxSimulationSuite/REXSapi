@@ -9,11 +9,12 @@
 
 TEST_CASE("Test rexs model registry")
 {
+  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-dbmodel.xsd"};
   rexsapi::database::TFileResourceLoader resourceLoader{projectDir() / "models"};
-  rexsapi::database::TXmlModelLoader modelLoader{resourceLoader};
-  auto createResult = rexsapi::database::TModelRegistry::createModelRegistry(modelLoader);
-  const auto& registry = createResult.first;
-  REQUIRE(createResult.second);
+  rexsapi::database::TXmlModelLoader modelLoader{resourceLoader, schemaLoader};
+  auto result = rexsapi::database::TModelRegistry::createModelRegistry(modelLoader);
+  const auto& registry = result.first;
+  REQUIRE(result.second);
 
   SUBCASE("Get existing models")
   {
