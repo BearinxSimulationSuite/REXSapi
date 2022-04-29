@@ -777,7 +777,7 @@ namespace rexsapi::xml
       } else if (const auto name = element.node().attribute("name"); !name.empty()) {
         const auto type = element.node().attribute("type");
         if (type.empty()) {
-          throw TException{fmt::format("element '{}' has no type", name)};
+          throw TException{fmt::format("element '{}' has no type", name.as_string())};
         }
         sequence.addDirectElement(name.as_string(), findType(type.as_string()), min, max);
       }
