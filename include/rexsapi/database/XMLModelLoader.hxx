@@ -6,6 +6,7 @@
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
 #include <rexsapi/database/LoaderResult.hxx>
+#include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 #include <cstring>
 
@@ -29,7 +30,14 @@ namespace rexsapi::database
           return;
         }
 
-        // TODO (lcf): check document with schema
+        {
+          rexsapi::xml::TFileXsdSchemaLoader loader{std::filesystem::path{"/Users/lfuerste/Development/REXSapi"} / "models" /
+                                                    "rexs-dbmodel.xsd"};
+          std::vector<std::string> errors;
+          if (!rexsapi::xml::TSchemaValidator{loader}.validate(doc, errors)) {
+            throw TException{"cannot validate db model file"};
+          }
+        }
 
         auto rexsModel = *doc.select_nodes("/rexsModel").begin();
         TModel model{rexsModel.node().attribute("version").value(), rexsModel.node().attribute("language").value(),
