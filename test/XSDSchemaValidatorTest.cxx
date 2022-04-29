@@ -13,6 +13,7 @@ namespace
         <xsd:element name="TestCases">
           <xsd:complexType>
             <xsd:sequence>
+              <xsd:element name="Annotation" type="xsd:string" maxOccurs="1" minOccurs="0"/>
               <xsd:element ref="Suites" maxOccurs="1" minOccurs="1"/>
               <xsd:element ref="Tests" maxOccurs="1" minOccurs="0"/>
             </xsd:sequence>
@@ -95,6 +96,7 @@ TEST_CASE("XSD schema validator test")
     const auto* xml = R"(
       <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <TestCases version="42" status="COOL" date="2022-04-28T11:10">
+        <Annotation>Puschelbär</Annotation>
         <Suites>
           <Suite name="suite 1">
             <Tests>

@@ -95,6 +95,7 @@ namespace rexsapi::xml
   {
   public:
     void addElementRef(const TElement& element, uint64_t min, uint64_t max);
+    void addDirectElement(std::string name, const TSimpleType& type, uint64_t min, uint64_t max);
 
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
@@ -102,6 +103,7 @@ namespace rexsapi::xml
     [[nodiscard]] bool checkContainsElement(const std::string& child) const;
 
     std::vector<TElementRef> m_Elements;
+    std::vector<TElement> m_DirectElements;
   };
 
 
@@ -163,6 +165,22 @@ namespace rexsapi::xml
   private:
     TSequence m_Sequence;
     TAttributes m_Attributes;
+  };
+
+
+  class TInlineContentType : public TElementType
+  {
+  public:
+    TInlineContentType(std::string name, const TSimpleType& type)
+    : TElementType{std::move(name)}
+    , m_Type{type}
+    {
+    }
+
+    void validate(const pugi::xml_node& node, TValidationContext& context) const override;
+
+  private:
+    const TSimpleType& m_Type;
   };
 
 
@@ -446,19 +464,34 @@ namespace rexsapi::xml
     m_Elements.emplace_back(TElementRef{element, min, max});
   }
 
+  inline void TSequence::addDirectElement(std::string name, const TSimpleType& type, uint64_t min, uint64_t max)
+  {
+    TElement element{name, std::make_unique<TInlineContentType>(name, type)};
+    m_DirectElements.emplace_back(std::move(element));
+    addElementRef(m_DirectElements.back(), min, max);
+  }
+
   inline void TSequence::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
     for (const auto& child : node.children()) {
-      const auto* element = context.findElement(child.name());
-      if (element == nullptr) {
-        context.addError(fmt::format("unkown element '{}'", child.name()));
-      } else if (!checkContainsElement(child.name())) {
-        context.addError(fmt::format("element '{}' is not allowed here", child.name()));
+      const std::string childName = child.name();
+      if (const auto* element = context.findElement(childName); element == nullptr) {
+        auto it = std::find_if(m_DirectElements.begin(), m_DirectElements.end(), [&childName](const auto& item) {
+          return item.getName() == childName;
+        });
+        if (it == m_DirectElements.end()) {
+          context.addError(fmt::format("unkown element '{}'", childName));
+        }
+      } else if (!checkContainsElement(childName)) {
+        context.addError(fmt::format("element '{}' is not allowed here", childName));
       }
     }
-    for (const auto& element : m_Elements) {
+    std::for_each(m_Elements.begin(), m_Elements.end(), [&node, &context](const auto& element) {
       element.validate(node, context);
-    }
+    });
+    std::for_each(m_DirectElements.begin(), m_DirectElements.end(), [&node, &context](const auto& element) {
+      element.validate(node, context);
+    });
   }
 
   [[nodiscard]] inline bool TSequence::checkContainsElement(const std::string& child) const
@@ -545,6 +578,12 @@ namespace rexsapi::xml
   {
     m_Attributes.validate(node, context);
     m_Sequence.validate(node, context);
+  }
+
+
+  inline void TInlineContentType::validate(const pugi::xml_node& node, TValidationContext& context) const
+  {
+    m_Type.validate(node.value(), context);
   }
 
 
@@ -727,11 +766,20 @@ namespace rexsapi::xml
     TSequence sequence;
 
     for (const auto& element : node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
-      const TElement& ref = findOrRegisterElement(element.node().attribute("ref").as_string());
       auto min = convertToUint64(element.node().attribute("minOccurs").as_string());
       auto maxString = std::string(element.node().attribute("maxOccurs").as_string());
       auto max = maxString == "unbounded" ? std::numeric_limits<uint64_t>::max() : convertToUint64(maxString);
-      sequence.addElementRef(ref, min, max);
+
+      if (const auto refName = element.node().attribute("ref"); !refName.empty()) {
+        const TElement& ref = findOrRegisterElement(refName.as_string());
+        sequence.addElementRef(ref, min, max);
+      } else if (const auto name = element.node().attribute("name"); !name.empty()) {
+        const auto type = element.node().attribute("type");
+        if (type.empty()) {
+          throw TException{fmt::format("element '{}' has no type", name)};
+        }
+        sequence.addDirectElement(name.as_string(), findType(type.as_string()), min, max);
+      }
     }
 
     TAttributes attributes;

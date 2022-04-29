@@ -30,9 +30,11 @@ TPodType <|.. ATDecimalType
 class TElementType
 class TComplexType
 class TSimpleContentType
+class TInlineContentType
 
 TElementType <|-- TComplexType
 TElementType <|-- TSimpleContentType
+TElementType <|-- TInlineContentType
 
 class TAttribute
 class TSequence
@@ -42,6 +44,8 @@ class TAttributes
 TComplexType o-- TSequence
 TComplexType o-- TAttributes
 TComplexType o-- TText
+
+TInlineContentType o-- TPodType
 
 TAttribute o-- TSimpleType
 TAttributes o-- TAttribute
