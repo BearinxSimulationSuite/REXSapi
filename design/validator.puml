@@ -2,27 +2,17 @@
 
 namespace xml {
 
-interface IXSDValidationContext
+class TValidationContext
 
-class TXSDValidationContext
 
-IXSDValidationContext <|-- TXSDValidationContext
-
-interface TType {
-  {abstract} void validate(const pugi::xml_node&, IXSDValidationContext&) const
+interface TSimpleType {
+  {abstract} void validate(const std::string&, TValidationContext&) const
 }
+
 
 class TPodType<T> {
-  void validate(const pugi::xml_node&, IXSDValidationContext&) const
+  void validate(const std::string&, TValidationContext&) const
 }
-
-interface TValueExtractor
-
-TPodType o-- TValueExtractor
-
-class TAttributeValueExtractor
-
-TValueExtractor <|-- TAttributeValueExtractor
 
 class "TPodType<TIntegerType>" as ATIntegerType
 class "TPodType<TNonNegativeIntegerType>" as ATNonNegativeIntegerType
@@ -30,20 +20,19 @@ class "TPodType<TBooleanType>" as ATBooleanType
 class "TPodType<TStringType>" as ATStringType
 class "TPodType<TDecimalType>" as ATDecimalType
 
+TSimpleType <|-- TPodType
 TPodType <|.. ATIntegerType
 TPodType <|.. ATNonNegativeIntegerType
 TPodType <|.. ATBooleanType
 TPodType <|.. ATStringType
 TPodType <|.. ATDecimalType
 
-class TSimpleType
+class TElementType
 class TComplexType
 class TSimpleContentType
 
-TType <|-- TPodType
-TType <|-- TSimpleType
-TType <|-- TComplexType
-TType <|-- TSimpleContentType
+TElementType <|-- TComplexType
+TElementType <|-- TSimpleContentType
 
 class TAttribute
 class TSequence
@@ -54,13 +43,14 @@ TComplexType o-- TSequence
 TComplexType o-- TAttributes
 TComplexType o-- TText
 
+TAttribute o-- TSimpleType
 TAttributes o-- TAttribute
 
 class TElement {
-  void validate(const pugi::xml_node&, IXSDValidationContext&) const
+  void validate(const pugi::xml_node&, TValidationContext&) const
 }
 
-TElement o-- TType
+TElement o-- TElementType
 
 class TElementRef
 
@@ -68,14 +58,14 @@ TElementRef o-- TElement
 
 TSequence o-- TElementRef
 
-class TRestriction
+class TRestrictedType
 
-TRestriction o-- TType
-TSimpleType o-- TRestriction
+TRestrictedType o-- TPodType
+TSimpleType <|-- TRestrictedType
 
 class TEnumeration
 
-TRestriction o-- TEnumeration
+TRestrictedType o-- TEnumeration
 
 }
 

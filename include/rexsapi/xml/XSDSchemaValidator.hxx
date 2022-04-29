@@ -22,21 +22,45 @@ namespace rexsapi::xml
   class TValidationContext;
 
 
-  class TType
+  class TSimpleType
   {
   public:
-    using Ptr = std::unique_ptr<TType>;
+    using Ptr = std::unique_ptr<TSimpleType>;
 
-    explicit TType(std::string name)
+    explicit TSimpleType(std::string name)
     : m_Name{std::move(name)}
     {
     }
 
-    virtual ~TType() = default;
+    virtual ~TSimpleType() = default;
 
     virtual void validate(const std::string& value, TValidationContext& context) const = 0;
 
-    const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const
+    {
+      return m_Name;
+    }
+
+  private:
+    const std::string m_Name;
+  };
+
+
+  class TElementType
+  {
+  public:
+    using Ptr = std::unique_ptr<TElementType>;
+
+    explicit TElementType(std::string name)
+    : m_Name{std::move(name)}
+    {
+    }
+
+    virtual ~TElementType() = default;
+
+    virtual void validate(const pugi::xml_node& node, TValidationContext& context) const = 0;
+
+    [[nodiscard]] const std::string& getName() const
     {
       return m_Name;
     }
@@ -84,7 +108,7 @@ namespace rexsapi::xml
   class TAttribute
   {
   public:
-    explicit TAttribute(std::string name, const TType& type, bool required)
+    explicit TAttribute(std::string name, const TSimpleType& type, bool required)
     : m_Name{std::move(name)}
     , m_Type{type}
     , m_Required{required}
@@ -100,7 +124,7 @@ namespace rexsapi::xml
 
   private:
     const std::string m_Name;
-    const TType& m_Type;
+    const TSimpleType& m_Type;
     const bool m_Required;
   };
 
@@ -124,37 +148,17 @@ namespace rexsapi::xml
   };
 
 
-  class TSXDComplexTypeMode
+  class TComplexType : public TElementType
   {
   public:
-    virtual ~TSXDComplexTypeMode() = default;
-
-    virtual void validate(const pugi::xml_node& node, TValidationContext& context) const = 0;
-  };
-
-
-  class TEmptyMode : public TSXDComplexTypeMode
-  {
-  public:
-    void validate(const pugi::xml_node& node, TValidationContext& context) const override
-    {
-      // nothing to do
-      (void)node;
-      (void)context;
-    }
-  };
-
-
-  class TComplexType
-  {
-  public:
-    TComplexType(TSequence&& sequence, TAttributes&& attributes)
-    : m_Sequence{std::move(sequence)}
+    TComplexType(std::string name, TSequence&& sequence, TAttributes&& attributes)
+    : TElementType{std::move(name)}
+    , m_Sequence{std::move(sequence)}
     , m_Attributes{std::move(attributes)}
     {
     }
 
-    void validate(const pugi::xml_node& node, TValidationContext& context) const;
+    void validate(const pugi::xml_node& node, TValidationContext& context) const override;
 
   private:
     TSequence m_Sequence;
@@ -165,11 +169,16 @@ namespace rexsapi::xml
   class TElement
   {
   public:
-    explicit TElement(std::string name, TComplexType type)
+    explicit TElement(std::string name, TElementType::Ptr&& type)
     : m_Name{std::move(name)}
     , m_Type{std::move(type)}
     {
     }
+
+    TElement(const TElement&) = delete;
+    TElement(TElement&&) = default;
+    TElement& operator=(const TElement&) = delete;
+    TElement& operator=(TElement&&) = delete;
 
     [[nodiscard]] const std::string& getName() const
     {
@@ -180,11 +189,11 @@ namespace rexsapi::xml
 
   private:
     const std::string m_Name;
-    const TComplexType m_Type;
+    TElementType::Ptr m_Type;
   };
 
 
-  using TTypes = std::unordered_map<std::string, TType::Ptr>;
+  using TSimpleTypes = std::unordered_map<std::string, TSimpleType::Ptr>;
   using TElements = std::unordered_map<std::string, TElement>;
 
 
@@ -208,12 +217,12 @@ namespace rexsapi::xml
 
     [[nodiscard]] const TElement& findOrRegisterElement(const std::string& name);
 
-    [[nodiscard]] const TType& findType(const std::string& name) const;
+    [[nodiscard]] const TSimpleType& findType(const std::string& name) const;
 
     [[nodiscard]] TElement parseElement(const pugi::xml_node& node);
 
     pugi::xml_document m_Doc;
-    TTypes m_Types;
+    TSimpleTypes m_Types;
     TElements m_Elements;
   };
 
@@ -264,47 +273,45 @@ namespace rexsapi::xml
   };
 
 
-  class TSimpleEnumType : public TType
+  class TEnumeration
   {
   public:
-    explicit TSimpleEnumType(std::string name, std::vector<std::string> enumValues)
-    : TType{std::move(name)}
+    explicit TEnumeration(std::string name, std::vector<std::string> enumValues)
+    : m_Name{std::move(name)}
     , m_EnumValues{std::move(enumValues)}
     {
     }
 
-    void validate(const std::string& value, TValidationContext& context) const override;
+    void validate(const std::string& value, TValidationContext& context) const;
 
   private:
+    std::string m_Name;
     std::vector<std::string> m_EnumValues;
   };
 
 
-  class TSimpleRestrictedType : public TType
+  class TRestrictedType : public TSimpleType
   {
   public:
-    explicit TSimpleRestrictedType(std::string name, const TType& type)
-    : TType{std::move(name)}
-    , m_Type{type}
+    explicit TRestrictedType(std::string name, const TSimpleType& baseType, std::optional<TEnumeration>&& enumeration)
+    : TSimpleType{std::move(name)}
+    , m_BaseType{baseType}
+    , m_Enumeration{std::move(enumeration)}
     {
     }
 
     void validate(const std::string& value, TValidationContext& context) const override;
 
   private:
-    const TType& m_Type;
+    const TSimpleType& m_BaseType;
+    std::optional<TEnumeration> m_Enumeration;
   };
 
 
-  class TStringType : public TType
+  class TStringType
   {
   public:
-    TStringType()
-    : TType{fmt::format("{}:string", xsdSchemaNS)}
-    {
-    }
-
-    void validate(const std::string& value, TValidationContext& context) const override
+    void validate(const std::string& value, TValidationContext& context) const
     {
       (void)value;
       (void)context;
@@ -312,51 +319,31 @@ namespace rexsapi::xml
   };
 
 
-  class TIntegerType : public TType
+  class TIntegerType
   {
   public:
-    TIntegerType()
-    : TType{fmt::format("{}:integer", xsdSchemaNS)}
-    {
-    }
-
-    void validate(const std::string& value, TValidationContext& context) const override;
+    void validate(const std::string& value, TValidationContext& context) const;
   };
 
 
-  class TNonNegativeIntegerType : public TType
+  class TNonNegativeIntegerType
   {
   public:
-    TNonNegativeIntegerType()
-    : TType{fmt::format("{}:nonNegativeInteger", xsdSchemaNS)}
-    {
-    }
-
-    void validate(const std::string& value, TValidationContext& context) const override;
+    void validate(const std::string& value, TValidationContext& context) const;
   };
 
 
-  class TDecimalType : public TType
+  class TDecimalType
   {
   public:
-    TDecimalType()
-    : TType{fmt::format("{}:decimal", xsdSchemaNS)}
-    {
-    }
-
-    void validate(const std::string& value, TValidationContext& context) const override;
+    void validate(const std::string& value, TValidationContext& context) const;
   };
 
 
-  class TBooleanType : public TType
+  class TBooleanType
   {
   public:
-    TBooleanType()
-    : TType{fmt::format("{}:boolean", xsdSchemaNS)}
-    {
-    }
-
-    void validate(const std::string& value, TValidationContext& context) const override;
+    void validate(const std::string& value, TValidationContext& context) const;
   };
 
 
@@ -386,6 +373,25 @@ namespace rexsapi::xml
     const TElements& m_Elements;
     std::vector<std::string> m_ElementStack;
     std::vector<std::string> m_Errors;
+  };
+
+
+  template<typename T>
+  class TPodType : public TSimpleType
+  {
+  public:
+    explicit TPodType(std::string name)
+    : TSimpleType{std::move(name)}
+    {
+    }
+
+    void validate(const std::string& value, TValidationContext& context) const override
+    {
+      m_Type.validate(value, context);
+    }
+
+  private:
+    T m_Type;
   };
 
 
@@ -542,25 +548,29 @@ namespace rexsapi::xml
   }
 
 
-  inline void TSimpleEnumType::validate(const std::string& value, TValidationContext& context) const
+  inline void TEnumeration::validate(const std::string& value, TValidationContext& context) const
   {
     auto it = std::find_if(m_EnumValues.begin(), m_EnumValues.end(), [&value](const auto& item) {
       return item == value;
     });
     if (it == m_EnumValues.end()) {
-      context.addError(fmt::format("unknown enum value '{}' for type '{}'", value, getName()));
+      context.addError(fmt::format("unknown enum value '{}' for type '{}'", value, m_Name));
     }
   }
 
-  inline void TSimpleRestrictedType::validate(const std::string& value, TValidationContext& context) const
+  inline void TRestrictedType::validate(const std::string& value, TValidationContext& context) const
   {
-    m_Type.validate(value, context);
+    if (m_Enumeration) {
+      m_Enumeration->validate(value, context);
+    } else {
+      m_BaseType.validate(value, context);
+    }
   }
 
   inline void TElement::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
     context.pushElement(getName());
-    m_Type.validate(node, context);
+    m_Type->validate(node, context);
     context.popElement();
   }
 
@@ -639,21 +649,24 @@ namespace rexsapi::xml
       // ATTENTION: this is a strong simplification of simple types
       auto restriction = elements.node().select_nodes(fmt::format("{0}:restriction", xsdSchemaNS).c_str());
       if (!restriction.empty()) {
+        std::optional<TEnumeration> enumeration;
+        const auto& baseType = findType(restriction.first().node().attribute("base").as_string());
         auto children = restriction.first().node().children();
+
         if (!children.empty()) {
           std::vector<std::string> enumValues;
           for (const auto& enums : children) {
             enumValues.emplace_back(enums.attribute("value").as_string());
           }
-          auto type = std::make_unique<TSimpleEnumType>(elements.node().attribute("name").as_string(), enumValues);
-          // TODO (lcf): check for duplicates
-          m_Types.try_emplace(type->getName(), std::move(type));
-        } else {
-          const auto& baseType = findType(restriction.first().node().attribute("base").as_string());
-          auto type = std::make_unique<TSimpleRestrictedType>(elements.node().attribute("name").as_string(), baseType);
-          // TODO (lcf): check for duplicates
-          m_Types.try_emplace(type->getName(), std::move(type));
+          enumeration = TEnumeration{elements.node().attribute("name").as_string(), std::move(enumValues)};
         }
+
+        auto type =
+          std::make_unique<TRestrictedType>(elements.node().attribute("name").as_string(), baseType, std::move(enumeration));
+        // TODO (lcf): check for duplicates
+        m_Types.try_emplace(type->getName(), std::move(type));
+      } else {
+        throw TException{"unsupported construct"};
       }
     }
 
@@ -666,15 +679,15 @@ namespace rexsapi::xml
 
   inline void TSchemaValidator::initTypes()
   {
-    auto type1 = std::make_unique<TStringType>();
+    auto type1 = std::make_unique<TPodType<TStringType>>(fmt::format("{}:string", xsdSchemaNS));
     m_Types.try_emplace(type1->getName(), std::move(type1));
-    auto type2 = std::make_unique<TIntegerType>();
+    auto type2 = std::make_unique<TPodType<TIntegerType>>(fmt::format("{}:integer", xsdSchemaNS));
     m_Types.try_emplace(type2->getName(), std::move(type2));
-    auto type3 = std::make_unique<TDecimalType>();
+    auto type3 = std::make_unique<TPodType<TDecimalType>>(fmt::format("{}:decimal", xsdSchemaNS));
     m_Types.try_emplace(type3->getName(), std::move(type3));
-    auto type4 = std::make_unique<TBooleanType>();
+    auto type4 = std::make_unique<TPodType<TBooleanType>>(fmt::format("{}:boolean", xsdSchemaNS));
     m_Types.try_emplace(type4->getName(), std::move(type4));
-    auto type5 = std::make_unique<TNonNegativeIntegerType>();
+    auto type5 = std::make_unique<TPodType<TNonNegativeIntegerType>>(fmt::format("{}:nonNegativeInteger", xsdSchemaNS));
     m_Types.try_emplace(type5->getName(), std::move(type5));
   }
 
@@ -700,7 +713,7 @@ namespace rexsapi::xml
     return it->second;
   }
 
-  [[nodiscard]] inline const TType& TSchemaValidator::findType(const std::string& name) const
+  [[nodiscard]] inline const TSimpleType& TSchemaValidator::findType(const std::string& name) const
   {
     auto it = m_Types.find(name);
     if (it == m_Types.end()) {
@@ -735,7 +748,8 @@ namespace rexsapi::xml
       attributes.setRelaxed();
     }
 
-    TComplexType complexType{std::move(sequence), std::move(attributes)};
+    auto complexType =
+      std::make_unique<TComplexType>(node.attribute("name").as_string(), std::move(sequence), std::move(attributes));
     return TElement{node.attribute("name").as_string(), std::move(complexType)};
   }
 }

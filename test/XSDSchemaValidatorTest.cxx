@@ -396,7 +396,7 @@ TEST_CASE("XSD schema validator types test")
 TEST_CASE("XSD schema validator simple type test")
 {
   std::vector<std::string> enumValues{"one", "two", "three"};
-  rexsapi::xml::TSimpleEnumType enumeration{"numbers", enumValues};
+  rexsapi::xml::TEnumeration enumeration{"numbers", enumValues};
 
   SUBCASE("Test enum valid")
   {
