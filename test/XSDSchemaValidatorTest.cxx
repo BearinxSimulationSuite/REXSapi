@@ -99,6 +99,21 @@ TEST_CASE("XSD schema validator test")
     CHECK(errors.empty());
   }
 
+  SUBCASE("Validate model from file")
+  {
+    pugi::xml_document doc;
+    pugi::xml_parse_result parseResult =
+      doc.load_file((projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs").string().c_str());
+    CHECK(parseResult);
+
+    rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-schema.xsd"};
+    rexsapi::xml::TSchemaValidator val{loader};
+
+    std::vector<std::string> errors;
+    CHECK(val.validate(doc, errors));
+    CHECK(errors.empty());
+  }
+
   SUBCASE("Validate schema from string")
   {
     const auto* xml = R"(
@@ -355,6 +370,28 @@ TEST_CASE("XSD schema validator failure test")
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
     CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Revision/] element 'Revision' does not have a value");
+  }
+
+  SUBCASE("Value on non-mixed type element")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2">hutzli</Test>
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Test/] element has value but is not of mixed type");
   }
 }
 

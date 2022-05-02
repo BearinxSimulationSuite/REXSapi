@@ -151,13 +151,20 @@ namespace rexsapi::xml
   };
 
 
+  class TText
+  {
+  public:
+    void validate(const pugi::xml_node& node, TValidationContext& context) const;
+  };
+
   class TComplexType : public TElementType
   {
   public:
-    TComplexType(std::string name, TSequence&& sequence, TAttributes&& attributes)
+    TComplexType(std::string name, TSequence&& sequence, TAttributes&& attributes, std::optional<TText>&& text)
     : TElementType{std::move(name)}
     , m_Sequence{std::move(sequence)}
     , m_Attributes{std::move(attributes)}
+    , m_Text{std::move(text)}
     {
     }
 
@@ -166,6 +173,7 @@ namespace rexsapi::xml
   private:
     TSequence m_Sequence;
     TAttributes m_Attributes;
+    std::optional<TText> m_Text;
   };
 
 
@@ -494,6 +502,9 @@ namespace rexsapi::xml
   {
     for (const auto& child : node.children()) {
       const std::string childName = child.name();
+      if (childName.empty()) {
+        continue;
+      }
       if (const auto* element = context.findElement(childName); element == nullptr) {
         auto it = std::find_if(m_DirectElements.begin(), m_DirectElements.end(), [&childName](const auto& item) {
           return item.getName() == childName;
@@ -593,10 +604,24 @@ namespace rexsapi::xml
   }
 
 
+  inline void TText::validate(const pugi::xml_node& node, TValidationContext& context) const
+  {
+    (void)node;
+    (void)context;
+  }
+
+
   inline void TComplexType::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
     m_Attributes.validate(node, context);
     m_Sequence.validate(node, context);
+    if (m_Text) {
+      m_Text->validate(node, context);
+    } else {
+      if (node.first_child().name()[0] == '\0' && node.first_child().value()[0] != '\0') {
+        context.addError("element has value but is not of mixed type");
+      }
+    }
   }
 
 
@@ -837,8 +862,14 @@ namespace rexsapi::xml
       attributes.setRelaxed();
     }
 
-    auto complexType =
-      std::make_unique<TComplexType>(node.attribute("name").as_string(), std::move(sequence), std::move(attributes));
+    std::optional<TText> text;
+
+    if (node.child(fmt::format("{}:complexType", xsdSchemaNS).c_str()).attribute("mixed").as_bool()) {
+      text = TText{};
+    }
+
+    auto complexType = std::make_unique<TComplexType>(node.attribute("name").as_string(), std::move(sequence),
+                                                      std::move(attributes), std::move(text));
     return TElement{node.attribute("name").as_string(), std::move(complexType)};
   }
 }
