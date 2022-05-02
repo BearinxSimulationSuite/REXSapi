@@ -13,12 +13,15 @@
 
 namespace rexsapi::database
 {
-  enum class TStatus { RELEASED };
+  enum class TStatus { RELEASED, IN_DEVELOPMENT };
 
   inline static TStatus statusFromString(const std::string& status)
   {
     if (status == "RELEASED") {
       return TStatus::RELEASED;
+    }
+    if (status == "IN_DEVELOPMENT") {
+      return TStatus::IN_DEVELOPMENT;
     }
     throw TException{fmt::format("status '{}' unkown", status)};
   }
@@ -56,9 +59,9 @@ namespace rexsapi::database
       return m_Date;
     }
 
-    [[nodiscard]] TStatus getStatus() const
+    [[nodiscard]] bool isReleased() const
     {
-      return m_Status;
+      return m_Status == TStatus::RELEASED;
     }
 
     bool addUnit(Unit&& unit)
