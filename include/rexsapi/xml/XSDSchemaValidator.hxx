@@ -278,15 +278,7 @@ namespace rexsapi::xml
     {
     }
 
-    [[nodiscard]] pugi::xml_document load() const
-    {
-      pugi::xml_document doc;
-      if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
-        throw TException{fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
-      }
-
-      return doc;
-    }
+    [[nodiscard]] pugi::xml_document load() const;
 
   private:
     std::filesystem::path m_XsdFile;
@@ -301,15 +293,7 @@ namespace rexsapi::xml
     {
     }
 
-    [[nodiscard]] pugi::xml_document load() const
-    {
-      pugi::xml_document doc;
-      if (pugi::xml_parse_result parseResult = doc.load_string(m_XsdSchema.c_str()); !parseResult) {
-        throw TException{fmt::format("cannot parse xsd schema: {}", parseResult.description())};
-      }
-
-      return doc;
-    }
+    [[nodiscard]] pugi::xml_document load() const;
 
   private:
     std::string m_XsdSchema;
@@ -424,10 +408,7 @@ namespace rexsapi::xml
     {
     }
 
-    void validate(const std::string& value, TValidationContext& context) const override
-    {
-      m_Type.validate(value, context);
-    }
+    void validate(const std::string& value, TValidationContext& context) const override;
 
   private:
     T m_Type;
@@ -437,6 +418,13 @@ namespace rexsapi::xml
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
+
+  template<typename T>
+  inline void TPodType<T>::validate(const std::string& value, TValidationContext& context) const
+  {
+    m_Type.validate(value, context);
+  }
+
 
   inline void TStringType::validate(const std::string& value, TValidationContext& context) const
   {
@@ -595,7 +583,7 @@ namespace rexsapi::xml
     }
   }
 
-  [[nodiscard]] inline bool TAttributes::containsAttribute(const std::string& attribute) const
+  inline bool TAttributes::containsAttribute(const std::string& attribute) const
   {
     auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attribute](const auto& att) {
       return att.getName() == attribute;
@@ -690,7 +678,7 @@ namespace rexsapi::xml
     m_ElementStack.pop_back();
   }
 
-  [[nodiscard]] inline std::string TValidationContext::getElementPath() const
+  inline std::string TValidationContext::getElementPath() const
   {
     std::stringstream stream;
     stream << "/";
@@ -705,7 +693,7 @@ namespace rexsapi::xml
     m_Errors.emplace_back(fmt::format("[{}] {}", getElementPath(), std::move(error)));
   }
 
-  [[nodiscard]] inline bool TValidationContext::hasErrors() const
+  inline bool TValidationContext::hasErrors() const
   {
     return !m_Errors.empty();
   }
@@ -715,7 +703,7 @@ namespace rexsapi::xml
     errors.swap(m_Errors);
   }
 
-  [[nodiscard]] inline bool TSchemaValidator::validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
+  inline bool TSchemaValidator::validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
   {
     TValidationContext context{m_Elements};
 
@@ -788,13 +776,13 @@ namespace rexsapi::xml
     m_Types.try_emplace(type5->getName(), std::move(type5));
   }
 
-  [[nodiscard]] inline const TElement* TSchemaValidator::findElement(const std::string& name) const
+  inline const TElement* TSchemaValidator::findElement(const std::string& name) const
   {
     auto it = m_Elements.find(name);
     return it == m_Elements.end() ? nullptr : &(it->second);
   }
 
-  [[nodiscard]] inline const TElement& TSchemaValidator::findOrRegisterElement(const std::string& name)
+  inline const TElement& TSchemaValidator::findOrRegisterElement(const std::string& name)
   {
     if (const auto* p = findElement(name); p) {
       return *p;
@@ -810,7 +798,7 @@ namespace rexsapi::xml
     return it->second;
   }
 
-  [[nodiscard]] inline const TSimpleType& TSchemaValidator::findType(const std::string& name) const
+  inline const TSimpleType& TSchemaValidator::findType(const std::string& name) const
   {
     auto it = m_Types.find(name);
     if (it == m_Types.end()) {
@@ -819,7 +807,7 @@ namespace rexsapi::xml
     return *it->second;
   }
 
-  [[nodiscard]] inline TElement TSchemaValidator::parseElement(const pugi::xml_node& node)
+  inline TElement TSchemaValidator::parseElement(const pugi::xml_node& node)
   {
     TSequence sequence;
 
@@ -871,6 +859,28 @@ namespace rexsapi::xml
     auto complexType = std::make_unique<TComplexType>(node.attribute("name").as_string(), std::move(sequence),
                                                       std::move(attributes), std::move(text));
     return TElement{node.attribute("name").as_string(), std::move(complexType)};
+  }
+
+
+  inline pugi::xml_document TFileXsdSchemaLoader::load() const
+  {
+    pugi::xml_document doc;
+    if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
+      throw TException{fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
+    }
+
+    return doc;
+  }
+
+
+  inline pugi::xml_document TBufferXsdSchemaLoader::load() const
+  {
+    pugi::xml_document doc;
+    if (pugi::xml_parse_result parseResult = doc.load_string(m_XsdSchema.c_str()); !parseResult) {
+      throw TException{fmt::format("cannot parse xsd schema: {}", parseResult.description())};
+    }
+
+    return doc;
   }
 }
 

@@ -21,67 +21,78 @@ namespace rexsapi::database
     {
     }
 
-    TLoaderResult load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
-    {
-      if (!callback) {
-        throw TException{"callback not set for resource loader"};
-      }
-
-      TLoaderResult result;
-
-      auto resources = findResources(result);
-      std::for_each(resources.begin(), resources.end(), [this, &callback, &result](const auto& resource) {
-        auto buffer = load(result, resource);
-        if (buffer.size()) {
-          callback(result, buffer);
-        }
-      });
-
-      return result;
-    }
+    TLoaderResult load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const;
 
   private:
-    [[nodiscard]] std::vector<std::filesystem::path> findResources(TLoaderResult& result) const
-    {
-      if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
-        throw TException{fmt::format("Directory '{}' does not exist or is not a directory", m_Path.string())};
-      }
+    [[nodiscard]] std::vector<std::filesystem::path> findResources(TLoaderResult& result) const;
 
-      std::vector<std::filesystem::path> resources;
-      for (const auto& p : std::filesystem::directory_iterator(m_Path)) {
-        // TODO (lcf): check file name structure with regex
-        if (p.path().extension() == ".xml") {
-          if (!std::filesystem::is_regular_file(p.path())) {
-            result.addError(TResourceError{fmt::format("Resource '{}' is not a file", p.path().string())});
-            continue;
-          }
-
-          resources.emplace_back(p.path());
-        }
-      }
-      if (resources.empty()) {
-        result.addError(TResourceError{"No model database files found"});
-      }
-
-      return resources;
-    }
-
-    [[nodiscard]] std::vector<uint8_t> load(TLoaderResult& result, const std::filesystem::path& resource) const
-    {
-      std::ifstream file{resource};
-      if (!file.good()) {
-        result.addError(TResourceError{fmt::format("Resource '{}' cannot be loaded", resource.string())});
-        return std::vector<uint8_t>{};
-      }
-      std::stringstream ss;
-      ss << file.rdbuf();
-      auto buffer = ss.str();
-
-      return std::vector<uint8_t>{buffer.begin(), buffer.end()};
-    }
+    [[nodiscard]] std::vector<uint8_t> load(TLoaderResult& result, const std::filesystem::path& resource) const;
 
     const std::filesystem::path m_Path;
   };
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Implementation
+  /////////////////////////////////////////////////////////////////////////////
+
+  inline TLoaderResult TFileResourceLoader::load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
+  {
+    if (!callback) {
+      throw TException{"callback not set for resource loader"};
+    }
+
+    TLoaderResult result;
+
+    auto resources = findResources(result);
+    std::for_each(resources.begin(), resources.end(), [this, &callback, &result](const auto& resource) {
+      auto buffer = load(result, resource);
+      if (buffer.size()) {
+        callback(result, buffer);
+      }
+    });
+
+    return result;
+  }
+
+  inline std::vector<std::filesystem::path> TFileResourceLoader::findResources(TLoaderResult& result) const
+  {
+    if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
+      throw TException{fmt::format("Directory '{}' does not exist or is not a directory", m_Path.string())};
+    }
+
+    std::vector<std::filesystem::path> resources;
+    for (const auto& p : std::filesystem::directory_iterator(m_Path)) {
+      // TODO (lcf): check file name structure with regex
+      if (p.path().extension() == ".xml") {
+        if (!std::filesystem::is_regular_file(p.path())) {
+          result.addError(TResourceError{fmt::format("Resource '{}' is not a file", p.path().string())});
+          continue;
+        }
+
+        resources.emplace_back(p.path());
+      }
+    }
+    if (resources.empty()) {
+      result.addError(TResourceError{"No model database files found"});
+    }
+
+    return resources;
+  }
+
+  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result, const std::filesystem::path& resource) const
+  {
+    std::ifstream file{resource};
+    if (!file.good()) {
+      result.addError(TResourceError{fmt::format("Resource '{}' cannot be loaded", resource.string())});
+      return std::vector<uint8_t>{};
+    }
+    std::stringstream ss;
+    ss << file.rdbuf();
+    auto buffer = ss.str();
+
+    return std::vector<uint8_t>{buffer.begin(), buffer.end()};
+  }
 }
 
 #endif
