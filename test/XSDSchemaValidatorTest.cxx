@@ -41,6 +41,7 @@ namespace
           <xsd:complexType>
             <xsd:sequence>
               <xsd:element ref="Test" maxOccurs="unbounded" minOccurs="2"/>
+              <xsd:element ref="Revision" maxOccurs="1" minOccurs="0"/>
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>        
@@ -57,6 +58,13 @@ namespace
             <xsd:enumeration value="OH NO"/>
           </xsd:restriction>
         </xsd:simpleType>
+        <xsd:element name="Revision">
+          <xsd:complexType>
+            <xsd:simpleContent>
+              <xsd:extension base="Number"></xsd:extension>
+            </xsd:simpleContent>
+          </xsd:complexType>
+        </xsd:element>
         <xsd:simpleType name="Number">
           <xsd:restriction base="xsd:integer"/>
         </xsd:simpleType>
@@ -118,6 +126,28 @@ TEST_CASE("XSD schema validator test")
           <Test name="2" />
           <Test name="3" />
         </Tests>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK(validate(xml, errors));
+    CHECK(errors.empty());
+  }
+
+  SUBCASE("Simple content type")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+              <Revision>17</Revision>
+            </Tests>
+          </Suite>
+        </Suites>
       </TestCases>
     )";
 
@@ -302,6 +332,29 @@ TEST_CASE("XSD schema validator failure test")
     CHECK_FALSE(validate(xml, errors));
     REQUIRE(errors.size() == 1);
     CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Test/number/] cannot convert 'no number' to integer");
+  }
+
+  SUBCASE("Simple content type without value")
+  {
+    const auto* xml = R"(
+      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <TestCases version="42">
+        <Suites>
+          <Suite name="suite 1">
+            <Tests>
+              <Test name="1.1" />
+              <Test name="1.2" />
+              <Revision />
+            </Tests>
+          </Suite>
+        </Suites>
+      </TestCases>
+    )";
+
+    std::vector<std::string> errors;
+    CHECK_FALSE(validate(xml, errors));
+    REQUIRE(errors.size() == 1);
+    CHECK(errors[0] == "[/TestCases/Suites/Suite/Tests/Revision/] element 'Revision' does not have a value");
   }
 }
 

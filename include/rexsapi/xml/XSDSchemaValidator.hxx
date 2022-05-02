@@ -185,6 +185,22 @@ namespace rexsapi::xml
   };
 
 
+  class TSimpleContentType : public TElementType
+  {
+  public:
+    TSimpleContentType(std::string name, const TSimpleType& type)
+    : TElementType{std::move(name)}
+    , m_Type{type}
+    {
+    }
+
+    void validate(const pugi::xml_node& node, TValidationContext& context) const override;
+
+  private:
+    const TSimpleType& m_Type;
+  };
+
+
   class TElement
   {
   public:
@@ -330,11 +346,7 @@ namespace rexsapi::xml
   class TStringType
   {
   public:
-    void validate(const std::string& value, TValidationContext& context) const
-    {
-      (void)value;
-      (void)context;
-    }
+    void validate(const std::string& value, TValidationContext& context) const;
   };
 
 
@@ -417,6 +429,12 @@ namespace rexsapi::xml
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
+
+  inline void TStringType::validate(const std::string& value, TValidationContext& context) const
+  {
+    (void)value;
+    (void)context;
+  }
 
   inline void TIntegerType::validate(const std::string& value, TValidationContext& context) const
   {
@@ -584,7 +602,21 @@ namespace rexsapi::xml
 
   inline void TInlineContentType::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
-    m_Type.validate(node.value(), context);
+    if (node.first_child().empty()) {
+      context.addError(fmt::format("element '{}' does not have a value", node.name()));
+    } else {
+      m_Type.validate(node.first_child().value(), context);
+    }
+  }
+
+
+  inline void TSimpleContentType::validate(const pugi::xml_node& node, TValidationContext& context) const
+  {
+    if (node.first_child().empty()) {
+      context.addError(fmt::format("element '{}' does not have a value", node.name()));
+    } else {
+      m_Type.validate(node.first_child().value(), context);
+    }
   }
 
 
@@ -765,6 +797,14 @@ namespace rexsapi::xml
   [[nodiscard]] inline TElement TSchemaValidator::parseElement(const pugi::xml_node& node)
   {
     TSequence sequence;
+
+    if (const auto element = node.select_node(fmt::format("{0}:complexType/{0}:simpleContent", xsdSchemaNS).c_str())) {
+      if (const auto child = element.node().child(fmt::format("{0}:extension", xsdSchemaNS).c_str()); !child.empty()) {
+        const auto type = child.attribute("base").as_string();
+        auto simpleContent = std::make_unique<TSimpleContentType>(node.name(), findType(type));
+        return TElement{node.attribute("name").as_string(), std::move(simpleContent)};
+      }
+    }
 
     for (const auto& element : node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
       auto min = convertToUint64(element.node().attribute("minOccurs").as_string());

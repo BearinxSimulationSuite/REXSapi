@@ -45,7 +45,8 @@ TComplexType o-- TSequence
 TComplexType o-- TAttributes
 TComplexType o-- TText
 
-TInlineContentType o-- TPodType
+TInlineContentType o-- TSimpleType
+TSimpleContentType o-- TSimpleType
 
 TAttribute o-- TSimpleType
 TAttributes o-- TAttribute
