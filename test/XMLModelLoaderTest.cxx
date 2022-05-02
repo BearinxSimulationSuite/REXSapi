@@ -39,12 +39,14 @@ namespace
 
 TEST_CASE("XML model loader test")
 {
+  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-dbmodel.xsd"};
   std::vector<rexsapi::database::TModel> models;
 
   SUBCASE("Load existing models")
   {
     rexsapi::database::TFileResourceLoader loader{projectDir() / "models"};
-    rexsapi::database::TXmlModelLoader modelLoader{loader};
+
+    rexsapi::database::TXmlModelLoader modelLoader{loader, schemaLoader};
     auto result = modelLoader.load([&models](rexsapi::database::TModel model) {
       models.emplace_back(std::move(model));
     });
@@ -65,7 +67,7 @@ TEST_CASE("XML model loader test")
     const auto* s =
       R"(<rexsModel version=" 1.4 " status=" RELEASED " language=" de " createdDate="2022-04-19T13:03:21.881+02:00"><units></rexsModel>)";
     StringResourceLoader loader{s};
-    rexsapi::database::TXmlModelLoader modelLoader{loader};
+    rexsapi::database::TXmlModelLoader modelLoader{loader, schemaLoader};
     auto result = modelLoader.load([&models](rexsapi::database::TModel model) {
       models.emplace_back(std::move(model));
     });

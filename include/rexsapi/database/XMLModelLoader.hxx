@@ -6,30 +6,37 @@
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
 #include <rexsapi/database/LoaderResult.hxx>
+#include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 #include <cstring>
 
 namespace rexsapi::database
 {
-  template<typename TResourceLoader>
+  template<typename TResourceLoader, typename TSchemaLoader>
   class TXmlModelLoader
   {
   public:
-    explicit TXmlModelLoader(const TResourceLoader& loader)
+    explicit TXmlModelLoader(const TResourceLoader& loader, const TSchemaLoader& schemaLoader)
     : m_Loader{loader}
+    , m_SchemaLoader{schemaLoader}
     {
     }
 
     TLoaderResult load(const std::function<void(TModel)>& callback) const
     {
-      return m_Loader.load([&callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
+      return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
         pugi::xml_document doc;
         if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
           result.addError(TResourceError{parseResult.description(), parseResult.offset});
           return;
         }
 
-        // TODO (lcf): check document with schema
+        {
+          std::vector<std::string> errors;
+          if (!rexsapi::xml::TSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
+            throw TException{"cannot validate db model file"};
+          }
+        }
 
         auto rexsModel = *doc.select_nodes("/rexsModel").begin();
         TModel model{rexsModel.node().attribute("version").value(), rexsModel.node().attribute("language").value(),
@@ -96,6 +103,7 @@ namespace rexsapi::database
     }
 
     const TResourceLoader& m_Loader;
+    const TSchemaLoader& m_SchemaLoader;
   };
 }
 

@@ -1,0 +1,77 @@
+@startuml Schema Validator
+
+namespace xml {
+
+class TValidationContext
+
+
+interface TSimpleType {
+  {abstract} void validate(const std::string&, TValidationContext&) const
+}
+
+
+class TPodType<T> {
+  void validate(const std::string&, TValidationContext&) const
+}
+
+class "TPodType<TIntegerType>" as ATIntegerType
+class "TPodType<TNonNegativeIntegerType>" as ATNonNegativeIntegerType
+class "TPodType<TBooleanType>" as ATBooleanType
+class "TPodType<TStringType>" as ATStringType
+class "TPodType<TDecimalType>" as ATDecimalType
+
+TSimpleType <|-- TPodType
+TPodType <|.. ATIntegerType
+TPodType <|.. ATNonNegativeIntegerType
+TPodType <|.. ATBooleanType
+TPodType <|.. ATStringType
+TPodType <|.. ATDecimalType
+
+class TElementType
+class TComplexType
+class TSimpleContentType
+class TInlineContentType
+
+TElementType <|-- TComplexType
+TElementType <|-- TSimpleContentType
+TElementType <|-- TInlineContentType
+
+class TAttribute
+class TSequence
+class TText
+class TAttributes
+
+TComplexType o-- TSequence
+TComplexType o-- TAttributes
+TComplexType o-- TText
+
+TInlineContentType o-- TSimpleType
+TSimpleContentType o-- TSimpleType
+
+TAttribute o-- TSimpleType
+TAttributes o-- TAttribute
+
+class TElement {
+  void validate(const pugi::xml_node&, TValidationContext&) const
+}
+
+TElement o-- TElementType
+
+class TElementRef
+
+TElementRef o-- TElement
+
+TSequence o-- TElementRef
+
+class TRestrictedType
+
+TRestrictedType o-- TPodType
+TSimpleType <|-- TRestrictedType
+
+class TEnumeration
+
+TRestrictedType o-- TEnumeration
+
+}
+
+@enduml
