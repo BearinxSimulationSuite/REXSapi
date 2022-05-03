@@ -6,6 +6,7 @@ configure_file (
 add_library(rexsapi INTERFACE)
 
 target_sources(rexsapi INTERFACE
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Rexsapi.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
