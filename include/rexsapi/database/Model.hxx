@@ -64,69 +64,21 @@ namespace rexsapi::database
       return m_Status == TStatus::RELEASED;
     }
 
-    bool addUnit(Unit&& unit)
-    {
-      auto [_, added] = m_Units.try_emplace(unit.getId(), std::move(unit));
-      return added;
-    }
+    bool addUnit(Unit&& unit);
 
-    [[nodiscard]] const Unit& findUnitById(uint64_t id) const
-    {
-      auto it = m_Units.find(id);
-      if (it == m_Units.end()) {
-        throw TException{fmt::format("unit '{}' not found", std::to_string(id))};
-      }
+    [[nodiscard]] const Unit& findUnitById(uint64_t id) const;
 
-      return it->second;
-    }
+    bool addType(uint64_t id, TValueType type);
 
-    bool addType(uint64_t id, TValueType type)
-    {
-      auto [_, added] = m_Types.try_emplace(id, type);
-      return added;
-    }
+    [[nodiscard]] const TValueType& findValueTypeById(uint64_t id) const;
 
-    [[nodiscard]] const TValueType& findValueTypeById(uint64_t id) const
-    {
-      auto it = m_Types.find(id);
-      if (it == m_Types.end()) {
-        throw TException{fmt::format("value type '{}' not found", std::to_string(id))};
-      }
+    bool addAttribute(TAttribute&& attribute);
 
-      return it->second;
-    }
+    [[nodiscard]] const TAttribute& findAttributetById(const std::string& id) const;
 
-    bool addAttribute(TAttribute&& attribute)
-    {
-      auto [_, added] = m_Attributes.try_emplace(attribute.getAttributeId(), std::move(attribute));
-      return added;
-    }
+    bool addComponent(TComponent&& component);
 
-    [[nodiscard]] const TAttribute& findAttributetById(const std::string& id) const
-    {
-      auto it = m_Attributes.find(id);
-      if (it == m_Attributes.end()) {
-        throw TException{fmt::format("attribute '{}' not found", id)};
-      }
-
-      return it->second;
-    }
-
-    bool addComponent(TComponent&& component)
-    {
-      auto [_, added] = m_Components.try_emplace(component.getId(), std::move(component));
-      return added;
-    }
-
-    [[nodiscard]] const TComponent& findComponentById(const std::string& id) const
-    {
-      auto it = m_Components.find(id);
-      if (it == m_Components.end()) {
-        throw TException{fmt::format("component '{}' not found", id)};
-      }
-
-      return it->second;
-    }
+    [[nodiscard]] const TComponent& findComponentById(const std::string& id) const;
 
   private:
     const std::string m_Version;
@@ -138,6 +90,76 @@ namespace rexsapi::database
     std::unordered_map<std::string, TAttribute> m_Attributes;
     std::unordered_map<std::string, TComponent> m_Components;
   };
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Implementation
+  /////////////////////////////////////////////////////////////////////////////
+
+  inline bool TModel::addUnit(Unit&& unit)
+  {
+    auto [_, added] = m_Units.try_emplace(unit.getId(), std::move(unit));
+    return added;
+  }
+
+  inline const Unit& TModel::findUnitById(uint64_t id) const
+  {
+    auto it = m_Units.find(id);
+    if (it == m_Units.end()) {
+      throw TException{fmt::format("unit '{}' not found", std::to_string(id))};
+    }
+
+    return it->second;
+  }
+
+  inline bool TModel::addType(uint64_t id, TValueType type)
+  {
+    auto [_, added] = m_Types.try_emplace(id, type);
+    return added;
+  }
+
+  inline const TValueType& TModel::findValueTypeById(uint64_t id) const
+  {
+    auto it = m_Types.find(id);
+    if (it == m_Types.end()) {
+      throw TException{fmt::format("value type '{}' not found", std::to_string(id))};
+    }
+
+    return it->second;
+  }
+
+  inline bool TModel::addAttribute(TAttribute&& attribute)
+  {
+    auto [_, added] = m_Attributes.try_emplace(attribute.getAttributeId(), std::move(attribute));
+    return added;
+  }
+
+  inline const TAttribute& TModel::findAttributetById(const std::string& id) const
+  {
+    auto it = m_Attributes.find(id);
+    if (it == m_Attributes.end()) {
+      throw TException{fmt::format("attribute '{}' not found", id)};
+    }
+
+    return it->second;
+  }
+
+  inline bool TModel::addComponent(TComponent&& component)
+  {
+    auto [_, added] = m_Components.try_emplace(component.getId(), std::move(component));
+    return added;
+  }
+
+  inline const TComponent& TModel::findComponentById(const std::string& id) const
+  {
+    auto it = m_Components.find(id);
+    if (it == m_Components.end()) {
+      throw TException{fmt::format("component '{}' not found", id)};
+    }
+
+    return it->second;
+  }
+
 }
 
 #endif

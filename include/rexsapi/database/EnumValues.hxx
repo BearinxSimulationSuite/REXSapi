@@ -21,18 +21,25 @@ namespace rexsapi::database
     {
     }
 
-    [[nodiscard]] bool check(const std::string& value) const
-    {
-      auto it = std::find_if(m_Values.begin(), m_Values.end(), [&value](const auto& entry) {
-        return entry.m_Value == value;
-      });
-
-      return it != m_Values.end();
-    }
+    [[nodiscard]] bool check(const std::string& value) const;
 
   private:
     std::vector<TEnumValue> m_Values;
   };
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Implementation
+  /////////////////////////////////////////////////////////////////////////////
+
+  inline bool TEnumValues::check(const std::string& value) const
+  {
+    auto it = std::find_if(m_Values.begin(), m_Values.end(), [&value](const auto& entry) {
+      return entry.m_Value == value;
+    });
+
+    return it != m_Values.end();
+  }
 }
 
 #endif
