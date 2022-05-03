@@ -6,7 +6,11 @@ configure_file (
 add_library(rexsapi INTERFACE)
 
 target_sources(rexsapi INTERFACE
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/compatibility/Defines.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Component.hxx
@@ -20,11 +24,6 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/XMLModelLoader.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/xml/XSDSchemaValidator.hxx
-
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
 )
 
 target_include_directories(rexsapi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>)
