@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_EXCEPTION_HXX
-#define REXSCXX_EXCEPTION_HXX
+#ifndef REXSAPI_EXCEPTION_HXX
+#define REXSAPI_EXCEPTION_HXX
 
 #include <stdexcept>
 #include <string>

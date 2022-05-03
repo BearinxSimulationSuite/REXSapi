@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_MODEL_HXX
-#define REXSCXX_DATABASE_MODEL_HXX
+#ifndef REXSAPI_DATABASE_MODEL_HXX
+#define REXSAPI_DATABASE_MODEL_HXX
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>

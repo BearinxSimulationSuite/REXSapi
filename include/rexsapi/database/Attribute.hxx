@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_ATTRIBUTE_HXX
-#define REXSCXX_DATABASE_ATTRIBUTE_HXX
+#ifndef REXSAPI_DATABASE_ATTRIBUTE_HXX
+#define REXSAPI_DATABASE_ATTRIBUTE_HXX
 
 #include <rexsapi/Format.hxx>
 #include <rexsapi/database/EnumValues.hxx>

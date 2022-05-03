@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_CONVERSION_HELPER_HXX
-#define REXSCXX_CONVERSION_HELPER_HXX
+#ifndef REXSAPI_CONVERSION_HELPER_HXX
+#define REXSAPI_CONVERSION_HELPER_HXX
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>

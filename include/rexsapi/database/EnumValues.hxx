@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_ENUM_VALUES
-#define REXSCXX_DATABASE_ENUM_VALUES
+#ifndef REXSAPI_DATABASE_ENUM_VALUES
+#define REXSAPI_DATABASE_ENUM_VALUES
 
 #include <algorithm>
 #include <string>
