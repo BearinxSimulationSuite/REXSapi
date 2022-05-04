@@ -73,13 +73,13 @@ namespace rexsapi::database
     }
 
   private:
-    const std::string m_AttributeId;
-    const std::string m_Name;
-    const TValueType m_Type;
+    std::string m_AttributeId;
+    std::string m_Name;
+    TValueType m_Type;
     const Unit& m_Unit;
-    const std::string m_Symbol;
-    const std::optional<const TInterval> m_Interval;
-    const std::optional<const TEnumValues> m_EnumValues;
+    std::string m_Symbol;
+    std::optional<const TInterval> m_Interval;
+    std::optional<const TEnumValues> m_EnumValues;
   };
 }
 
