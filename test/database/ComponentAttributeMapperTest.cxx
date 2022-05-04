@@ -1,9 +1,9 @@
 
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
 
-#include <doctest.h>
+#include <test/TestModelLoader.hxx>
 
-#include "TestModelLoader.hxx"
+#include <doctest.h>
 
 TEST_CASE("Component attribute mapper")
 {
@@ -11,9 +11,10 @@ TEST_CASE("Component attribute mapper")
 
   SUBCASE("Check mappings")
   {
-    std::vector<std::pair<std::string, std::string>> attributeMappings = {{"planet_carrier", "mass_of_component"},
-                                                                          {"planet_carrier", "strut_inner_diameter"},
-                                                                          {"profile_crowning", "profile_crowning_at_tip"}};
+    std::vector<std::pair<std::string, std::string>> attributeMappings = {
+      {"planet_carrier", "mass_of_component"},
+      {"planet_carrier", "strut_inner_diameter"},
+      {"profile_crowning", "profile_crowning_at_tip"}};
 
     rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 
@@ -24,8 +25,9 @@ TEST_CASE("Component attribute mapper")
 
   SUBCASE("Not existing attribute mapping")
   {
-    std::vector<std::pair<std::string, std::string>> attributeMappings = {
-      {"planet_carrier", "mass_of_component"}, {"planet_carrier", "load_duration"}, {"profile_twist", "not existing attribute"}};
+    std::vector<std::pair<std::string, std::string>> attributeMappings = {{"planet_carrier", "mass_of_component"},
+                                                                          {"planet_carrier", "load_duration"},
+                                                                          {"profile_twist", "not existing attribute"}};
 
     rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 

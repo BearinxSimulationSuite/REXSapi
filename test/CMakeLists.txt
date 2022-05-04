@@ -5,25 +5,27 @@ add_executable(rexsapi_test
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
   TestModelLoader.hxx
 
-  AttributeTest.cxx
-  ComponentAttributeMapperTest.cxx
-  ComponentTest.cxx
-  ConversionHelperTest.cxx
-  EnumValuesTest.cxx
-  FileResourceLoaderTest.cxx
-  IntervalTest.cxx
-  LoaderResultTest.cxx
-  ModelRegistryTest.cxx
-  ModelTest.cxx
-  XMLModelLoaderTest.cxx
   XSDSchemaValidatorTest.cxx
-  ValueTypeTest.cxx
+  ConversionHelperTest.cxx
+
+  database/AttributeTest.cxx
+  database/ComponentAttributeMapperTest.cxx
+  database/ComponentTest.cxx
+  database/EnumValuesTest.cxx
+  database/FileResourceLoaderTest.cxx
+  database/IntervalTest.cxx
+  database/LoaderResultTest.cxx
+  database/ModelRegistryTest.cxx
+  database/ModelTest.cxx
+  database/XMLModelLoaderTest.cxx
+  database/ValueTypeTest.cxx
 )
 
 include(${PROJECT_SOURCE_DIR}/cmake/fetch_doctest.cmake)
 include("${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake")
 
 target_include_directories(rexsapi_test SYSTEM PRIVATE "${doctest_SOURCE_DIR}/doctest")
+target_include_directories(rexsapi_test PRIVATE ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(rexsapi_test PRIVATE
   Threads::Threads

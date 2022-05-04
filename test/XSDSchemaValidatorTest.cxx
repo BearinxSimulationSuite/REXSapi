@@ -88,7 +88,8 @@ TEST_CASE("XSD schema validator test")
   SUBCASE("Validate db model schema from file")
   {
     pugi::xml_document doc;
-    pugi::xml_parse_result parseResult = doc.load_file((projectDir() / "models" / "rexs_model_1.4_en.xml").string().c_str());
+    pugi::xml_parse_result parseResult =
+      doc.load_file((projectDir() / "models" / "rexs_model_1.4_en.xml").string().c_str());
     CHECK(parseResult);
 
     rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-dbmodel.xsd"};
@@ -462,7 +463,8 @@ TEST_CASE("XSD schema validator types test")
     CHECK(check<rexsapi::xml::TNonNegativeIntegerType>("4711"));
     CHECK(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max())));
     CHECK(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::min())));
-    CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max()) + "1"));
+    CHECK_FALSE(
+      check<rexsapi::xml::TNonNegativeIntegerType>(std::to_string(std::numeric_limits<uint64_t>::max()) + "1"));
     CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>(""));
     CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("-4711"));
     CHECK_FALSE(check<rexsapi::xml::TNonNegativeIntegerType>("47LL"));
