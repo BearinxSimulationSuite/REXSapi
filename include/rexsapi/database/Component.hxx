@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_COMPONENT_HXX
-#define REXSCXX_DATABASE_COMPONENT_HXX
+#ifndef REXSAPI_DATABASE_COMPONENT_HXX
+#define REXSAPI_DATABASE_COMPONENT_HXX
 
 #include <rexsapi/database/Attribute.hxx>
 
@@ -21,7 +21,7 @@ namespace rexsapi::database
     TComponent(const TComponent&) = delete;
     TComponent(TComponent&&) = default;
     TComponent& operator=(const TComponent&) = delete;
-    TComponent& operator=(TComponent&&) = delete;
+    TComponent& operator=(TComponent&&) = default;
 
     [[nodiscard]] const std::string& getId() const
     {
@@ -39,9 +39,9 @@ namespace rexsapi::database
     }
 
   private:
-    const std::string m_Id;
-    const std::string m_Name;
-    const std::vector<std::reference_wrapper<const TAttribute>> m_Attributes;
+    std::string m_Id;
+    std::string m_Name;
+    std::vector<std::reference_wrapper<const TAttribute>> m_Attributes;
   };
 }
 

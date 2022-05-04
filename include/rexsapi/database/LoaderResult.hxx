@@ -1,8 +1,8 @@
 
-#ifndef REXSCXX_DATABASE_RESOURCE_LOADER_HXX
-#define REXSCXX_DATABASE_RESOURCE_LOADER_HXX
+#ifndef REXSAPI_DATABASE_RESOURCE_LOADER_HXX
+#define REXSAPI_DATABASE_RESOURCE_LOADER_HXX
 
-#include <rexsapi/compatibility/Defines.hxx>
+#include <rexsapi/Defines.hxx>
 
 #include <algorithm>
 #include <functional>

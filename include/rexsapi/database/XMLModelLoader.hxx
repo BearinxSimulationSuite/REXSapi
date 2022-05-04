@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_XML_MODEL_LOADER_HXX
-#define REXSCXX_DATABASE_XML_MODEL_LOADER_HXX
+#ifndef REXSAPI_DATABASE_XML_MODEL_LOADER_HXX
+#define REXSAPI_DATABASE_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/XMLParser.hxx>

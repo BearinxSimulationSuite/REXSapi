@@ -1,7 +1,5 @@
 
-#include <rexsapi/database/FileResourceLoader.hxx>
-#include <rexsapi/database/ModelRegistry.hxx>
-#include <rexsapi/database/XMLModelLoader.hxx>
+#include <rexsapi/Rexsapi.hxx>
 
 #include <test/TestHelper.hxx>
 

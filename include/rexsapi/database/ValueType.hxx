@@ -1,6 +1,6 @@
 
-#ifndef REXSCXX_DATABASE_VALUE_TYPES_HXX
-#define REXSCXX_DATABASE_VALUE_TYPES_HXX
+#ifndef REXSAPI_DATABASE_VALUE_TYPES_HXX
+#define REXSAPI_DATABASE_VALUE_TYPES_HXX
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
