@@ -3,7 +3,6 @@
 #define REXSAPI_EXCEPTION_HXX
 
 #include <stdexcept>
-#include <string>
 
 namespace rexsapi
 {
@@ -13,6 +12,5 @@ namespace rexsapi
     using std::runtime_error::runtime_error;
   };
 }
-
 
 #endif
