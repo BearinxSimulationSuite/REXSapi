@@ -2,31 +2,20 @@
 
 class TExtensionMapper
 
-class TModelLoader
+class TFileLoader<T>
+class TBufferLoader<T>
 
-class TXMLModelLoader
+class "TFileLoader<TXMLModelLoader>" as ATXMLModelLoader
+class "TFileLoader<TJsonModelLoader>" as ATJsonModelLoader
 
-class TJsonModelLoader
+class "TBufferLoader<TXMLModelLoader>" as ATXMLModelLoader
+class "TBufferLoader<TJsonModelLoader>" as ATJsonModelLoader
 
-class TBufferModelLoader
+TFileLoader --> TExtensionMapper
+TFileLoader --> ATXMLModelLoader
+TFileLoader --> ATJsonModelLoader
 
-TModelLoader <|-- TXMLModelLoader
-TModelLoader <|-- TJsonModelLoader
-TModelLoader <|-- TBufferModelLoader
-
-class ILoaderFactory
-
-class TFileLoaderFactory
-class TTestLoaderFactory
-
-ILoaderFactory <|-- TFileLoaderFactory
-ILoaderFactory <|-- TTestLoaderFactory
-ILoaderFactory --> TModelLoader
-
-TFileLoaderFactory --> TExtensionMapper
-TFileLoaderFactory ..> TXMLModelLoader
-TFileLoaderFactory ..> TJsonModelLoader
-
-TTestLoaderFactory ..> TBufferModelLoader
+TBufferLoader --> ATXMLModelLoader
+TBufferLoader --> ATJsonModelLoader
 
 @enduml

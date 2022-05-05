@@ -7,6 +7,7 @@ add_executable(rexsapi_test
 
   ConversionHelperTest.cxx
   LoaderResultTest.cxx
+  ModelLoaderTest.cxx
   ModelTest.cxx
   XSDSchemaValidatorTest.cxx
 
