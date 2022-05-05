@@ -1,0 +1,49 @@
+
+#ifndef REXSAPI_TYPES_HXX
+#define REXSAPI_TYPES_HXX
+
+namespace rexsapi
+{
+  enum class TRelationType {
+    ASSEMBLY,
+    CENTRAL_SHAFT,
+    CONNECTION,
+    COUPLING,
+    FLANK,
+    MANUFACTURING_STEP,
+    ORDERED_ASSEMBLY,
+    ORDERED_REFERENCE,
+    PLANET_CARRIER_SHAFT,
+    PLANET_PIN,
+    PLANET_SHAFT,
+    REFERENCE,
+    SIDE,
+    STAGE,
+    STAGE_GEAR_DATA
+  };
+
+  enum class TRelationRole {
+    ASSEMBLY,
+    GEAR,
+    GEAR_1,
+    GEAR_2,
+    INNER_PART,
+    LEFT,
+    MANUFACTURING_SETTINGS,
+    ORIGIN,
+    OUTER_PART,
+    PART,
+    PLANETARY_STAGE,
+    REFERENCED,
+    RIGHT,
+    SHAFT,
+    SIDE_1,
+    SIDE_2,
+    STAGE,
+    STAGE_GEAR_DATA,
+    TOOL,
+    WORKPIECE
+  };
+}
+
+#endif

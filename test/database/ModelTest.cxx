@@ -18,7 +18,7 @@ TEST_CASE("Status test")
   }
 }
 
-TEST_CASE("Model test")
+TEST_CASE("Database Model test")
 {
   SUBCASE("Create model")
   {
@@ -31,7 +31,8 @@ TEST_CASE("Model test")
 
   SUBCASE("Not released model")
   {
-    rexsapi::database::TModel model("1.4", "de", "2022-04-20T14:18:11.344+02:00", rexsapi::database::TStatus::IN_DEVELOPMENT);
+    rexsapi::database::TModel model("1.4", "de", "2022-04-20T14:18:11.344+02:00",
+                                    rexsapi::database::TStatus::IN_DEVELOPMENT);
     CHECK_FALSE(model.isReleased());
   }
 

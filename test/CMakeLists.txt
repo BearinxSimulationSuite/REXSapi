@@ -5,8 +5,9 @@ add_executable(rexsapi_test
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
   TestModelLoader.hxx
 
-  XSDSchemaValidatorTest.cxx
   ConversionHelperTest.cxx
+  ModelTest.cxx
+  XSDSchemaValidatorTest.cxx
 
   database/AttributeTest.cxx
   database/ComponentAttributeMapperTest.cxx
