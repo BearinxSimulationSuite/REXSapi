@@ -70,6 +70,8 @@ namespace rexsapi
         relations.emplace_back(TRelation{relationType, std::move(references)});
       }
 
+      // TODO (lcf): check that all components are used in at least one relation
+
       return TModel{info, std::move(components), std::move(relations)};
     }
   };

@@ -9,6 +9,7 @@ add_executable(rexsapi_test
   LoaderResultTest.cxx
   ModelLoaderTest.cxx
   ModelTest.cxx
+  UnitTest.cxx
   XSDSchemaValidatorTest.cxx
 
   database/AttributeTest.cxx

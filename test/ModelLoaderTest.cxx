@@ -11,7 +11,7 @@ TEST_CASE("Model loader factory test")
 {
   const auto registry = createModelRegistry();
 
-  SUBCASE("Load")
+  SUBCASE("Load model from buffer")
   {
     std::string buffer = R"(
       <?xml version="1.0" encoding="UTF-8" standalone="no"?>
