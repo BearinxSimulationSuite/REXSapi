@@ -19,7 +19,7 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result) const
+    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result)
     {
       // TODO (lcf): check path, extension, etc.
       // TODO (lcf): load file contents into buffer
@@ -48,7 +48,7 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result) const
+    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result)
     {
       T loader;
       return loader.load(result, m_Buffer);
