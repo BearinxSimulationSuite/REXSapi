@@ -23,6 +23,7 @@ TEST_CASE("Model test")
     components.emplace_back(rexsapi::TComponent{"gear_casing", "Gehäuse", std::move(attributes)});
 
     dbComponent = &dbModel.findComponentById("lubricant");
+    attributes = rexsapi::TAttributes{};
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("density_at_15_degree_celsius"),
                                                 rexsapi::TUnit{dbModel.findUnitByName("kg / dm^3")},
                                                 rexsapi::TValue{"1.02"}});
@@ -50,8 +51,8 @@ TEST_CASE("Model test")
     rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00", "1.4"};
     rexsapi::TModel model{info, std::move(components), std::move(relations)};
 
-    CHECK(model.getInfo().m_ApplicationId == "FVA Workbench");
-    CHECK(model.getInfo().m_Version == "1.4");
+    CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
+    CHECK(model.getInfo().getVersion() == "1.4");
     CHECK(model.getComponents().size() == 2);
     CHECK(model.getRelations().size() == 1);
   }

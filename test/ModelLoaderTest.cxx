@@ -71,7 +71,7 @@ TEST_CASE("Model loader factory test")
     auto model = loader.load(result, registry);
     CHECK(result);
     REQUIRE(model);
-    CHECK(model->getInfo().m_ApplicationId == "REXSApi Unit Test");
+    CHECK(model->getInfo().getApplicationId() == "REXSApi Unit Test");
     CHECK(model->getComponents().size() == 2);
     CHECK(model->getRelations().size() == 1);
   }

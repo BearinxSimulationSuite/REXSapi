@@ -28,7 +28,7 @@ namespace rexsapi
 
       // TODO (lcf): version should be configurable, maybe have something
       // like a sub-model-registry based on the language
-      const auto& dbModel = registry.getModel(info.m_Version, "en");
+      const auto& dbModel = registry.getModel(info.getVersion(), "en");
 
       TComponents components;
       for (const auto& component : doc.select_nodes("/model/components/component")) {
