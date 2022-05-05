@@ -2,11 +2,15 @@
 #include <rexsapi/ModelLoader.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
 
+#include <test/TestModelLoader.hxx>
+
 #include <doctest.h>
 
 
 TEST_CASE("Model loader factory test")
 {
+  const auto registry = createModelRegistry();
+
   SUBCASE("Load")
   {
     std::string buffer = R"(
@@ -64,6 +68,11 @@ TEST_CASE("Model loader factory test")
 
     rexsapi::TBufferLoader<rexsapi::TXMLModelLoader> loader{buffer};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result);
+    auto model = loader.load(result, registry);
+    CHECK(result);
+    REQUIRE(model);
+    CHECK(model->getInfo().m_ApplicationId == "REXSApi Unit Test");
+    CHECK(model->getComponents().size() == 2);
+    CHECK(model->getRelations().size() == 1);
   }
 }

@@ -4,6 +4,7 @@
 
 #include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
+#include <rexsapi/database/ModelRegistry.hxx>
 
 #include <filesystem>
 
@@ -19,14 +20,14 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result)
+    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry)
     {
       // TODO (lcf): check path, extension, etc.
       // TODO (lcf): load file contents into buffer
       // TODO (lcf): use T to load buffer as model
 
       T loader;
-      return loader.load(result);
+      return loader.load(result, registry);
     }
 
   private:
@@ -48,10 +49,10 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result)
+    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry)
     {
       T loader;
-      return loader.load(result, m_Buffer);
+      return loader.load(result, registry, m_Buffer);
     }
 
   private:
