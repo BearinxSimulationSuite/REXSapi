@@ -11,13 +11,13 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/LoaderResult.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Component.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/FileResourceLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Interval.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/database/LoaderResult.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ModelRegistry.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Unit.hxx

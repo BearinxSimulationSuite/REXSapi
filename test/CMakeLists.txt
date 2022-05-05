@@ -6,6 +6,7 @@ add_executable(rexsapi_test
   TestModelLoader.hxx
 
   ConversionHelperTest.cxx
+  LoaderResultTest.cxx
   ModelTest.cxx
   XSDSchemaValidatorTest.cxx
 
@@ -15,7 +16,6 @@ add_executable(rexsapi_test
   database/EnumValuesTest.cxx
   database/FileResourceLoaderTest.cxx
   database/IntervalTest.cxx
-  database/LoaderResultTest.cxx
   database/ModelRegistryTest.cxx
   database/ModelTest.cxx
   database/XMLModelLoaderTest.cxx

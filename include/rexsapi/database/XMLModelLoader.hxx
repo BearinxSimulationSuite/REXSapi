@@ -3,9 +3,9 @@
 #define REXSAPI_DATABASE_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
+#include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
-#include <rexsapi/database/LoaderResult.hxx>
 #include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 #include <cstring>
@@ -34,7 +34,8 @@ namespace rexsapi::database
   /////////////////////////////////////////////////////////////////////////////
 
   template<typename TResourceLoader, typename TSchemaLoader>
-  inline TLoaderResult TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
+  inline TLoaderResult
+  TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
   {
     return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
       pugi::xml_document doc;
@@ -52,7 +53,8 @@ namespace rexsapi::database
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
       TModel model{rexsModel.node().attribute("version").value(), rexsModel.node().attribute("language").value(),
-                   rexsModel.node().attribute("date").value(), statusFromString(rexsModel.node().attribute("status").value())};
+                   rexsModel.node().attribute("date").value(),
+                   statusFromString(rexsModel.node().attribute("status").value())};
 
       for (const auto& node : doc.select_nodes("/rexsModel/units/unit")) {
         auto id = convertToUint64(node.node().attribute("id").value());
@@ -92,7 +94,8 @@ namespace rexsapi::database
           }
         }
 
-        model.addAttribute(TAttribute{attributeId, name, valueType, model.findUnitById(unit), symbol, interval, enumValues});
+        model.addAttribute(
+          TAttribute{attributeId, name, valueType, model.findUnitById(unit), symbol, interval, enumValues});
       }
 
       std::vector<std::pair<std::string, std::string>> attributeMappings;

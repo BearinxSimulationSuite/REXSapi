@@ -4,7 +4,7 @@
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
-#include <rexsapi/database/LoaderResult.hxx>
+#include <rexsapi/LoaderResult.hxx>
 
 #include <filesystem>
 #include <fstream>
@@ -36,7 +36,8 @@ namespace rexsapi::database
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline TLoaderResult TFileResourceLoader::load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
+  inline TLoaderResult
+  TFileResourceLoader::load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
   {
     if (!callback) {
       throw TException{"callback not set for resource loader"};
@@ -80,7 +81,8 @@ namespace rexsapi::database
     return resources;
   }
 
-  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result, const std::filesystem::path& resource) const
+  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result,
+                                                        const std::filesystem::path& resource) const
   {
     std::ifstream file{resource};
     if (!file.good()) {
