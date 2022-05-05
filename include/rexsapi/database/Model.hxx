@@ -64,9 +64,9 @@ namespace rexsapi::database
       return m_Status == TStatus::RELEASED;
     }
 
-    bool addUnit(Unit&& unit);
+    bool addUnit(TUnit&& unit);
 
-    [[nodiscard]] const Unit& findUnitById(uint64_t id) const;
+    [[nodiscard]] const TUnit& findUnitById(uint64_t id) const;
 
     bool addType(uint64_t id, TValueType type);
 
@@ -85,7 +85,7 @@ namespace rexsapi::database
     std::string m_Language;
     std::string m_Date;
     TStatus m_Status;
-    std::unordered_map<uint64_t, Unit> m_Units;
+    std::unordered_map<uint64_t, TUnit> m_Units;
     std::unordered_map<uint64_t, TValueType> m_Types;
     std::unordered_map<std::string, TAttribute> m_Attributes;
     std::unordered_map<std::string, TComponent> m_Components;
@@ -96,13 +96,13 @@ namespace rexsapi::database
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline bool TModel::addUnit(Unit&& unit)
+  inline bool TModel::addUnit(TUnit&& unit)
   {
     auto [_, added] = m_Units.try_emplace(unit.getId(), std::move(unit));
     return added;
   }
 
-  inline const Unit& TModel::findUnitById(uint64_t id) const
+  inline const TUnit& TModel::findUnitById(uint64_t id) const
   {
     auto it = m_Units.find(id);
     if (it == m_Units.end()) {

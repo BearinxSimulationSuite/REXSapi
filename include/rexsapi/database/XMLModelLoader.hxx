@@ -60,7 +60,7 @@ namespace rexsapi::database
       for (const auto& node : doc.select_nodes("/rexsModel/units/unit")) {
         auto id = convertToUint64(node.node().attribute("id").value());
         const auto* name = node.node().attribute("name").value();
-        model.addUnit(Unit{id, name});
+        model.addUnit(TUnit{id, name});
       }
 
       for (const auto& node : doc.select_nodes("/rexsModel/valueTypes/valueType")) {

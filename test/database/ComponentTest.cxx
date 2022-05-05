@@ -6,8 +6,8 @@
 
 TEST_CASE("Component test")
 {
-  rexsapi::database::Unit unitDeg{58, "deg"};
-  rexsapi::database::Unit unitMum{11, "mum"};
+  rexsapi::database::TUnit unitDeg{58, "deg"};
+  rexsapi::database::TUnit unitMum{11, "mum"};
 
   rexsapi::database::TAttribute attribute1{
     "chamfer_angle_worm_wheel", "Chamfer ange", rexsapi::database::TValueType::FLOATING_POINT, unitDeg, "ϑ", {}, {}};
