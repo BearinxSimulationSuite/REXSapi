@@ -68,6 +68,8 @@ namespace rexsapi::database
 
     [[nodiscard]] const TUnit& findUnitById(uint64_t id) const;
 
+    [[nodiscard]] const TUnit& findUnitByName(const std::string& name) const;
+
     bool addType(uint64_t id, TValueType type);
 
     [[nodiscard]] const TValueType& findValueTypeById(uint64_t id) const;
@@ -106,7 +108,20 @@ namespace rexsapi::database
   {
     auto it = m_Units.find(id);
     if (it == m_Units.end()) {
-      throw TException{fmt::format("unit '{}' not found", std::to_string(id))};
+      throw TException{fmt::format("unit with id '{}' not found", std::to_string(id))};
+    }
+
+    return it->second;
+  }
+
+  inline const TUnit& TModel::findUnitByName(const std::string& name) const
+  {
+    auto it = std::find_if(m_Units.begin(), m_Units.end(), [&name](const auto& item) {
+      const auto& [_, unit] = item;
+      return unit.getName() == name;
+    });
+    if (it == m_Units.end()) {
+      throw TException{fmt::format("unit '{}' not found", name)};
     }
 
     return it->second;

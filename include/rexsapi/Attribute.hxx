@@ -2,6 +2,7 @@
 #ifndef REXSAPI_ATTRIBUTE_HXX
 #define REXSAPI_ATTRIBUTE_HXX
 
+#include <rexsapi/Unit.hxx>
 #include <rexsapi/Value.hxx>
 #include <rexsapi/database/Attribute.hxx>
 
@@ -10,8 +11,9 @@ namespace rexsapi
   class TAttribute
   {
   public:
-    TAttribute(const database::TAttribute& attribute, TValue value)
+    TAttribute(const database::TAttribute& attribute, TUnit unit, TValue value)
     : m_Attribute{attribute}
+    , m_Unit{unit}
     , m_Value{std::move(value)}
     {
     }
@@ -26,6 +28,11 @@ namespace rexsapi
       return m_Attribute.getName();
     }
 
+    const TUnit& getUnit() const
+    {
+      return m_Unit;
+    }
+
     const TValue& getValue() const
     {
       return m_Value;
@@ -33,6 +40,7 @@ namespace rexsapi
 
   private:
     const database::TAttribute& m_Attribute;
+    TUnit m_Unit;
     TValue m_Value;
   };
 

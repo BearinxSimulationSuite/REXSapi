@@ -26,7 +26,9 @@ namespace rexsapi
       TModelInfo info{getAttribute(rexsModel, "applicationId"), getAttribute(rexsModel, "applicationVersion"),
                       getAttribute(rexsModel, "date"), getAttribute(rexsModel, "version")};
 
-      const auto& dbModel = registry.getModel(info.m_Version, "en");  // TODO (lcf): version should be configurable
+      // TODO (lcf): version should be configurable, maybe have something
+      // like a sub-model-registry based on the language
+      const auto& dbModel = registry.getModel(info.m_Version, "en");
 
       TComponents components;
       for (const auto& component : doc.select_nodes("/model/components/component")) {
@@ -38,8 +40,12 @@ namespace rexsapi
         for (const auto& attribute :
              doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str())) {
           std::string id = getAttribute(attribute, "id");
+          std::string unit = getAttribute(attribute, "unit", "none");
 
-          attributes.emplace_back(rexsapi::TAttribute{componentType.findAttributeById(id), rexsapi::TValue{""}});
+          // TODO (lcf): check unit with attribute unit
+          // TODO (lcf): custom units for custom attributes
+          attributes.emplace_back(
+            TAttribute{componentType.findAttributeById(id), TUnit{dbModel.findUnitByName(unit)}, TValue{""}});
         }
 
         components.emplace_back(TComponent{componentId, componentName, std::move(attributes)});

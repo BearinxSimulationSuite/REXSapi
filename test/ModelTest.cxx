@@ -14,23 +14,29 @@ TEST_CASE("Model test")
     const auto* dbComponent = &dbModel.findComponentById("gear_casing");
 
     rexsapi::TAttributes attributes{
-      rexsapi::TAttribute{dbComponent->findAttributeById("temperature_lubricant"), rexsapi::TValue{"73.2"}},
+      rexsapi::TAttribute{dbComponent->findAttributeById("temperature_lubricant"),
+                          rexsapi::TUnit{dbModel.findUnitByName("C")}, rexsapi::TValue{"73.2"}},
       rexsapi::TAttribute{dbComponent->findAttributeById("type_of_gear_casing_construction_vdi_2736_2014"),
-                          rexsapi::TValue{"closed"}}};
+                          rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"closed"}}};
 
     rexsapi::TComponents components;
     components.emplace_back(rexsapi::TComponent{"gear_casing", "Gehäuse", std::move(attributes)});
 
     dbComponent = &dbModel.findComponentById("lubricant");
-    attributes.emplace_back(
-      rexsapi::TAttribute{dbComponent->findAttributeById("density_at_15_degree_celsius"), rexsapi::TValue{"1.02"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("density_at_15_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("kg / dm^3")},
+                                                rexsapi::TValue{"1.02"}});
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("lubricant_type_iso_6336_2006"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")},
                                                 rexsapi::TValue{"non_water_soluble_polyglycol"}});
-    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("name"), rexsapi::TValue{"PG"}});
-    attributes.emplace_back(
-      rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_100_degree_celsius"), rexsapi::TValue{"37.0"}});
-    attributes.emplace_back(
-      rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_40_degree_celsius"), rexsapi::TValue{"220.0"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("name"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"PG"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_100_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                                rexsapi::TValue{"37.0"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_40_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                                rexsapi::TValue{"220.0"}});
 
     components.emplace_back(rexsapi::TComponent{"lubricant", "S2/220", std::move(attributes)});
 
