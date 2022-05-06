@@ -7,12 +7,18 @@
 #include <rexsapi/Model.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
+#include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 namespace rexsapi
 {
   class TXMLModelLoader
   {
   public:
+    explicit TXMLModelLoader(const xml::TXSDSchemaValidator& validator)
+    : m_Validator{validator}
+    {
+    }
+
     std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry,
                                std::vector<uint8_t>& buffer) const
     {
@@ -20,6 +26,14 @@ namespace rexsapi
       if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
         result.addError(TResourceError{parseResult.description(), parseResult.offset});
         return {};
+      }
+
+      {
+        std::vector<std::string> errors;
+        if (!m_Validator.validate(doc, errors)) {
+          // TODO (lcf): errors should be added to the exception, or even better, to the result
+          throw TException{"cannot validate db model file"};
+        }
       }
 
       auto rexsModel = *doc.select_nodes("/model").begin();
@@ -80,6 +94,9 @@ namespace rexsapi
 
       return TModel{info, std::move(components), std::move(relations)};
     }
+
+  private:
+    const xml::TXSDSchemaValidator& m_Validator;
   };
 }
 

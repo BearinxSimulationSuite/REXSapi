@@ -14,11 +14,12 @@
 namespace rexsapi
 {
 
-  class TFileLoader
+  class TFileModelLoader
   {
   public:
-    explicit TFileLoader(std::filesystem::path path)
-    : m_Path{std::move(path)}
+    explicit TFileModelLoader(const xml::TXSDSchemaValidator& validator, std::filesystem::path path)
+    : m_Validator{validator}
+    , m_Path{std::move(path)}
     {
     }
 
@@ -51,35 +52,39 @@ namespace rexsapi
       auto buffer = ss.str();
 
       std::vector<uint8_t> buf{buffer.begin(), buffer.end()};
-      return TXMLModelLoader{}.load(result, registry, buf);
+      return TXMLModelLoader{m_Validator}.load(result, registry, buf);
     }
 
   private:
+    const xml::TXSDSchemaValidator& m_Validator;
     std::filesystem::path m_Path;
   };
 
 
-  template<typename T>
-  class TBufferLoader
+  template<typename TSchemaValidator, typename TLoader>
+  class TBufferModelLoader
   {
   public:
-    explicit TBufferLoader(const std::string& buffer)
-    : m_Buffer{buffer.begin(), buffer.end()}
+    explicit TBufferModelLoader(const TSchemaValidator& validator, const std::string& buffer)
+    : m_Validator{validator}
+    , m_Buffer{buffer.begin(), buffer.end()}
     {
     }
 
-    explicit TBufferLoader(std::vector<uint8_t> buffer)
-    : m_Buffer{std::move(buffer)}
+    explicit TBufferModelLoader(const TSchemaValidator& validator, std::vector<uint8_t> buffer)
+    : m_Validator{validator}
+    , m_Buffer{std::move(buffer)}
     {
     }
 
     [[nodiscard]] std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry)
     {
-      T loader;
+      TLoader loader{m_Validator};
       return loader.load(result, registry, m_Buffer);
     }
 
   private:
+    const TSchemaValidator& m_Validator;
     std::vector<uint8_t> m_Buffer;
   };
 }

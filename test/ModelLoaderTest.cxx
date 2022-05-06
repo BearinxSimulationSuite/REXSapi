@@ -8,9 +8,11 @@
 #include <doctest.h>
 
 
-TEST_CASE("Model loader factory test")
+TEST_CASE("Model loader test")
 {
   const auto registry = createModelRegistry();
+  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
+  rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
 
   SUBCASE("Load model from buffer")
   {
@@ -67,7 +69,7 @@ TEST_CASE("Model loader factory test")
       </model>
     )";
 
-    rexsapi::TBufferLoader<rexsapi::TXMLModelLoader> loader{buffer};
+    rexsapi::TBufferModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{validator, buffer};
     rexsapi::TLoaderResult result;
     auto model = loader.load(result, registry);
     CHECK(result);
@@ -79,7 +81,7 @@ TEST_CASE("Model loader factory test")
 
   SUBCASE("Load model from file")
   {
-    rexsapi::TFileLoader loader{projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
+    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
     rexsapi::TLoaderResult result;
     auto model = loader.load(result, registry);
     CHECK(result);
