@@ -1,43 +1,59 @@
 
-#include <rexsapi/database/Model.hxx>
+#include <rexsapi/Model.hxx>
+
+#include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
 
-
-TEST_CASE("Status test")
-{
-  SUBCASE("Existing status from string")
-  {
-    CHECK(rexsapi::database::statusFromString("RELEASED") == rexsapi::database::TStatus::RELEASED);
-    CHECK(rexsapi::database::statusFromString("IN_DEVELOPMENT") == rexsapi::database::TStatus::IN_DEVELOPMENT);
-  }
-
-  SUBCASE("Non existing status from string")
-  {
-    CHECK_THROWS_WITH(rexsapi::database::statusFromString("PUSCHEL"), "status 'PUSCHEL' unkown");
-  }
-}
-
 TEST_CASE("Model test")
 {
-  SUBCASE("Create model")
-  {
-    rexsapi::database::TModel model("1.4", "de", "2022-04-20T14:18:11.344+02:00", rexsapi::database::TStatus::RELEASED);
-    CHECK(model.getVersion() == "1.4");
-    CHECK(model.getLanguage() == "de");
-    CHECK(model.getDate() == "2022-04-20T14:18:11.344+02:00");
-    CHECK(model.isReleased());
-  }
+  const auto dbModel = loadModel("1.4");
 
-  SUBCASE("Not released model")
+  SUBCASE("Create")
   {
-    rexsapi::database::TModel model("1.4", "de", "2022-04-20T14:18:11.344+02:00", rexsapi::database::TStatus::IN_DEVELOPMENT);
-    CHECK_FALSE(model.isReleased());
-  }
+    const auto* dbComponent = &dbModel.findComponentById("gear_casing");
 
-  SUBCASE("non existing component")
-  {
-    rexsapi::database::TModel model("1.4", "de", "2022-04-20T14:18:11.344+02:00", rexsapi::database::TStatus::RELEASED);
-    CHECK_THROWS_WITH((void)model.findComponentById("hutzli"), "component 'hutzli' not found");
+    rexsapi::TAttributes attributes{
+      rexsapi::TAttribute{dbComponent->findAttributeById("temperature_lubricant"),
+                          rexsapi::TUnit{dbModel.findUnitByName("C")}, rexsapi::TValue{"73.2"}},
+      rexsapi::TAttribute{dbComponent->findAttributeById("type_of_gear_casing_construction_vdi_2736_2014"),
+                          rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"closed"}}};
+
+    rexsapi::TComponents components;
+    components.emplace_back(rexsapi::TComponent{"gear_casing", "Gehäuse", std::move(attributes)});
+
+    dbComponent = &dbModel.findComponentById("lubricant");
+    attributes = rexsapi::TAttributes{};
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("density_at_15_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("kg / dm^3")},
+                                                rexsapi::TValue{"1.02"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("lubricant_type_iso_6336_2006"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")},
+                                                rexsapi::TValue{"non_water_soluble_polyglycol"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("name"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"PG"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_100_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                                rexsapi::TValue{"37.0"}});
+    attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_40_degree_celsius"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                                rexsapi::TValue{"220.0"}});
+
+    components.emplace_back(rexsapi::TComponent{"lubricant", "S2/220", std::move(attributes)});
+
+    rexsapi::TRelationReferences references{
+      rexsapi::TRelationReference{rexsapi::TRelationRole::ORIGIN, components[0]},
+      rexsapi::TRelationReference{rexsapi::TRelationRole::REFERENCED, components[1]}};
+
+
+    rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, std::move(references)}};
+
+    rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00", "1.4"};
+    rexsapi::TModel model{info, std::move(components), std::move(relations)};
+
+    CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
+    CHECK(model.getInfo().getVersion() == "1.4");
+    CHECK(model.getComponents().size() == 2);
+    CHECK(model.getRelations().size() == 1);
   }
 }

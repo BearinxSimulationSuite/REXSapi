@@ -15,7 +15,7 @@ namespace rexsapi::database
   class TAttribute
   {
   public:
-    TAttribute(std::string attributeId, std::string name, TValueType type, const Unit& unit, std::string symbol,
+    TAttribute(std::string attributeId, std::string name, TValueType type, const TUnit& unit, std::string symbol,
                std::optional<const TInterval> interval, std::optional<const TEnumValues> enumValues)
     : m_AttributeId{std::move(attributeId)}
     , m_Name{std::move(name)}
@@ -52,7 +52,7 @@ namespace rexsapi::database
       return m_Type;
     }
 
-    [[nodiscard]] const Unit& getUnit() const
+    [[nodiscard]] const TUnit& getUnit() const
     {
       return m_Unit;
     }
@@ -76,7 +76,7 @@ namespace rexsapi::database
     std::string m_AttributeId;
     std::string m_Name;
     TValueType m_Type;
-    const Unit& m_Unit;
+    const TUnit& m_Unit;
     std::string m_Symbol;
     std::optional<const TInterval> m_Interval;
     std::optional<const TEnumValues> m_EnumValues;

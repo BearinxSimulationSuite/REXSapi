@@ -24,6 +24,9 @@ TEST_CASE("Test rexs model registry")
     CHECK(component.getId() == "side_plate");
     CHECK(component.getName() == "Wange");
     CHECK(component.getAttributes().size() == 9);
+
+    CHECK(model.findUnitByName("mm").getId() == 2);
+    CHECK(model.findUnitById(2).getName() == "mm");
   }
 
   SUBCASE("Get non existing models")

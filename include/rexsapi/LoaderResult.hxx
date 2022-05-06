@@ -1,6 +1,6 @@
 
-#ifndef REXSAPI_DATABASE_RESOURCE_LOADER_HXX
-#define REXSAPI_DATABASE_RESOURCE_LOADER_HXX
+#ifndef REXSAPI_RESOURCE_LOADER_HXX
+#define REXSAPI_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Defines.hxx>
 
@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace rexsapi::database
+namespace rexsapi
 {
   struct TResourceError {
     explicit TResourceError(std::string message, ssize_t position = -1)

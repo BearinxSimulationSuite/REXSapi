@@ -6,7 +6,7 @@
 
 TEST_CASE("Attribute test")
 {
-  rexsapi::database::Unit unit{58, "deg"};
+  rexsapi::database::TUnit unit{58, "deg"};
 
   SUBCASE("Create enum attribute")
   {
@@ -17,8 +17,13 @@ TEST_CASE("Attribute test")
     values.emplace_back(rexsapi::database::TEnumValue{"positive", "Positive u-direction"});
     rexsapi::database::TEnumValues enumValues{std::move(values)};
 
-    rexsapi::database::TAttribute attribute{
-      "axial_force_absorption", "Support of axial loads", rexsapi::database::TValueType::ENUM, unit, "", {}, enumValues};
+    rexsapi::database::TAttribute attribute{"axial_force_absorption",
+                                            "Support of axial loads",
+                                            rexsapi::database::TValueType::ENUM,
+                                            unit,
+                                            "",
+                                            {},
+                                            enumValues};
 
     CHECK(attribute.getAttributeId() == "axial_force_absorption");
     CHECK(attribute.getName() == "Support of axial loads");
@@ -42,8 +47,13 @@ TEST_CASE("Attribute test")
     rexsapi::database::TInterval interval{{0, rexsapi::database::TIntervalType::OPEN},
                                           {180, rexsapi::database::TIntervalType::OPEN}};
 
-    rexsapi::database::TAttribute attribute{
-      "chamfer_angle_worm_wheel", "Chamfer ange", rexsapi::database::TValueType::FLOATING_POINT, unit, "ϑ", interval, {}};
+    rexsapi::database::TAttribute attribute{"chamfer_angle_worm_wheel",
+                                            "Chamfer ange",
+                                            rexsapi::database::TValueType::FLOATING_POINT,
+                                            unit,
+                                            "ϑ",
+                                            interval,
+                                            {}};
 
     CHECK(attribute.getAttributeId() == "chamfer_angle_worm_wheel");
     CHECK(attribute.getName() == "Chamfer ange");

@@ -240,11 +240,11 @@ namespace rexsapi::xml
   using TElements = std::unordered_map<std::string, TElement>;
 
 
-  class TSchemaValidator
+  class TXSDSchemaValidator
   {
   public:
     template<typename TXsdSchemaLoader>
-    explicit TSchemaValidator(const TXsdSchemaLoader& loader)
+    explicit TXSDSchemaValidator(const TXsdSchemaLoader& loader)
     : m_Doc{loader.load()}
     {
       init();
@@ -545,12 +545,12 @@ namespace rexsapi::xml
     auto nodes = node.select_nodes(m_Element.getName().c_str());
 
     if (nodes.size() < m_Min) {
-      context.addError(
-        fmt::format("too few '{}' elements, found {} instead of at least {}", m_Element.getName(), nodes.size(), m_Min));
+      context.addError(fmt::format("too few '{}' elements, found {} instead of at least {}", m_Element.getName(),
+                                   nodes.size(), m_Min));
     }
     if (nodes.size() > m_Max) {
-      context.addError(
-        fmt::format("too many '{}' elements, found {} instead of at most {}", m_Element.getName(), nodes.size(), m_Max));
+      context.addError(fmt::format("too many '{}' elements, found {} instead of at most {}", m_Element.getName(),
+                                   nodes.size(), m_Max));
     }
 
     for (const auto& child : nodes) {
@@ -703,7 +703,7 @@ namespace rexsapi::xml
     errors.swap(m_Errors);
   }
 
-  inline bool TSchemaValidator::validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
+  inline bool TXSDSchemaValidator::validate(const pugi::xml_document& doc, std::vector<std::string>& errors) const
   {
     TValidationContext context{m_Elements};
 
@@ -722,7 +722,7 @@ namespace rexsapi::xml
     return !result;
   }
 
-  inline void TSchemaValidator::init()
+  inline void TXSDSchemaValidator::init()
   {
     if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchemaNS).c_str()); !root) {
       throw TException{fmt::format("{}:schema node not found", xsdSchemaNS)};
@@ -746,8 +746,8 @@ namespace rexsapi::xml
           enumeration = TEnumeration{elements.node().attribute("name").as_string(), std::move(enumValues)};
         }
 
-        auto type =
-          std::make_unique<TRestrictedType>(elements.node().attribute("name").as_string(), baseType, std::move(enumeration));
+        auto type = std::make_unique<TRestrictedType>(elements.node().attribute("name").as_string(), baseType,
+                                                      std::move(enumeration));
         // TODO (lcf): check for duplicates
         m_Types.try_emplace(type->getName(), std::move(type));
       } else {
@@ -762,7 +762,7 @@ namespace rexsapi::xml
     }
   }
 
-  inline void TSchemaValidator::initTypes()
+  inline void TXSDSchemaValidator::initTypes()
   {
     auto type1 = std::make_unique<TPodType<TStringType>>(fmt::format("{}:string", xsdSchemaNS));
     m_Types.try_emplace(type1->getName(), std::move(type1));
@@ -776,13 +776,13 @@ namespace rexsapi::xml
     m_Types.try_emplace(type5->getName(), std::move(type5));
   }
 
-  inline const TElement* TSchemaValidator::findElement(const std::string& name) const
+  inline const TElement* TXSDSchemaValidator::findElement(const std::string& name) const
   {
     auto it = m_Elements.find(name);
     return it == m_Elements.end() ? nullptr : &(it->second);
   }
 
-  inline const TElement& TSchemaValidator::findOrRegisterElement(const std::string& name)
+  inline const TElement& TXSDSchemaValidator::findOrRegisterElement(const std::string& name)
   {
     if (const auto* p = findElement(name); p) {
       return *p;
@@ -798,7 +798,7 @@ namespace rexsapi::xml
     return it->second;
   }
 
-  inline const TSimpleType& TSchemaValidator::findType(const std::string& name) const
+  inline const TSimpleType& TXSDSchemaValidator::findType(const std::string& name) const
   {
     auto it = m_Types.find(name);
     if (it == m_Types.end()) {
@@ -807,7 +807,7 @@ namespace rexsapi::xml
     return *it->second;
   }
 
-  inline TElement TSchemaValidator::parseElement(const pugi::xml_node& node)
+  inline TElement TXSDSchemaValidator::parseElement(const pugi::xml_node& node)
   {
     TSequence sequence;
 
@@ -819,7 +819,8 @@ namespace rexsapi::xml
       }
     }
 
-    for (const auto& element : node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
+    for (const auto& element :
+         node.select_nodes(fmt::format("{0}:complexType/{0}:sequence/{0}:element", xsdSchemaNS).c_str())) {
       auto min = convertToUint64(element.node().attribute("minOccurs").as_string());
       auto maxString = std::string(element.node().attribute("maxOccurs").as_string());
       auto max = maxString == "unbounded" ? std::numeric_limits<uint64_t>::max() : convertToUint64(maxString);
@@ -866,7 +867,8 @@ namespace rexsapi::xml
   {
     pugi::xml_document doc;
     if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
-      throw TException{fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
+      throw TException{
+        fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
     }
 
     return doc;

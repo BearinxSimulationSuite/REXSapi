@@ -6,10 +6,10 @@
 
 namespace rexsapi::database
 {
-  class Unit
+  class TUnit
   {
   public:
-    Unit(uint64_t id, std::string name)
+    TUnit(uint64_t id, std::string name)
     : m_Id{id}
     , m_Name{std::move(name)}
     {

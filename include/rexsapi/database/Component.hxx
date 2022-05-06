@@ -38,6 +38,18 @@ namespace rexsapi::database
       return m_Attributes;
     }
 
+    [[nodiscard]] const TAttribute& findAttributeById(const std::string& id) const
+    {
+      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&id](const TAttribute& attribute) {
+        return attribute.getAttributeId() == id;
+      });
+      if (it == m_Attributes.end()) {
+        throw TException{fmt::format("component '{}' does not contain attribute '{}'", m_Id, id)};
+      }
+
+      return *it;
+    }
+
   private:
     std::string m_Id;
     std::string m_Name;

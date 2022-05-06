@@ -6,8 +6,8 @@
 
 TEST_CASE("Component test")
 {
-  rexsapi::database::Unit unitDeg{58, "deg"};
-  rexsapi::database::Unit unitMum{11, "mum"};
+  rexsapi::database::TUnit unitDeg{58, "deg"};
+  rexsapi::database::TUnit unitMum{11, "mum"};
 
   rexsapi::database::TAttribute attribute1{
     "chamfer_angle_worm_wheel", "Chamfer ange", rexsapi::database::TValueType::FLOATING_POINT, unitDeg, "ϑ", {}, {}};
@@ -31,5 +31,9 @@ TEST_CASE("Component test")
     CHECK(component.getName() == "Cylindrical gear");
     auto atts = component.getAttributes();
     CHECK(atts.size() == 2);
+    const auto& attribute = component.findAttributeById("arithmetic_average_roughness_root");
+    CHECK(attribute.getAttributeId() == "arithmetic_average_roughness_root");
+    CHECK_THROWS_WITH((void)component.findAttributeById("not-available-attribute"),
+                      "component 'cylindrical_gear' does not contain attribute 'not-available-attribute'");
   }
 }

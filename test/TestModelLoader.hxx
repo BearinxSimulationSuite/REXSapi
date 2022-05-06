@@ -1,5 +1,6 @@
 
 #include <rexsapi/database/FileResourceLoader.hxx>
+#include <rexsapi/database/ModelRegistry.hxx>
 #include <rexsapi/database/XMLModelLoader.hxx>
 
 #include <test/TestHelper.hxx>
@@ -29,4 +30,12 @@ static inline rexsapi::database::TModel loadModel(const std::string& version)
     throw rexsapi::TException{"no model with version '" + version + "' found"};
   }
   return std::move(*it);
+}
+
+static inline rexsapi::database::TModelRegistry createModelRegistry()
+{
+  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-dbmodel.xsd"};
+  rexsapi::database::TFileResourceLoader resourceLoader{projectDir() / "models"};
+  rexsapi::database::TXmlModelLoader modelLoader{resourceLoader, schemaLoader};
+  return rexsapi::database::TModelRegistry::createModelRegistry(modelLoader).first;
 }
