@@ -78,7 +78,7 @@ namespace
     CHECK(parseResult);
 
     rexsapi::xml::TBufferXsdSchemaLoader loader{schema};
-    rexsapi::xml::TSchemaValidator val{loader};
+    rexsapi::xml::TXSDSchemaValidator val{loader};
     return val.validate(doc, errors);
   }
 }
@@ -93,7 +93,7 @@ TEST_CASE("XSD schema validator test")
     CHECK(parseResult);
 
     rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-dbmodel.xsd"};
-    rexsapi::xml::TSchemaValidator val{loader};
+    rexsapi::xml::TXSDSchemaValidator val{loader};
 
     std::vector<std::string> errors;
     CHECK(val.validate(doc, errors));
@@ -108,7 +108,7 @@ TEST_CASE("XSD schema validator test")
     CHECK(parseResult);
 
     rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-schema.xsd"};
-    rexsapi::xml::TSchemaValidator val{loader};
+    rexsapi::xml::TXSDSchemaValidator val{loader};
 
     std::vector<std::string> errors;
     CHECK(val.validate(doc, errors));

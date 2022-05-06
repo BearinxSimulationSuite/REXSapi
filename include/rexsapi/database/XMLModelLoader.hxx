@@ -46,7 +46,7 @@ namespace rexsapi::database
 
       {
         std::vector<std::string> errors;
-        if (!rexsapi::xml::TSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
+        if (!rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
           // TODO (lcf): errors should be added to the exception, or even better, to the result
           throw TException{"cannot validate db model file"};
         }
