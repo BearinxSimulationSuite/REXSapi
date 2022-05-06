@@ -457,11 +457,7 @@ namespace rexsapi::xml
   inline void TDecimalType::validate(const std::string& value, TValidationContext& context) const
   {
     try {
-      std::size_t pos{};
-      std::stod(value, &pos);
-      if (pos != value.length()) {
-        context.addError(fmt::format("cannot convert '{}' to decimal", value));
-      }
+      convertToDouble(value);
     } catch (const std::exception&) {
       context.addError(fmt::format("cannot convert '{}' to decimal", value));
     }

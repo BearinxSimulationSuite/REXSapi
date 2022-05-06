@@ -25,6 +25,11 @@ namespace rexsapi::database
       return m_Name;
     }
 
+    [[nodiscard]] bool compare(const std::string& name) const
+    {
+      return m_Name == name;
+    }
+
   private:
     const uint64_t m_Id;
     const std::string m_Name;

@@ -10,6 +10,7 @@ add_executable(rexsapi_test
   ModelLoaderTest.cxx
   ModelTest.cxx
   UnitTest.cxx
+  XMLValueDecoderTest.cxx
   XSDSchemaValidatorTest.cxx
 
   database/AttributeTest.cxx
@@ -20,6 +21,7 @@ add_executable(rexsapi_test
   database/IntervalTest.cxx
   database/ModelRegistryTest.cxx
   database/ModelTest.cxx
+  database/UnitTest.cxx
   database/XMLModelLoaderTest.cxx
   database/ValueTypeTest.cxx
 )

@@ -2,7 +2,9 @@
 #ifndef REXSAPI_VALUE_HXX
 #define REXSAPI_VALUE_HXX
 
-#include <string>
+#include <rexsapi/database/EnumValues.hxx>
+
+#include <variant>
 
 namespace rexsapi
 {
@@ -22,6 +24,11 @@ namespace rexsapi
   private:
     std::string m_Value;
   };
+
+
+  using Variant = std::variant<double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
+                               std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>>;
+
 }
 
 #endif
