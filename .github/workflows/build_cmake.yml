@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug, Release]
-        cxx: [g++, g++-10]
+        cxx: [g++, g++-10, clang-10]
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
@@ -49,9 +49,9 @@ jobs:
         if: ${{ env.COVERAGE == 'ON' }}
         uses: imciner2/run-lcov@v1
         with:
-          input_directory: '.'
+          input_directory: "."
           exclude: '"*test/*" "*_deps/*" "*/usr/include/*"'
-          output_file: './coverage.info'
+          output_file: "./coverage.info"
       - name: generate coverage report
         if: ${{ env.COVERAGE == 'ON' }}
         run: |
