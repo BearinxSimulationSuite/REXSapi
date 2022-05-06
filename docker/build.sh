@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -xe
 
 if [[ -v CLEANUP ]]; then
   echo "Cleaning up"
