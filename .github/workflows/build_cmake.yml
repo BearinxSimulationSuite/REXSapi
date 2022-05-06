@@ -19,7 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         build_type: [Debug, Release]
-        cxx: [g++, g++-10, clang-10]
+        cxx: [g++, g++-10, clang++-10]
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies

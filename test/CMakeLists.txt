@@ -31,10 +31,9 @@ target_include_directories(rexsapi_test SYSTEM PRIVATE "${doctest_SOURCE_DIR}/do
 target_include_directories(rexsapi_test PRIVATE ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(rexsapi_test PRIVATE
-  Threads::Threads
   rexsapi
+  Threads::Threads
   ${CMAKE_DL_LIBS}
-  ${REXSAPI_PLATFORM_LIBS}
 )
 
 if(COVERAGE)
