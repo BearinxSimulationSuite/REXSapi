@@ -2,6 +2,7 @@
 #include <rexsapi/ModelLoader.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
 
+#include <test/TestHelper.hxx>
 #include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
@@ -74,5 +75,13 @@ TEST_CASE("Model loader factory test")
     CHECK(model->getInfo().getApplicationId() == "REXSApi Unit Test");
     CHECK(model->getComponents().size() == 2);
     CHECK(model->getRelations().size() == 1);
+  }
+
+  SUBCASE("Load model from file")
+  {
+    rexsapi::TFileLoader loader{projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
+    rexsapi::TLoaderResult result;
+    auto model = loader.load(result, registry);
+    CHECK(result);
   }
 }
