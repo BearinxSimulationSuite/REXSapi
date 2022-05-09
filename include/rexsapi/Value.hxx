@@ -20,6 +20,16 @@ namespace rexsapi
     {
     }
 
+    explicit TValue(const char* val)
+        : m_Value(std::string(val))
+    {
+    }
+
+    explicit TValue(int val)
+    : m_Value(static_cast<int64_t>(val))
+    {
+    }
+
     TValue(const TValue&) = default;
     TValue(TValue&&) = default;
     TValue& operator=(const TValue&) = delete;
