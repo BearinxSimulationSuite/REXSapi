@@ -37,6 +37,7 @@ namespace rexsapi
                                                      const rexsapi::database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
+    // TODO (lcf): extract to helper class
     pugi::xml_document doc;
     if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
       result.addError(TResourceError{parseResult.description(), parseResult.offset});
@@ -82,7 +83,6 @@ namespace rexsapi
           continue;
         }
 
-        // TODO (lcf): check unit with attribute unit
         // TODO (lcf): custom units for custom attributes
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, TValue{""}});
       }

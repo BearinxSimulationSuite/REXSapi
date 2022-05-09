@@ -138,12 +138,14 @@ namespace rexsapi
     m_Decoder[database::TValueType::BOOLEAN] = std::make_unique<xml::TBooleanDecoder>();
     m_Decoder[database::TValueType::INTEGER] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[database::TValueType::FLOATING_POINT] = std::make_unique<xml::TFloatDecoder>();
+    m_Decoder[database::TValueType::STRING] = std::make_unique<xml::TStringDecoder>();
     m_Decoder[database::TValueType::ENUM] = std::make_unique<xml::TEnumDecoder>();
     m_Decoder[database::TValueType::INTEGER_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TIntegerDecoder>>();
     m_Decoder[database::TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
     m_Decoder[database::TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TBooleanDecoder>>();
+    m_Decoder[database::TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
     m_Decoder[database::TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
-    m_Decoder[database::TValueType::STRING] = std::make_unique<xml::TStringDecoder>();
+    m_Decoder[database::TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
   }
 
   inline bool TXMLValueDecoder::decode(database::TValueType type,

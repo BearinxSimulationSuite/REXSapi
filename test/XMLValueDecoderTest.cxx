@@ -15,7 +15,10 @@ TEST_CASE("XML value decoder test")
     <attribute id="boolean">true</attribute>
     <attribute id="float">47.11</attribute>
     <attribute id="integer">42</attribute>
+    <attribute id="string">This is a string</attribute>
     <attribute id="enum">injection_lubrication</attribute>
+    <attribute id="reference component">42</attribute>
+    <attribute id="file reference">/root/my/path</attribute>
     <attribute id="float array">
       <array>
         <c>1.0</c>
@@ -28,6 +31,20 @@ TEST_CASE("XML value decoder test")
         <c>1</c>
         <c>2</c>
         <c>3</c>
+      </array>
+    </attribute>
+    <attribute id="boolean array">
+      <array>
+        <c>true</c>
+        <c>false</c>
+        <c>false</c>
+      </array>
+    </attribute>
+    <attribute id="enum array">
+      <array>
+        <c>injection_lubrication</c>
+        <c>dip_lubrication</c>
+        <c>dip_lubrication</c>
       </array>
     </attribute>
   </component>
@@ -62,6 +79,24 @@ TEST_CASE("XML value decoder test")
     CHECK(decoder.decode(rexsapi::database::TValueType::FLOATING_POINT, enumValue, node));
   }
 
+  SUBCASE("Decode string")
+  {
+    auto node = doc.select_node("/component[@id='1']/attribute[@id='string']").node();
+    CHECK(decoder.decode(rexsapi::database::TValueType::STRING, enumValue, node));
+  }
+
+  SUBCASE("Decode reference component")
+  {
+    auto node = doc.select_node("/component[@id='1']/attribute[@id='reference component']").node();
+    CHECK(decoder.decode(rexsapi::database::TValueType::REFERENCE_COMPONENT, enumValue, node));
+  }
+
+  SUBCASE("Decode file reference")
+  {
+    auto node = doc.select_node("/component[@id='1']/attribute[@id='file reference']").node();
+    CHECK(decoder.decode(rexsapi::database::TValueType::FILE_REFERENCE, enumValue, node));
+  }
+
   SUBCASE("Decode enumValue")
   {
     enumValue = rexsapi::database::TEnumValues{{rexsapi::database::TEnumValue{"dip_lubrication", ""},
@@ -81,5 +116,20 @@ TEST_CASE("XML value decoder test")
   {
     auto node = doc.select_node("/component[@id='1']/attribute[@id='float array']").node();
     CHECK(decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_ARRAY, enumValue, node));
+  }
+
+  SUBCASE("Decode boolean array")
+  {
+    auto node = doc.select_node("/component[@id='1']/attribute[@id='boolean array']").node();
+    CHECK(decoder.decode(rexsapi::database::TValueType::BOOLEAN_ARRAY, enumValue, node));
+  }
+
+  SUBCASE("Decode enumValue array")
+  {
+    enumValue = rexsapi::database::TEnumValues{{rexsapi::database::TEnumValue{"dip_lubrication", ""},
+                                                rexsapi::database::TEnumValue{"injection_lubrication", ""}}};
+
+    auto node = doc.select_node("/component[@id='1']/attribute[@id='enum array']").node();
+    CHECK(decoder.decode(rexsapi::database::TValueType::ENUM_ARRAY, enumValue, node));
   }
 }
