@@ -3,10 +3,10 @@
 #define REXSAPI_DATABASE_ATTRIBUTE_HXX
 
 #include <rexsapi/Format.hxx>
+#include <rexsapi/Types.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 #include <rexsapi/database/Interval.hxx>
 #include <rexsapi/database/Unit.hxx>
-#include <rexsapi/database/ValueType.hxx>
 
 #include <optional>
 

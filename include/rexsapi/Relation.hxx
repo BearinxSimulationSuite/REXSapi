@@ -16,17 +16,17 @@ namespace rexsapi
     {
     }
 
-    const std::string& getHint() const
+    [[nodiscard]] const std::string& getHint() const
     {
       return m_Component.getId();
     }
 
-    TRelationRole getRole() const
+    [[nodiscard]] TRelationRole getRole() const
     {
       return m_Role;
     }
 
-    const TComponent& getComponent() const
+    [[nodiscard]] const TComponent& getComponent() const
     {
       return m_Component;
     }
@@ -42,24 +42,31 @@ namespace rexsapi
   class TRelation
   {
   public:
-    TRelation(TRelationType type, TRelationReferences&& references)
+    TRelation(TRelationType type, std::optional<uint32_t> order, TRelationReferences&& references)
     : m_Type{type}
+    , m_Order{std::move(order)}
     , m_References{std::move(references)}
     {
     }
 
-    TRelationType getType() const
+    [[nodiscard]] TRelationType getType() const
     {
       return m_Type;
     }
 
-    const TRelationReferences& getReferences() const
+    [[nodiscard]] std::optional<uint32_t> getOrder() const
+    {
+      return m_Order;
+    }
+
+    [[nodiscard]] const TRelationReferences& getReferences() const
     {
       return m_References;
     }
 
   private:
     TRelationType m_Type;
+    std::optional<uint32_t> m_Order;
     TRelationReferences m_References;
   };
 

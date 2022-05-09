@@ -13,29 +13,40 @@ namespace rexsapi
   public:
     TAttribute(const database::TAttribute& attribute, TUnit unit, TValue value)
     : m_Attribute{attribute}
-    , m_Unit{unit}
+    , m_Unit{std::move(unit)}
     , m_Value{std::move(value)}
     {
     }
 
-    const std::string& getAttributeId() const
+    [[nodiscard]] const std::string& getAttributeId() const
     {
       return m_Attribute.getAttributeId();
     }
 
-    const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const
     {
       return m_Attribute.getName();
     }
 
-    const TUnit& getUnit() const
+    [[nodiscard]] const TUnit& getUnit() const
     {
       return m_Unit;
     }
 
-    const TValue& getValue() const
+    [[nodiscard]] TValueType getValueType() const
     {
-      return m_Value;
+      return m_Attribute.getValueType();
+    }
+
+    [[nodiscard]] bool hasValue() const
+    {
+      return !m_Value.isEmpty();
+    }
+
+    template<typename T>
+    [[nodiscard]] const T& getValue() const
+    {
+      return m_Value.getValue<T>();
     }
 
   private:

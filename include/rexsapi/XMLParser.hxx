@@ -8,17 +8,18 @@
 
 namespace rexsapi
 {
-  static inline std::string getAttribute(const pugi::xml_node& node, const char* attribute)
+  static inline std::string getStringAttribute(const pugi::xml_node& node, const char* attribute)
   {
     return node.attribute(attribute).value();
   }
 
-  static inline std::string getAttribute(const pugi::xpath_node& node, const char* attribute)
+  static inline std::string getStringAttribute(const pugi::xpath_node& node, const char* attribute)
   {
     return node.node().attribute(attribute).value();
   }
 
-  static inline std::string getAttribute(const pugi::xpath_node& node, const char* attribute, const std::string& def)
+  static inline std::string getStringAttribute(const pugi::xpath_node& node, const char* attribute,
+                                               const std::string& def)
   {
     if (auto att = node.node().attribute(attribute); !att.empty()) {
       return att.value();

@@ -15,7 +15,7 @@ TEST_CASE("Model test")
 
     rexsapi::TAttributes attributes{
       rexsapi::TAttribute{dbComponent->findAttributeById("temperature_lubricant"),
-                          rexsapi::TUnit{dbModel.findUnitByName("C")}, rexsapi::TValue{"73.2"}},
+                          rexsapi::TUnit{dbModel.findUnitByName("C")}, rexsapi::TValue{73.2}},
       rexsapi::TAttribute{dbComponent->findAttributeById("type_of_gear_casing_construction_vdi_2736_2014"),
                           rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"closed"}}};
 
@@ -26,7 +26,7 @@ TEST_CASE("Model test")
     attributes = rexsapi::TAttributes{};
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("density_at_15_degree_celsius"),
                                                 rexsapi::TUnit{dbModel.findUnitByName("kg / dm^3")},
-                                                rexsapi::TValue{"1.02"}});
+                                                rexsapi::TValue{1.02}});
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("lubricant_type_iso_6336_2006"),
                                                 rexsapi::TUnit{dbModel.findUnitByName("none")},
                                                 rexsapi::TValue{"non_water_soluble_polyglycol"}});
@@ -34,10 +34,10 @@ TEST_CASE("Model test")
                                                 rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"PG"}});
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_100_degree_celsius"),
                                                 rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
-                                                rexsapi::TValue{"37.0"}});
+                                                rexsapi::TValue{37.0}});
     attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("viscosity_at_40_degree_celsius"),
                                                 rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
-                                                rexsapi::TValue{"220.0"}});
+                                                rexsapi::TValue{220.0}});
 
     components.emplace_back(rexsapi::TComponent{"lubricant", "S2/220", std::move(attributes)});
 
@@ -45,15 +45,23 @@ TEST_CASE("Model test")
       rexsapi::TRelationReference{rexsapi::TRelationRole::ORIGIN, components[0]},
       rexsapi::TRelationReference{rexsapi::TRelationRole::REFERENCED, components[1]}};
 
-
-    rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, std::move(references)}};
+    rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, {}, std::move(references)}};
 
     rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00", "1.4"};
     rexsapi::TModel model{info, std::move(components), std::move(relations)};
 
     CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
     CHECK(model.getInfo().getVersion() == "1.4");
-    CHECK(model.getComponents().size() == 2);
-    CHECK(model.getRelations().size() == 1);
+    REQUIRE(model.getComponents().size() == 2);
+    CHECK(model.getComponents()[0].getId() == "gear_casing");
+    REQUIRE(model.getRelations().size() == 1);
+    REQUIRE(model.getRelations()[0].getReferences().size() == 2);
+    CHECK(model.getRelations()[0].getReferences()[0].getComponent().getId() == "gear_casing");
+    CHECK(model.getRelations()[0].getReferences()[1].getComponent().getId() == "lubricant");
+    REQUIRE(model.getRelations()[0].getReferences()[1].getComponent().getAttributes().size() == 5);
+    const auto& atts = model.getRelations()[0].getReferences()[1].getComponent().getAttributes();
+    CHECK(atts[0].getAttributeId() == "density_at_15_degree_celsius");
+    CHECK(atts[0].getValueType() == rexsapi::TValueType::FLOATING_POINT);
+    CHECK(atts[0].getValue<double>() == doctest::Approx{1.02});
   }
 }

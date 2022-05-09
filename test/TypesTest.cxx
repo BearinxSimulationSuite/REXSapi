@@ -23,6 +23,7 @@ TEST_CASE("Relation type test")
     CHECK(rexsapi::relationTypeFromString("side") == rexsapi::TRelationType::SIDE);
     CHECK(rexsapi::relationTypeFromString("stage") == rexsapi::TRelationType::STAGE);
     CHECK(rexsapi::relationTypeFromString("stage_gear_data") == rexsapi::TRelationType::STAGE_GEAR_DATA);
+    CHECK_THROWS(rexsapi::relationTypeFromString("unknown relation type"));
   }
 }
 
@@ -50,5 +51,6 @@ TEST_CASE("Relation role test")
     CHECK(rexsapi::relationRoleFromString("stage_gear_data") == rexsapi::TRelationRole::STAGE_GEAR_DATA);
     CHECK(rexsapi::relationRoleFromString("tool") == rexsapi::TRelationRole::TOOL);
     CHECK(rexsapi::relationRoleFromString("workpiece") == rexsapi::TRelationRole::WORKPIECE);
+    CHECK_THROWS(rexsapi::relationRoleFromString("unknown relation role"));
   }
 }
