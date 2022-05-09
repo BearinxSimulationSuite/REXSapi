@@ -33,7 +33,7 @@ namespace rexsapi
       return m_Unit;
     }
 
-    [[nodiscard]] database::TValueType getValueType() const
+    [[nodiscard]] TValueType getValueType() const
     {
       return m_Attribute.getValueType();
     }

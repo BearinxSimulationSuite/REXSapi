@@ -10,10 +10,10 @@ TEST_CASE("Component test")
   rexsapi::database::TUnit unitMum{11, "mum"};
 
   rexsapi::database::TAttribute attribute1{
-    "chamfer_angle_worm_wheel", "Chamfer ange", rexsapi::database::TValueType::FLOATING_POINT, unitDeg, "ϑ", {}, {}};
+    "chamfer_angle_worm_wheel", "Chamfer ange", rexsapi::TValueType::FLOATING_POINT, unitDeg, "ϑ", {}, {}};
   rexsapi::database::TAttribute attribute2{"arithmetic_average_roughness_root",
                                            "Arithmetic average roughness root",
-                                           rexsapi::database::TValueType::FLOATING_POINT,
+                                           rexsapi::TValueType::FLOATING_POINT,
                                            unitMum,
                                            "R_aF",
                                            {},

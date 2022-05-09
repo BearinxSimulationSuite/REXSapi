@@ -12,6 +12,7 @@ add_executable(rexsapi_test
   TypesTest.cxx
   UnitTest.cxx
   ValueTest.cxx
+  ValueTypeTest.cxx
   XMLValueDecoderTest.cxx
   XSDSchemaValidatorTest.cxx
 
@@ -25,7 +26,6 @@ add_executable(rexsapi_test
   database/ModelTest.cxx
   database/UnitTest.cxx
   database/XMLModelLoaderTest.cxx
-  database/ValueTypeTest.cxx
 )
 
 include(${PROJECT_SOURCE_DIR}/cmake/fetch_doctest.cmake)

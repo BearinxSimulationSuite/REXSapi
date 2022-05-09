@@ -87,49 +87,48 @@ TEST_CASE("XML value decoder test")
   SUBCASE("Decode empty node")
   {
     pugi::xml_node node{};
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::BOOLEAN, enumValue, node).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::BOOLEAN, enumValue, node).second);
   }
 
   SUBCASE("Decode boolean")
   {
-    auto result = decoder.decode(rexsapi::database::TValueType::BOOLEAN, enumValue, getNode(doc, "boolean"));
+    auto result = decoder.decode(rexsapi::TValueType::BOOLEAN, enumValue, getNode(doc, "boolean"));
     CHECK(result.second);
     CHECK(result.first.getValue<bool>());
   }
 
   SUBCASE("Decode integer")
   {
-    auto result = decoder.decode(rexsapi::database::TValueType::INTEGER, enumValue, getNode(doc, "integer"));
+    auto result = decoder.decode(rexsapi::TValueType::INTEGER, enumValue, getNode(doc, "integer"));
     CHECK(result.second);
     CHECK(result.first.getValue<int64_t>() == 42);
   }
 
   SUBCASE("Decode float")
   {
-    auto result = decoder.decode(rexsapi::database::TValueType::FLOATING_POINT, enumValue, getNode(doc, "float"));
+    auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT, enumValue, getNode(doc, "float"));
     CHECK(result.second);
     CHECK(result.first.getValue<double>() == doctest::Approx(47.11));
   }
 
   SUBCASE("Decode string")
   {
-    auto result = decoder.decode(rexsapi::database::TValueType::STRING, enumValue, getNode(doc, "string"));
+    auto result = decoder.decode(rexsapi::TValueType::STRING, enumValue, getNode(doc, "string"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::string>() == "This is a string");
   }
 
   SUBCASE("Decode reference component")
   {
-    auto result = decoder.decode(rexsapi::database::TValueType::REFERENCE_COMPONENT, enumValue,
-                                 getNode(doc, "reference component"));
+    auto result =
+      decoder.decode(rexsapi::TValueType::REFERENCE_COMPONENT, enumValue, getNode(doc, "reference component"));
     CHECK(result.second);
     CHECK(result.first.getValue<int64_t>() == 17);
   }
 
   SUBCASE("Decode file reference")
   {
-    auto result =
-      decoder.decode(rexsapi::database::TValueType::FILE_REFERENCE, enumValue, getNode(doc, "file reference"));
+    auto result = decoder.decode(rexsapi::TValueType::FILE_REFERENCE, enumValue, getNode(doc, "file reference"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::string>() == "/root/my/path");
   }
@@ -139,15 +138,14 @@ TEST_CASE("XML value decoder test")
     enumValue = rexsapi::database::TEnumValues{{rexsapi::database::TEnumValue{"dip_lubrication", ""},
                                                 rexsapi::database::TEnumValue{"injection_lubrication", ""}}};
 
-    auto result = decoder.decode(rexsapi::database::TValueType::ENUM, enumValue, getNode(doc, "enum"));
+    auto result = decoder.decode(rexsapi::TValueType::ENUM, enumValue, getNode(doc, "enum"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::string>() == "injection_lubrication");
   }
 
   SUBCASE("Decode integer array")
   {
-    auto result =
-      decoder.decode(rexsapi::database::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array"));
+    auto result = decoder.decode(rexsapi::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array"));
     CHECK(result.second);
     REQUIRE(result.first.getValue<std::vector<int64_t>>().size() == 3);
     CHECK(result.first.getValue<std::vector<int64_t>>()[1] == 2);
@@ -155,16 +153,14 @@ TEST_CASE("XML value decoder test")
 
   SUBCASE("Decode float array")
   {
-    auto result =
-      decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "float array"));
+    auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "float array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<double>>().size() == 3);
   }
 
   SUBCASE("Decode boolean array")
   {
-    auto result =
-      decoder.decode(rexsapi::database::TValueType::BOOLEAN_ARRAY, enumValue, getNode(doc, "boolean array"));
+    auto result = decoder.decode(rexsapi::TValueType::BOOLEAN_ARRAY, enumValue, getNode(doc, "boolean array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<bool>>().size() == 3);
   }
@@ -174,15 +170,14 @@ TEST_CASE("XML value decoder test")
     enumValue = rexsapi::database::TEnumValues{{rexsapi::database::TEnumValue{"dip_lubrication", ""},
                                                 rexsapi::database::TEnumValue{"injection_lubrication", ""}}};
 
-    auto result = decoder.decode(rexsapi::database::TValueType::ENUM_ARRAY, enumValue, getNode(doc, "enum array"));
+    auto result = decoder.decode(rexsapi::TValueType::ENUM_ARRAY, enumValue, getNode(doc, "enum array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<std::string>>().size() == 3);
   }
 
   SUBCASE("Decode float matrix")
   {
-    auto result =
-      decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"));
+    auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"));
     CHECK(result.second);
     CHECK(result.first.getValue<rexsapi::Matrix<double>>().m_Values.size() == 3);
     for (const auto& row : result.first.getValue<rexsapi::Matrix<double>>().m_Values) {
@@ -238,29 +233,28 @@ TEST_CASE("XML value decoder error test")
 
   SUBCASE("Decode boolean")
   {
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::BOOLEAN, enumValue, getNode(doc, "boolean")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::BOOLEAN, enumValue, getNode(doc, "boolean")).second);
   }
 
   SUBCASE("Decode integer")
   {
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::INTEGER, enumValue, getNode(doc, "integer")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::INTEGER, enumValue, getNode(doc, "integer")).second);
   }
 
   SUBCASE("Decode float")
   {
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::FLOATING_POINT, enumValue, getNode(doc, "float")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::FLOATING_POINT, enumValue, getNode(doc, "float")).second);
   }
 
   SUBCASE("Decode string")
   {
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::STRING, enumValue, getNode(doc, "string")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::STRING, enumValue, getNode(doc, "string")).second);
   }
 
   SUBCASE("Decode reference component")
   {
     CHECK_FALSE(
-      decoder.decode(rexsapi::database::TValueType::REFERENCE_COMPONENT, enumValue, getNode(doc, "reference component"))
-        .second);
+      decoder.decode(rexsapi::TValueType::REFERENCE_COMPONENT, enumValue, getNode(doc, "reference component")).second);
   }
 
   SUBCASE("Decode enumValue")
@@ -268,20 +262,18 @@ TEST_CASE("XML value decoder error test")
     enumValue = rexsapi::database::TEnumValues{{rexsapi::database::TEnumValue{"dip_lubrication", ""},
                                                 rexsapi::database::TEnumValue{"injection_lubrication", ""}}};
 
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::ENUM, enumValue, getNode(doc, "enum")).second);
-    CHECK_FALSE(decoder.decode(rexsapi::database::TValueType::ENUM, {}, getNode(doc, "enum")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::ENUM, enumValue, getNode(doc, "enum")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::ENUM, {}, getNode(doc, "enum")).second);
   }
 
   SUBCASE("Decode integer array")
   {
-    CHECK_FALSE(
-      decoder.decode(rexsapi::database::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array")).second);
   }
 
   SUBCASE("Decode float matrix")
   {
     CHECK_FALSE(
-      decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"))
-        .second);
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix")).second);
   }
 }

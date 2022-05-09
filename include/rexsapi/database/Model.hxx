@@ -4,10 +4,10 @@
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
+#include <rexsapi/Types.hxx>
 #include <rexsapi/database/Attribute.hxx>
 #include <rexsapi/database/Component.hxx>
 #include <rexsapi/database/Unit.hxx>
-#include <rexsapi/database/ValueType.hxx>
 
 #include <unordered_map>
 

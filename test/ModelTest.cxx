@@ -61,7 +61,7 @@ TEST_CASE("Model test")
     REQUIRE(model.getRelations()[0].getReferences()[1].getComponent().getAttributes().size() == 5);
     const auto& atts = model.getRelations()[0].getReferences()[1].getComponent().getAttributes();
     CHECK(atts[0].getAttributeId() == "density_at_15_degree_celsius");
-    CHECK(atts[0].getValueType() == rexsapi::database::TValueType::FLOATING_POINT);
+    CHECK(atts[0].getValueType() == rexsapi::TValueType::FLOATING_POINT);
     CHECK(atts[0].getValue<double>() == doctest::Approx{1.02});
   }
 }

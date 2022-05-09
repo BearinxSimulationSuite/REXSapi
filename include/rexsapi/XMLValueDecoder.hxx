@@ -3,10 +3,10 @@
 #define REXSAPI_XML_VALUE_DECODER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
+#include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/EnumValues.hxx>
-#include <rexsapi/database/ValueType.hxx>
 
 #include <memory>
 #include <optional>
@@ -35,12 +35,12 @@ namespace rexsapi
   public:
     TXMLValueDecoder();
 
-    [[nodiscard]] std::pair<TValue, bool> decode(database::TValueType type,
+    [[nodiscard]] std::pair<TValue, bool> decode(TValueType type,
                                                  const std::optional<const database::TEnumValues>& enumValue,
                                                  const pugi::xml_node& node) const;
 
   private:
-    std::unordered_map<database::TValueType, std::unique_ptr<TXMLDecoder>> m_Decoder;
+    std::unordered_map<TValueType, std::unique_ptr<TXMLDecoder>> m_Decoder;
   };
 
   namespace xml
@@ -193,22 +193,21 @@ namespace rexsapi
 
   inline TXMLValueDecoder::TXMLValueDecoder()
   {
-    m_Decoder[database::TValueType::BOOLEAN] = std::make_unique<xml::TBooleanDecoder>();
-    m_Decoder[database::TValueType::INTEGER] = std::make_unique<xml::TIntegerDecoder>();
-    m_Decoder[database::TValueType::FLOATING_POINT] = std::make_unique<xml::TFloatDecoder>();
-    m_Decoder[database::TValueType::STRING] = std::make_unique<xml::TStringDecoder>();
-    m_Decoder[database::TValueType::ENUM] = std::make_unique<xml::TEnumDecoder>();
-    m_Decoder[database::TValueType::INTEGER_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TIntegerDecoder>>();
-    m_Decoder[database::TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
-    m_Decoder[database::TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TBooleanDecoder>>();
-    m_Decoder[database::TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
-    m_Decoder[database::TValueType::FLOATING_POINT_MATRIX] =
-      std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
-    m_Decoder[database::TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
-    m_Decoder[database::TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
+    m_Decoder[TValueType::BOOLEAN] = std::make_unique<xml::TBooleanDecoder>();
+    m_Decoder[TValueType::INTEGER] = std::make_unique<xml::TIntegerDecoder>();
+    m_Decoder[TValueType::FLOATING_POINT] = std::make_unique<xml::TFloatDecoder>();
+    m_Decoder[TValueType::STRING] = std::make_unique<xml::TStringDecoder>();
+    m_Decoder[TValueType::ENUM] = std::make_unique<xml::TEnumDecoder>();
+    m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TIntegerDecoder>>();
+    m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TBooleanDecoder>>();
+    m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
+    m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
+    m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
   }
 
-  inline std::pair<TValue, bool> TXMLValueDecoder::decode(database::TValueType type,
+  inline std::pair<TValue, bool> TXMLValueDecoder::decode(TValueType type,
                                                           const std::optional<const database::TEnumValues>& enumValue,
                                                           const pugi::xml_node& node) const
   {

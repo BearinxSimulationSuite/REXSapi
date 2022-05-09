@@ -7,22 +7,33 @@ add_library(rexsapi INTERFACE)
 
 target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Rexsapi.hxx
+
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Attribute.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Component.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/LoaderResult.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelLoader.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Relation.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Types.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Unit.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Value.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLValueDecoder.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Component.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ComponentAttributeMapper.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/database/EnumValues.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/FileResourceLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Interval.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ModelRegistry.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Unit.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ValueType.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/XMLModelLoader.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/xml/XSDSchemaValidator.hxx
