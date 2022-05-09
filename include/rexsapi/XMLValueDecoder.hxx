@@ -19,15 +19,15 @@ namespace rexsapi
   public:
     virtual ~TXMLDecoder() = default;
 
-    [[nodiscard]] bool decode(const std::optional<const database::TEnumValues>& enumValue,
-                              const pugi::xml_node& node) const
+    [[nodiscard]] std::pair<TValue, bool> decode(const std::optional<const database::TEnumValues>& enumValue,
+                                                 const pugi::xml_node& node) const
     {
       return onDecode(enumValue, node);
     }
 
   private:
-    virtual bool onDecode(const std::optional<const database::TEnumValues>& enumValue,
-                          const pugi::xml_node& node) const = 0;
+    virtual std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                             const pugi::xml_node& node) const = 0;
   };
 
   class TXMLValueDecoder
@@ -35,8 +35,9 @@ namespace rexsapi
   public:
     TXMLValueDecoder();
 
-    [[nodiscard]] bool decode(database::TValueType type, const std::optional<const database::TEnumValues>& enumValue,
-                              const pugi::xml_node& node) const;
+    [[nodiscard]] std::pair<TValue, bool> decode(database::TValueType type,
+                                                 const std::optional<const database::TEnumValues>& enumValue,
+                                                 const pugi::xml_node& node) const;
 
   private:
     std::unordered_map<database::TValueType, std::unique_ptr<TXMLDecoder>> m_Decoder;
@@ -47,68 +48,82 @@ namespace rexsapi
     class TStringDecoder : public TXMLDecoder
     {
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>&, const pugi::xml_node& node) const override
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const pugi::xml_node& node) const override
       {
         const std::string value = node.child_value();
-        return !value.empty();
+        return std::make_pair(TValue{value}, !value.empty());
       }
     };
 
     class TBooleanDecoder : public TXMLDecoder
     {
+    public:
+      using Type = bool;
+
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>&, const pugi::xml_node& node) const override
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const pugi::xml_node& node) const override
       {
         const auto* value = node.child_value();
         if (std::strcmp("true", value) == 0) {
-          return true;
+          return std::make_pair(TValue{true}, true);
         }
         if (std::strcmp("false", value) == 0) {
-          return true;
+          return std::make_pair(TValue{false}, true);
         }
 
-        return false;
+        return std::make_pair(TValue{}, false);
       }
     };
 
     class TIntegerDecoder : public TXMLDecoder
     {
+    public:
+      using Type = int64_t;
+
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>&, const pugi::xml_node& node) const override
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const pugi::xml_node& node) const override
       {
         try {
-          convertToInt64(node.child_value());
-          return true;
+          return std::make_pair(TValue{convertToInt64(node.child_value())}, true);
         } catch (const std::exception&) {
-          return false;
+          return std::make_pair(TValue{}, false);
         }
       }
     };
 
     class TFloatDecoder : public TXMLDecoder
     {
+    public:
+      using Type = double;
+
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>&, const pugi::xml_node& node) const override
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const pugi::xml_node& node) const override
       {
         try {
-          convertToDouble(node.child_value());
-          return true;
+          return std::make_pair(TValue{convertToDouble(node.child_value())}, true);
         } catch (const std::exception&) {
-          return false;
+          return std::make_pair(TValue{}, false);
         }
       }
     };
 
     class TEnumDecoder : public TXMLDecoder
     {
+    public:
+      using Type = std::string;
+
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>& enumValue,
-                    const pugi::xml_node& node) const override
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
       {
         if (enumValue) {
-          return enumValue->check(node.child_value());
+          return std::make_pair(TValue{node.child_value()}, enumValue->check(node.child_value()));
         }
-        return false;
+        return std::make_pair(TValue{}, false);
       }
     };
 
@@ -116,15 +131,23 @@ namespace rexsapi
     class TArrayDecoder : public TXMLDecoder
     {
     private:
-      bool onDecode(const std::optional<const database::TEnumValues>& enumValue,
-                    const pugi::xml_node& node) const override
+      using type = typename ElementDecoder::Type;
+
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
       {
+        std::vector<type> array;
         ElementDecoder decoder;
         bool result{true};
         for (const auto& arrayNode : node.select_nodes("array/c")) {
-          result &= decoder.decode(enumValue, arrayNode.node());
+          auto res = decoder.decode(enumValue, arrayNode.node());
+          if (res.second) {
+            const TValue& val = res.first;
+            array.emplace_back(std::move(val.getValue<type>()));
+          }
+          result &= res.second;
         }
-        return result;
+        return std::make_pair(TValue{array}, result);
       }
     };
   }
@@ -149,12 +172,12 @@ namespace rexsapi
     m_Decoder[database::TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
   }
 
-  inline bool TXMLValueDecoder::decode(database::TValueType type,
-                                       const std::optional<const database::TEnumValues>& enumValue,
-                                       const pugi::xml_node& node) const
+  inline std::pair<TValue, bool> TXMLValueDecoder::decode(database::TValueType type,
+                                                          const std::optional<const database::TEnumValues>& enumValue,
+                                                          const pugi::xml_node& node) const
   {
     if (node.empty()) {
-      return false;
+      return std::make_pair(TValue{}, false);
     }
 
     return m_Decoder.at(type)->decode(enumValue, node);
