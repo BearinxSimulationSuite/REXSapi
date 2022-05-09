@@ -8,6 +8,25 @@
 
 namespace rexsapi
 {
+  template<typename T>
+  struct Matrix {
+    bool validate() const
+    {
+      if (m_Values.size()) {
+        size_t n = m_Values[0].size();
+        for (const auto& row : m_Values) {
+          if (row.size() != n) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    std::vector<std::vector<T>> m_Values;
+  };
+
+
   class TValue
   {
   public:
@@ -21,7 +40,7 @@ namespace rexsapi
     }
 
     explicit TValue(const char* val)
-        : m_Value(std::string(val))
+    : m_Value(std::string(val))
     {
     }
 
@@ -58,7 +77,7 @@ namespace rexsapi
   private:
     using Variant =
       std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>>;
+                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
 
     Variant m_Value;
   };

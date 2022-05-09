@@ -57,6 +57,25 @@ TEST_CASE("XML value decoder test")
         <c>dip_lubrication</c>
       </array>
     </attribute>
+    <attribute id="float matrix">
+      <matrix>
+        <r>
+          <c>1.1</c>
+          <c>1.2</c>
+          <c>1.3</c>
+        </r>
+        <r>
+          <c>2.1</c>
+          <c>2.2</c>
+          <c>2.3</c>
+        </r>
+        <r>
+          <c>3.1</c>
+          <c>3.2</c>
+          <c>3.3</c>
+        </r>
+      </matrix>
+    </attribute>
   </component>
   )";
   std::vector<uint8_t> buffer{document.begin(), document.end()};
@@ -159,6 +178,17 @@ TEST_CASE("XML value decoder test")
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<std::string>>().size() == 3);
   }
+
+  SUBCASE("Decode float matrix")
+  {
+    auto result =
+      decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<rexsapi::Matrix<double>>().m_Values.size() == 3);
+    for (const auto& row : result.first.getValue<rexsapi::Matrix<double>>().m_Values) {
+      CHECK(row.size() == 3);
+    }
+  }
 }
 
 TEST_CASE("XML value decoder error test")
@@ -181,7 +211,24 @@ TEST_CASE("XML value decoder error test")
         <c>3.3</c>
       </array>
     </attribute>
-  </component>
+    <attribute id="float matrix">
+      <matrix>
+        <r>
+          <c>1.1</c>
+          <c>1.2</c>
+          <c>1.3</c>
+        </r>
+        <r>
+          <c>2.1</c>
+          <c>2.2</c>
+        </r>
+        <r>
+          <c>3.1</c>
+          <c>3.2</c>
+          <c>3.3</c>
+        </r>
+      </matrix>
+    </attribute>  </component>
   )";
   std::vector<uint8_t> buffer{document.begin(), document.end()};
   pugi::xml_document doc;
@@ -229,5 +276,12 @@ TEST_CASE("XML value decoder error test")
   {
     CHECK_FALSE(
       decoder.decode(rexsapi::database::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array")).second);
+  }
+
+  SUBCASE("Decode float matrix")
+  {
+    CHECK_FALSE(
+      decoder.decode(rexsapi::database::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"))
+        .second);
   }
 }
