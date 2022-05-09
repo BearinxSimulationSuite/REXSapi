@@ -8,6 +8,7 @@
 #include <rexsapi/database/ValueType.hxx>
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 namespace rexsapi

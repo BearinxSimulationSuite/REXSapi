@@ -78,7 +78,7 @@ namespace rexsapi
         }
         if (!m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node())) {
           result.addError(TResourceError{
-            fmt::format("attribute '{}' of component '{}' does specify the correct value", id, component)});
+            fmt::format("attribute '{}' of component '{}' does specify the correct value", id, componentId)});
           continue;
         }
 
