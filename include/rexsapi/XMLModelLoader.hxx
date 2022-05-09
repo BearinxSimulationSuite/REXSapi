@@ -77,14 +77,15 @@ namespace rexsapi
             "attribute '{}' of component '{}' does specify the correct unit: '{}'", id, componentId, unit)});
           continue;
         }
-        if (!m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node()).second) {
+        auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
+        if (!value.second) {
           result.addError(TResourceError{
             fmt::format("attribute '{}' of component '{}' does specify the correct value", id, componentId)});
           continue;
         }
 
         // TODO (lcf): custom units for custom attributes
-        attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, TValue{""}});
+        attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
       }
 
       components.emplace_back(TComponent{componentId, componentName, std::move(attributes)});

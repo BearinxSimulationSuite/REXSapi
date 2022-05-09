@@ -96,7 +96,7 @@ namespace rexsapi::xml
   {
   public:
     void addElementRef(const TElement& element, uint64_t min, uint64_t max);
-    void addDirectElement(std::string name, const TSimpleType& type, uint64_t min, uint64_t max);
+    void addDirectElement(const std::string& name, const TSimpleType& type, uint64_t min, uint64_t max);
 
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
@@ -475,7 +475,7 @@ namespace rexsapi::xml
     m_Elements.emplace_back(TElementRef{element, min, max});
   }
 
-  inline void TSequence::addDirectElement(std::string name, const TSimpleType& type, uint64_t min, uint64_t max)
+  inline void TSequence::addDirectElement(const std::string& name, const TSimpleType& type, uint64_t min, uint64_t max)
   {
     TElement element{name, std::make_unique<TInlineContentType>(name, type)};
     m_DirectElements.emplace_back(std::move(element));
