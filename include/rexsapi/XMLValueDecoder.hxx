@@ -157,11 +157,7 @@ namespace rexsapi
       return false;
     }
 
-    try {
-      return m_Decoder.at(type)->decode(enumValue, node);
-    } catch (const std::exception&) {
-      return false;
-    }
+    return m_Decoder.at(type)->decode(enumValue, node);
   }
 }
 

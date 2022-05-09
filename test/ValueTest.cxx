@@ -31,6 +31,7 @@ TEST_CASE("Value test")
     rexsapi::TValue val{4711};
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<int64_t>() == 4711);
+    CHECK(val.getValue<int64_t>(815) == 4711);
   }
 
   SUBCASE("integer default value")
