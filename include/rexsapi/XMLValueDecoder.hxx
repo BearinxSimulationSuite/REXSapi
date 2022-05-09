@@ -3,6 +3,7 @@
 #define REXSAPI_XML_VALUE_DECODER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
+#include <rexsapi/Value.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 #include <rexsapi/database/ValueType.hxx>

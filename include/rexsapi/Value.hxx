@@ -8,27 +8,44 @@
 
 namespace rexsapi
 {
+  using Variant =
+    std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
+                 std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>>;
+
   class TValue
   {
   public:
-    explicit TValue(std::string value)
-    : m_Value{std::move(value)}
+    TValue() = default;
+
+    template<typename T>
+    explicit TValue(T&& val)
+    : m_Value{std::forward<T>(val)}
     {
     }
 
-    const std::string& getValue() const
+    bool isEmpty() const
     {
-      return m_Value;
+      return m_Value.index() == 0;
+    }
+
+    template<typename T>
+    const T& getValue() const
+    {
+      return std::get<T>(m_Value);
+    }
+
+    template<typename T>
+    const T& getValue(const T& def) const
+    {
+      if (m_Value.index() == 0) {
+        return def;
+      }
+      return std::get<T>(m_Value);
     }
 
   private:
-    std::string m_Value;
+    Variant m_Value;
   };
-
-
-  using Variant = std::variant<double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
-                               std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>>;
-
 }
 
 #endif
