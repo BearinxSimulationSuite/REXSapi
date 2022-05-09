@@ -48,7 +48,7 @@ namespace rexsapi
   static inline double convertToDouble(const std::string& s)
   {
     try {
-      std::size_t pos{};
+      std::size_t pos = 0;
       auto val = std::stod(s, &pos);
       if (pos == s.length()) {
         return val;

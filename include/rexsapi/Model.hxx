@@ -54,17 +54,17 @@ namespace rexsapi
     {
     }
 
-    const TModelInfo& getInfo() const
+    [[nodiscard]] const TModelInfo& getInfo() const
     {
       return m_Info;
     }
 
-    const TComponents& getComponents() const
+    [[nodiscard]] const TComponents& getComponents() const
     {
       return m_Components;
     }
 
-    const TRelations& getRelations() const
+    [[nodiscard]] const TRelations& getRelations() const
     {
       return m_Relations;
     }

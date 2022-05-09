@@ -26,7 +26,7 @@ namespace rexsapi::database
   private:
     [[nodiscard]] std::vector<std::filesystem::path> findResources(TLoaderResult& result) const;
 
-    [[nodiscard]] std::vector<uint8_t> load(TLoaderResult& result, const std::filesystem::path& resource) const;
+    [[nodiscard]] static std::vector<uint8_t> load(TLoaderResult& result, const std::filesystem::path& resource);
 
     const std::filesystem::path m_Path;
   };
@@ -46,7 +46,7 @@ namespace rexsapi::database
     TLoaderResult result;
 
     auto resources = findResources(result);
-    std::for_each(resources.begin(), resources.end(), [this, &callback, &result](const auto& resource) {
+    std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
       auto buffer = load(result, resource);
       if (buffer.size()) {
         callback(result, buffer);
@@ -81,8 +81,7 @@ namespace rexsapi::database
     return resources;
   }
 
-  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result,
-                                                        const std::filesystem::path& resource) const
+  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result, const std::filesystem::path& resource)
   {
     std::ifstream file{resource};
     if (!file.good()) {
