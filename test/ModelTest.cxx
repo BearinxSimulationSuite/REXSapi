@@ -46,14 +46,17 @@ TEST_CASE("Model test")
       rexsapi::TRelationReference{rexsapi::TRelationRole::REFERENCED, components[1]}};
 
 
-    rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, std::move(references)}};
+    rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, {}, std::move(references)}};
 
     rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00", "1.4"};
     rexsapi::TModel model{info, std::move(components), std::move(relations)};
 
     CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
     CHECK(model.getInfo().getVersion() == "1.4");
-    CHECK(model.getComponents().size() == 2);
-    CHECK(model.getRelations().size() == 1);
+    REQUIRE(model.getComponents().size() == 2);
+    CHECK(model.getComponents()[0].getId() == "gear_casing");
+    REQUIRE(model.getRelations().size() == 1);
+    REQUIRE(model.getRelations()[0].getReferences().size() == 2);
+    CHECK(model.getRelations()[0].getReferences()[0].getComponent().getId() == "gear_casing");
   }
 }

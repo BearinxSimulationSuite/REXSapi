@@ -52,8 +52,8 @@ namespace rexsapi
     }
 
     auto rexsModel = *doc.select_nodes("/model").begin();
-    TModelInfo info{getAttribute(rexsModel, "applicationId"), getAttribute(rexsModel, "applicationVersion"),
-                    getAttribute(rexsModel, "date"), getAttribute(rexsModel, "version")};
+    TModelInfo info{getStringAttribute(rexsModel, "applicationId"), getStringAttribute(rexsModel, "applicationVersion"),
+                    getStringAttribute(rexsModel, "date"), getStringAttribute(rexsModel, "version")};
 
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
@@ -61,15 +61,15 @@ namespace rexsapi
 
     TComponents components;
     for (const auto& component : doc.select_nodes("/model/components/component")) {
-      auto componentId = getAttribute(component, "id");
-      std::string componentName = getAttribute(component, "name", "");
-      const auto& componentType = dbModel.findComponentById(getAttribute(component, "type"));
+      auto componentId = getStringAttribute(component, "id");
+      std::string componentName = getStringAttribute(component, "name", "");
+      const auto& componentType = dbModel.findComponentById(getStringAttribute(component, "type"));
 
       TAttributes attributes;
       for (const auto& attribute :
            doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str())) {
-        std::string id = getAttribute(attribute, "id");
-        std::string unit = getAttribute(attribute, "unit", "none");
+        std::string id = getStringAttribute(attribute, "id");
+        std::string unit = getStringAttribute(attribute, "unit", "none");
         const auto& att = componentType.findAttributeById(id);
         if (!att.getUnit().compare(unit)) {
           result.addError(TResourceError{fmt::format(
@@ -92,14 +92,21 @@ namespace rexsapi
 
     TRelations relations;
     for (const auto& relation : doc.select_nodes("/model/relations/relation")) {
-      std::string relationId = getAttribute(relation, "id");
-      auto relationType = relationTypeFromString(getAttribute(relation, "type"));
+      std::string relationId = getStringAttribute(relation, "id");
+      auto relationType = relationTypeFromString(getStringAttribute(relation, "type"));
+      std::optional<uint32_t> order;
+      if (auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
+        order = orderAtt.as_uint();
+        if (order.value() < 1) {
+          result.addError(TResourceError{fmt::format("relation id={} order is <1", relationId)});
+        }
+      }
 
       TRelationReferences references;
       for (const auto& reference :
            doc.select_nodes(fmt::format("/model/relations/relation[@id = '{}']/ref", relationId).c_str())) {
-        std::string referenceId = getAttribute(reference, "id");
-        auto role = relationRoleFromString(getAttribute(reference, "role"));
+        std::string referenceId = getStringAttribute(reference, "id");
+        auto role = relationRoleFromString(getStringAttribute(reference, "role"));
 
         auto it = std::find_if(components.begin(), components.end(), [&referenceId](const auto& component) {
           return component.getId() == referenceId;
@@ -112,7 +119,7 @@ namespace rexsapi
         }
       }
 
-      relations.emplace_back(TRelation{relationType, std::move(references)});
+      relations.emplace_back(TRelation{relationType, order, std::move(references)});
     }
 
     // TODO (lcf): check that all components are used in at least one relation
