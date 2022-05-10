@@ -4,6 +4,7 @@
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
+#include <rexsapi/RexsVersion.hxx>
 #include <rexsapi/Types.hxx>
 #include <rexsapi/database/Attribute.hxx>
 #include <rexsapi/database/Component.hxx>
@@ -29,8 +30,8 @@ namespace rexsapi::database
   class TModel
   {
   public:
-    TModel(std::string version, std::string language, std::string date, TStatus status)
-    : m_Version{std::move(version)}
+    TModel(TRexsVersion version, std::string language, std::string date, TStatus status)
+    : m_Version{version}
     , m_Language{std::move(language)}
     , m_Date{std::move(date)}
     , m_Status{status}
@@ -44,7 +45,7 @@ namespace rexsapi::database
     TModel& operator=(const TModel&) = delete;
     TModel& operator=(TModel&&) = default;
 
-    [[nodiscard]] const std::string& getVersion() const
+    [[nodiscard]] const TRexsVersion& getVersion() const
     {
       return m_Version;
     }
@@ -83,7 +84,7 @@ namespace rexsapi::database
     [[nodiscard]] const TComponent& findComponentById(const std::string& id) const;
 
   private:
-    std::string m_Version;
+    TRexsVersion m_Version;
     std::string m_Language;
     std::string m_Date;
     TStatus m_Status;
