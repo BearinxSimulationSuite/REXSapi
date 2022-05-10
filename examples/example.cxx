@@ -2,7 +2,6 @@
 #include <rexsapi/Rexsapi.hxx>
 
 #include <iostream>
-#include <regex>
 
 struct TREXSVersionNumber {
   TREXSVersionNumber() = default;
@@ -53,6 +52,48 @@ public:
   TAttributeDimension Attribute_Dimension;
   TREXSVersionNumber From_REXS_Version;
   TREXSVersionNumber To_REXS_Version;
+};
+
+struct TIntermediateLayerAttribute {
+  void setAttributeName(std::string name)
+  {
+    Name = std::move(name);
+  }
+
+  void setAttributeType(TAttributeType type)
+  {
+    Type = type;
+  }
+
+  void setAttributeDimension(TAttributeDimension dimension)
+  {
+    Dimension = dimension;
+  }
+
+  std::string Name;
+  TAttributeType Type;
+  TAttributeDimension Dimension;
+};
+
+struct TIntermediateLayerObject {
+  std::string LayerObjectType;
+  std::string Name;
+
+  std::vector<TIntermediateLayerAttribute*> IntermediateLayerAttributes;
+};
+
+struct TREXSTransmissionModelIntermediateLayer {
+  void setREXSVersion(TREXSVersionNumber version)
+  {
+    m_Version = version;
+  }
+
+  TREXSVersionNumber m_Version;
+  std::vector<TIntermediateLayerObject*> IntermediateLayerObjects;
+};
+
+struct Data {
+  TREXSTransmissionModelIntermediateLayer* IntermediateLayer;
 };
 
 class TComponentRules
@@ -117,48 +158,6 @@ private:
   std::unordered_map<std::string, const TAttributeRule*> m_AttributeRules;
 };
 
-struct TIntermediateLayerAttribute {
-  void setAttributeName(std::string name)
-  {
-    Name = std::move(name);
-  }
-
-  void setAttributeType(TAttributeType type)
-  {
-    Type = type;
-  }
-
-  void setAttributeDimension(TAttributeDimension dimension)
-  {
-    Dimension = dimension;
-  }
-
-  std::string Name;
-  TAttributeType Type;
-  TAttributeDimension Dimension;
-};
-
-struct TIntermediateLayerObject {
-  std::string LayerObjectType;
-  std::string Name;
-
-  std::vector<TIntermediateLayerAttribute*> IntermediateLayerAttributes;
-};
-
-struct TREXSTransmissionModelIntermediateLayer {
-  void setREXSVersion(TREXSVersionNumber version)
-  {
-    m_Version = version;
-  }
-
-  TREXSVersionNumber m_Version;
-  std::vector<TIntermediateLayerObject*> IntermediateLayerObjects;
-};
-
-struct Data {
-  TREXSTransmissionModelIntermediateLayer* IntermediateLayer;
-};
-
 
 static inline rexsapi::database::TModelRegistry createModelRegistry(const std::filesystem::path& databaseSchemaPath,
                                                                     const std::filesystem::path& databasePath)
@@ -180,6 +179,26 @@ static inline rexsapi::xml::TXSDSchemaValidator createSchameValidator(const std:
 class TREXSTransmissionModelXmlInterface
 {
 public:
+  static TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& basePath,
+                                                       const std::filesystem::path& modelFile)
+  {
+    std::unique_ptr<TREXSTransmissionModelIntermediateLayer> intermediateLayer{
+      new TREXSTransmissionModelIntermediateLayer};
+    Data data{intermediateLayer.get()};
+
+    TREXSTransmissionModelXmlInterface transmissionInterface{
+      createModelRegistry(basePath / "models" / "rexs-dbmodel.xsd", basePath / "models"),
+      createSchameValidator(basePath / "models" / "rexs-schema.xsd")};
+
+    if (!transmissionInterface.load(data, modelFile)) {
+      // add some message
+      return nullptr;
+    }
+
+    return intermediateLayer.release();
+  }
+
+private:
   TREXSTransmissionModelXmlInterface(rexsapi::database::TModelRegistry registry,
                                      rexsapi::xml::TXSDSchemaValidator validator)
   : m_Registry{std::move(registry)}
@@ -201,7 +220,6 @@ public:
     return fillIntermediateLayer(data, *model);
   }
 
-private:
   bool fillIntermediateLayer(Data& data, const rexsapi::TModel& model) const
   {
     bool success{true};
@@ -249,26 +267,6 @@ private:
 };
 
 
-static TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& basePath,
-                                                     const std::filesystem::path& modelFile)
-{
-  std::unique_ptr<TREXSTransmissionModelIntermediateLayer> intermediateLayer{
-    new TREXSTransmissionModelIntermediateLayer};
-  Data data{intermediateLayer.get()};
-
-  TREXSTransmissionModelXmlInterface transmissionInterface{
-    createModelRegistry(basePath / "models" / "rexs-dbmodel.xsd", basePath / "models"),
-    createSchameValidator(basePath / "models" / "rexs-schema.xsd")};
-
-  if (!transmissionInterface.load(data, modelFile)) {
-    // add some message
-    return nullptr;
-  }
-
-  return intermediateLayer.release();
-}
-
-
 int main(int argc, char** argv)
 {
   if (argc != 3) {
@@ -276,7 +274,8 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  auto* intermediateLayer = load(std::filesystem::path{argv[1]}, std::filesystem::path{argv[2]});
+  auto* intermediateLayer =
+    TREXSTransmissionModelXmlInterface::load(std::filesystem::path{argv[1]}, std::filesystem::path{argv[2]});
 
   if (intermediateLayer) {
     std::cerr << "Successfully imported" << std::endl;
