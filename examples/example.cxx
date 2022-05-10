@@ -201,31 +201,16 @@ public:
     return fillIntermediateLayer(data, *model);
   }
 
-
 private:
   bool fillIntermediateLayer(Data& data, const rexsapi::TModel& model) const
   {
     bool success{true};
 
-    success = fillIntermediateLayerREXSVersionNumber(data, model.getInfo());
+    data.IntermediateLayer->setREXSVersion(
+      TREXSVersionNumber{model.getInfo().getVersion().getMajor(), model.getInfo().getVersion().getMinor()});
+
     if (success) {
       success = fillIntermediateLayerComponents(data, model.getComponents());
-    }
-
-    return true;
-  }
-
-  bool fillIntermediateLayerREXSVersionNumber(Data& data, const rexsapi::TModelInfo& info) const
-  {
-    static std::regex regExpr{R"(^(\d+)\.(\d+)$)"};
-    std::smatch match;
-    if (std::regex_search(info.getVersion(), match, regExpr)) {
-      unsigned int major = static_cast<unsigned int>(std::stoul(match[1]));
-      unsigned int minor = static_cast<unsigned int>(std::stoul(match[2]));
-      data.IntermediateLayer->setREXSVersion(TREXSVersionNumber{major, minor});
-    } else {
-      // set some message
-      return false;
     }
 
     return true;
@@ -264,8 +249,8 @@ private:
 };
 
 
-TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& basePath,
-                                              const std::filesystem::path& modelFile)
+static TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& basePath,
+                                                     const std::filesystem::path& modelFile)
 {
   std::unique_ptr<TREXSTransmissionModelIntermediateLayer> intermediateLayer{
     new TREXSTransmissionModelIntermediateLayer};
