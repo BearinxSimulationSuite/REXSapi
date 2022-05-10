@@ -16,8 +16,8 @@ TEST_CASE("Test rexs model registry")
 
   SUBCASE("Get existing models")
   {
-    const auto& model = registry.getModel("1.4", "de");
-    CHECK(model.getVersion() == "1.4");
+    const auto& model = registry.getModel(rexsapi::TRexsVersion{"1.4"}, "de");
+    CHECK(model.getVersion() == rexsapi::TRexsVersion{"1.4"});
     CHECK(model.getLanguage() == "de");
 
     const auto& component = model.findComponentById("side_plate");
@@ -31,7 +31,9 @@ TEST_CASE("Test rexs model registry")
 
   SUBCASE("Get non existing models")
   {
-    CHECK_THROWS_WITH((void)registry.getModel("1.4", "es"), "cannot find a model for version '1.4' and locale 'es'");
-    CHECK_THROWS_WITH((void)registry.getModel("1.99", "en"), "cannot find a model for version '1.99' and locale 'en'");
+    CHECK_THROWS_WITH((void)registry.getModel(rexsapi::TRexsVersion{"1.4"}, "es"),
+                      "cannot find a model for version '1.4' and locale 'es'");
+    CHECK_THROWS_WITH((void)registry.getModel(rexsapi::TRexsVersion{"1.99"}, "en"),
+                      "cannot find a model for version '1.99' and locale 'en'");
   }
 }

@@ -16,7 +16,7 @@ namespace rexsapi::database
     TModelRegistry& operator=(const TModelRegistry&) = delete;
     TModelRegistry& operator=(TModelRegistry&&) = delete;
 
-    [[nodiscard]] const TModel& getModel(const std::string& version, const std::string& language) const;
+    [[nodiscard]] const TModel& getModel(const TRexsVersion& version, const std::string& language) const;
 
     template<typename TModelLoader>
     static std::pair<TModelRegistry, TLoaderResult> createModelRegistry(const TModelLoader& loader);
@@ -35,14 +35,14 @@ namespace rexsapi::database
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline const TModel& TModelRegistry::getModel(const std::string& version, const std::string& language) const
+  inline const TModel& TModelRegistry::getModel(const TRexsVersion& version, const std::string& language) const
   {
     auto it = std::find_if(m_Models.begin(), m_Models.end(), [&version, &language](const auto& model) {
       return model.getVersion() == version && model.getLanguage() == language;
     });
 
     if (it == m_Models.end()) {
-      throw TException{fmt::format("cannot find a model for version '{}' and locale '{}'", version, language)};
+      throw TException{fmt::format("cannot find a model for version '{}' and locale '{}'", version.string(), language)};
     }
 
     return *it;
