@@ -53,8 +53,8 @@ namespace rexsapi::database
       }
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
-      TModel model{rexsModel.node().attribute("version").value(), rexsModel.node().attribute("language").value(),
-                   rexsModel.node().attribute("date").value(),
+      TModel model{TRexsVersion{rexsModel.node().attribute("version").value()},
+                   rexsModel.node().attribute("language").value(), rexsModel.node().attribute("date").value(),
                    statusFromString(rexsModel.node().attribute("status").value())};
 
       for (const auto& node : doc.select_nodes("/rexsModel/units/unit")) {

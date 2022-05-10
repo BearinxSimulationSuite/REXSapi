@@ -3,13 +3,14 @@
 #define REXSAPI_MODEL_HXX
 
 #include <rexsapi/Relation.hxx>
+#include <rexsapi/RexsVersion.hxx>
 
 namespace rexsapi
 {
   class TModelInfo
   {
   public:
-    TModelInfo(std::string applicationId, std::string applicationVersion, std::string date, std::string version)
+    TModelInfo(std::string applicationId, std::string applicationVersion, std::string date, TRexsVersion version)
     : m_ApplicationId{std::move(applicationId)}
     , m_ApplicationVersion{std::move(applicationVersion)}
     , m_Date{std::move(date)}
@@ -32,7 +33,7 @@ namespace rexsapi
       return m_Date;
     }
 
-    [[nodiscard]] const std::string& getVersion() const
+    [[nodiscard]] const TRexsVersion& getVersion() const
     {
       return m_Version;
     }
@@ -41,7 +42,7 @@ namespace rexsapi
     std::string m_ApplicationId;
     std::string m_ApplicationVersion;
     std::string m_Date;
-    std::string m_Version;
+    TRexsVersion m_Version;
   };
 
   class TModel

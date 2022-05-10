@@ -54,7 +54,7 @@ namespace rexsapi
 
     auto rexsModel = *doc.select_nodes("/model").begin();
     TModelInfo info{getStringAttribute(rexsModel, "applicationId"), getStringAttribute(rexsModel, "applicationVersion"),
-                    getStringAttribute(rexsModel, "date"), getStringAttribute(rexsModel, "version")};
+                    getStringAttribute(rexsModel, "date"), TRexsVersion{getStringAttribute(rexsModel, "version")}};
 
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
