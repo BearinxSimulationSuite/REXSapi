@@ -18,7 +18,7 @@ struct TREXSVersionNumber {
 
 enum TSideType { REXS_component, REXS_component_group };
 
-enum TDirection { bidirectional, REXS_to_Bearinx };
+enum TDirection { bidirectional, REXS_to_Bearinx, Bearinx_to_REXS };
 
 enum TAttributeDimension { scalar_dimension };
 
@@ -50,6 +50,16 @@ public:
   std::string Attribute_Name_side_2;
   TAttributeType Attribute_Type;
   TAttributeDimension Attribute_Dimension;
+  TREXSVersionNumber From_REXS_Version;
+  TREXSVersionNumber To_REXS_Version;
+};
+
+class TRelationRule : public TRule
+{
+public:
+  TSideType Object_Type_1;
+  TSideType Object_Type_2;
+  TDirection Direction;
   TREXSVersionNumber From_REXS_Version;
   TREXSVersionNumber To_REXS_Version;
 };
@@ -99,14 +109,14 @@ struct Data {
 class TComponentRules
 {
 public:
-  TComponentRules(const TREXSVersionNumber& rexs_version, std::vector<TRule*> rules)
+  TComponentRules(const TREXSVersionNumber& rexs_version, const std::vector<TRule*>& rules)
   {
     for (const auto* rule : rules) {
       if (const auto* componentRule = dynamic_cast<const TComponentRule*>(rule); componentRule) {
         if (componentRule->Type_Side_1 == REXS_component &&
             ((componentRule->Direction == bidirectional || componentRule->Direction == REXS_to_Bearinx) &&
-             (rexs_version.m_MajorVersionNr > componentRule->From_REXS_Version.m_MajorVersionNr) &&
-             (rexs_version.m_MajorVersionNr < componentRule->To_REXS_Version.m_MajorVersionNr))) {
+             (rexs_version.m_MajorVersionNr >= componentRule->From_REXS_Version.m_MajorVersionNr) &&
+             (rexs_version.m_MajorVersionNr <= componentRule->To_REXS_Version.m_MajorVersionNr))) {
           m_ComponentRules[componentRule->Name_Side_1] = componentRule;
         }
       }
@@ -130,14 +140,14 @@ private:
 class TAttributeRules
 {
 public:
-  TAttributeRules(const TREXSVersionNumber& rexs_version, std::vector<TRule*> rules)
+  TAttributeRules(const TREXSVersionNumber& rexs_version, const std::vector<TRule*>& rules)
   {
     for (const auto* rule : rules) {
       if (const auto* attributeRule = dynamic_cast<const TAttributeRule*>(rule); attributeRule) {
         if ((attributeRule->Type_Side_1 == REXS_component || attributeRule->Type_Side_1 == REXS_component_group) &&
             ((attributeRule->Direction == bidirectional || attributeRule->Direction == REXS_to_Bearinx) &&
-             (rexs_version.m_MajorVersionNr > attributeRule->From_REXS_Version.m_MajorVersionNr) &&
-             (rexs_version.m_MajorVersionNr < attributeRule->To_REXS_Version.m_MajorVersionNr))) {
+             (rexs_version.m_MajorVersionNr >= attributeRule->From_REXS_Version.m_MajorVersionNr) &&
+             (rexs_version.m_MajorVersionNr <= attributeRule->To_REXS_Version.m_MajorVersionNr))) {
           m_AttributeRules[attributeRule->Attribute_Name_side_1] = attributeRule;
         }
       }
