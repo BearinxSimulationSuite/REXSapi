@@ -79,8 +79,8 @@ namespace rexsapi
         }
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
-          result.addError(TResourceError{
-            fmt::format("attribute '{}' of component '{}' does specify the correct value", id, componentId)});
+          result.addError(TResourceError{fmt::format(
+            "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
         }
 

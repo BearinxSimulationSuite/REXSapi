@@ -37,6 +37,11 @@ namespace rexsapi
       return m_Errors.empty();
     }
 
+    const std::vector<TResourceError>& getErrors() const
+    {
+      return m_Errors;
+    }
+
   private:
     std::vector<TResourceError> m_Errors;
   };

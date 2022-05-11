@@ -88,6 +88,11 @@ TEST_CASE("Model loader test")
     rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
     rexsapi::TLoaderResult result;
     auto model = loader.load(result, registry);
-    CHECK(result);
+    CHECK_FALSE(result);
+    REQUIRE(result.getErrors().size() == 2);
+    CHECK(result.getErrors()[0].m_Message ==
+          "value of attribute 'material_type_din_743_2012' of component '238' does not have the correct value type");
+    CHECK(result.getErrors()[1].m_Message ==
+          "value of attribute 'material_type_din_743_2012' of component '239' does not have the correct value type");
   }
 }

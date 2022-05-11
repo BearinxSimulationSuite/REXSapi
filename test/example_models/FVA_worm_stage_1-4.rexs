@@ -221,7 +221,7 @@
       <attribute id="material_category_vdi_2736_2014" unit="none">steel</attribute>
       <attribute id="material_designation" unit="none">42CrMo4</attribute>
       <attribute id="material_hardening_method_fkm_2012" unit="none">unhardened</attribute>
-      <attribute id="material_type_din_743_2012" unit="none">cr_ni_mo_case_hardening_steel</attribute>
+      <attribute id="material_type_din_743_2012" unit="none">2</attribute>
       <attribute id="material_type_fkm_2012" unit="none">heat_treatable_steel_quenched_tempered_condition</attribute>
       <attribute id="poisson_ratio" unit="none">0.3</attribute>
       <attribute id="surface_hardness_brinell" unit="HB">266.0</attribute>
@@ -250,7 +250,7 @@
       <attribute id="material_category_vdi_2736_2014" unit="none">steel</attribute>
       <attribute id="material_designation" unit="none">16MnCr5</attribute>
       <attribute id="material_hardening_method_fkm_2012" unit="none">unhardened</attribute>
-      <attribute id="material_type_din_743_2012" unit="none">nitriding_steel</attribute>
+      <attribute id="material_type_din_743_2012" unit="none">3</attribute>
       <attribute id="material_type_fkm_2012" unit="none">case_hardening_steel_blank_hardened_condition</attribute>
       <attribute id="poisson_ratio" unit="none">0.3</attribute>
       <attribute id="surface_hardness_brinell" unit="HB">693.5</attribute>
