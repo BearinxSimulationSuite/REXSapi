@@ -1,3 +1,18 @@
+/*
+ * Copyright Schaeffler Technologies AG & Co. KG (info.de@schaeffler.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef REXSAPI_XML_MODEL_LOADER_HXX
 #define REXSAPI_XML_MODEL_LOADER_HXX
@@ -79,8 +94,8 @@ namespace rexsapi
         }
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
-          result.addError(TResourceError{
-            fmt::format("attribute '{}' of component '{}' does specify the correct value", id, componentId)});
+          result.addError(TResourceError{fmt::format(
+            "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
         }
 
