@@ -1,3 +1,18 @@
+/*
+ * Copyright Schaeffler Technologies AG & Co. KG (info.de@schaeffler.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <rexsapi/database/Interval.hxx>
 
@@ -49,7 +64,8 @@ TEST_CASE("Interval test")
 
   SUBCASE("Left open interval")
   {
-    rexsapi::database::TInterval interval{rexsapi::database::TIntervalEndpoint{0, rexsapi::database::TIntervalType::OPEN}, {}};
+    rexsapi::database::TInterval interval{
+      rexsapi::database::TIntervalEndpoint{0, rexsapi::database::TIntervalType::OPEN}, {}};
     CHECK(interval.check(1));
     CHECK(interval.check(42));
     CHECK_FALSE(interval.check(0));
@@ -58,7 +74,8 @@ TEST_CASE("Interval test")
 
   SUBCASE("Right open interval")
   {
-    rexsapi::database::TInterval interval{{}, rexsapi::database::TIntervalEndpoint{500, rexsapi::database::TIntervalType::OPEN}};
+    rexsapi::database::TInterval interval{
+      {}, rexsapi::database::TIntervalEndpoint{500, rexsapi::database::TIntervalType::OPEN}};
     CHECK(interval.check(499));
     CHECK(interval.check(0));
     CHECK(interval.check(-500));
@@ -68,8 +85,9 @@ TEST_CASE("Interval test")
 
   SUBCASE("Left and right closed interval")
   {
-    rexsapi::database::TInterval interval{rexsapi::database::TIntervalEndpoint{-10, rexsapi::database::TIntervalType::CLOSED},
-                                          rexsapi::database::TIntervalEndpoint{10, rexsapi::database::TIntervalType::CLOSED}};
+    rexsapi::database::TInterval interval{
+      rexsapi::database::TIntervalEndpoint{-10, rexsapi::database::TIntervalType::CLOSED},
+      rexsapi::database::TIntervalEndpoint{10, rexsapi::database::TIntervalType::CLOSED}};
     CHECK(interval.check(-10));
     CHECK(interval.check(-9));
     CHECK(interval.check(0));
