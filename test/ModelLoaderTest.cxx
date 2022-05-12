@@ -94,7 +94,7 @@ TEST_CASE("Model loader test")
     const auto& attribute = model->getComponents()[0].getAttributes()[0];
     CHECK(attribute.getAttributeId() == "account_for_gravity");
     CHECK(attribute.getValueType() == rexsapi::TValueType::BOOLEAN);
-    CHECK(attribute.getValue<bool>());
+    CHECK(attribute.getValue<rexsapi::Bool>());
     CHECK(model->getRelations().size() == 1);
   }
 

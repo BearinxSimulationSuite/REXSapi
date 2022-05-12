@@ -17,12 +17,40 @@
 #ifndef REXSAPI_VALUE_HXX
 #define REXSAPI_VALUE_HXX
 
+#include <rexsapi/Exception.hxx>
+#include <rexsapi/Format.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
 #include <variant>
 
 namespace rexsapi
 {
+  template<class... Ts>
+  struct overload : Ts... {
+    using Ts::operator()...;
+  };
+  template<class... Ts>
+  overload(Ts...) -> overload<Ts...>;
+
+  struct Bool {
+    Bool()
+    : m_Value{true}
+    {
+    }
+
+    Bool(bool value)
+    : m_Value{value}
+    {
+    }
+
+    explicit operator bool() const
+    {
+      return m_Value;
+    }
+
+    bool m_Value;
+  };
+
   template<typename T>
   struct Matrix {
     bool validate() const
@@ -64,6 +92,11 @@ namespace rexsapi
     {
     }
 
+    explicit TValue(bool val)
+    : m_Value(static_cast<Bool>(val))
+    {
+    }
+
     TValue(const TValue&) = default;
     TValue(TValue&&) = default;
     TValue& operator=(const TValue&) = delete;
@@ -80,6 +113,12 @@ namespace rexsapi
       return std::get<T>(m_Value);
     }
 
+    template<>
+    const bool& getValue<bool>() const
+    {
+      return std::get<Bool>(m_Value).m_Value;
+    }
+
     template<typename T>
     const T& getValue(const T& def) const
     {
@@ -89,9 +128,47 @@ namespace rexsapi
       return std::get<T>(m_Value);
     }
 
+    std::string asString() const
+    {
+      return std::visit(overload{[](const std::monostate&) -> std::string {
+                                   return "";
+                                 },
+                                 [](const std::string& s) {
+                                   return s;
+                                 },
+                                 [](const Bool& b) -> std::string {
+                                   return fmt::format("{}", (bool)b);
+                                 },
+                                 [](const double& d) -> std::string {
+                                   return fmt::format("{}", d);
+                                 },
+                                 [](const int64_t& i) -> std::string {
+                                   return fmt::format("{}", i);
+                                 },
+                                 [](const std::vector<double>&) -> std::string {
+                                   throw TException{"cannot convert vector to string"};
+                                 },
+                                 [](const std::vector<Bool>&) -> std::string {
+                                   throw TException{"cannot convert vector to string"};
+                                 },
+                                 [](const std::vector<int64_t>&) -> std::string {
+                                   throw TException{"cannot convert vector to string"};
+                                 },
+                                 [](const std::vector<std::string>&) -> std::string {
+                                   throw TException{"cannot convert vector to string"};
+                                 },
+                                 [](const std::vector<std::vector<int64_t>>&) -> std::string {
+                                   throw TException{"cannot convert vector to string"};
+                                 },
+                                 [](const Matrix<double>&) -> std::string {
+                                   throw TException{"cannot convert matrix to string"};
+                                 }},
+                        m_Value);
+    }
+
   private:
     using Variant =
-      std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
+      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
                    std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
 
     Variant m_Value;

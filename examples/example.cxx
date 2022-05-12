@@ -40,11 +40,11 @@ struct TREXSVersionNumber {
   unsigned int m_MinorVersionNr{0};
 };
 
-enum object_type { REXS_component, REXS_component_group };
+enum object_type { REXS_component, REXS_component_group, intermediate_layer_object };
 
 enum direction_type { bidirectional, REXS_to_Bearinx, Bearinx_to_REXS };
 
-enum dimension_of_attribute { scalar_dimension };
+enum dimension_of_attribute { scalar_dimension, vector_dimension, matrix_2D_dimension };
 
 enum type_of_attribute { integer_type, reference_type };
 
@@ -85,6 +85,8 @@ public:
   std::string Attribute_Name_side_2;
   type_of_attribute Attribute_Type;
   dimension_of_attribute Attribute_Dimension;
+  std::string Attribute_Unit_side_1;
+  std::string Attribute_Unit_side_2;
 };
 
 class TRelationRule : public TRule
@@ -181,16 +183,34 @@ struct TIntermediateLayerAttribute {
     Dimension = dimension;
   }
 
+  void setAttributeUnit(const std::string attribute_unit)
+  {
+    AttributeUnit = attribute_unit;
+  }
+
+  void setAttributeValue(const std::string attribute_value, const int attribute_index = -1)
+  {
+    (void)attribute_value;
+    (void)attribute_index;
+  }
+
   std::string Name;
   type_of_attribute Type;
   dimension_of_attribute Dimension;
+  std::string AttributeUnit;
 };
 
 struct TIntermediateLayerObject {
   std::string LayerObjectType;
   std::string Name;
 
-  std::vector<TIntermediateLayerAttribute*> IntermediateLayerAttributes;
+  void register_attribute(TIntermediateLayerAttribute* new_attribute)
+  {
+    Attributes.emplace_back(new_attribute);
+  }
+
+private:
+  std::vector<TIntermediateLayerAttribute*> Attributes;
 };
 
 class TIntermediateLayerRelation
@@ -230,10 +250,24 @@ struct TREXSTransmissionModelIntermediateLayer {
     return m_Version;
   }
 
-  TREXSVersionNumber m_Version;
+  std::string convert_value(const std::string value, const type_of_attribute attribute_type, const object_type type_1,
+                            const std::string unit_1, const object_type type_2, const std::string unit_2) const
+  {
+    (void)value;
+    (void)attribute_type;
+    (void)type_1;
+    (void)unit_1;
+    (void)type_2;
+    (void)unit_2;
+    return "";
+  }
+
   std::vector<TRule*> Rules;
   std::vector<TIntermediateLayerObject*> IntermediateLayerObjects;
   std::vector<TIntermediateLayerRelation*> IntermediateLayerRelation;
+
+private:
+  TREXSVersionNumber m_Version;
 };
 
 struct Data {
@@ -376,6 +410,46 @@ static inline rexsapi::xml::TXSDSchemaValidator createSchameValidator(const std:
   return rexsapi::xml::TXSDSchemaValidator{schemaLoader};
 }
 
+template<typename T>
+void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, const TAttributeRule& attributeRule,
+                       const std::vector<T>& values)
+{
+  int i = 0;
+  for (const auto& val : values) {
+    layerAttribute.setAttributeValue(
+      data.IntermediateLayer->convert_value(rexsapi::TValue{val}.asString(), attributeRule.Attribute_Type,
+                                            REXS_component, attributeRule.Attribute_Unit_side_1,
+                                            intermediate_layer_object, attributeRule.Attribute_Unit_side_2),
+      i++);
+  }
+}
+
+void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, const TAttributeRule& attributeRule,
+                       rexsapi::TValueType type, rexsapi::TValue& value)
+{
+  switch (type) {
+    case rexsapi::TValueType::FLOATING_POINT:
+    case rexsapi::TValueType::BOOLEAN:
+    case rexsapi::TValueType::INTEGER:
+    case rexsapi::TValueType::ENUM:
+    case rexsapi::TValueType::STRING:
+    case rexsapi::TValueType::FILE_REFERENCE:
+      layerAttribute.setAttributeValue(data.IntermediateLayer->convert_value(
+        value.asString(), attributeRule.Attribute_Type, REXS_component, attributeRule.Attribute_Unit_side_1,
+        intermediate_layer_object, attributeRule.Attribute_Unit_side_2));
+      break;
+    case rexsapi::TValueType::BOOLEAN_ARRAY:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<rexsapi::Bool>>());
+      break;
+    case rexsapi::TValueType::FLOATING_POINT_ARRAY:
+    case rexsapi::TValueType::REFERENCE_COMPONENT:
+    case rexsapi::TValueType::FLOATING_POINT_MATRIX:
+    case rexsapi::TValueType::INTEGER_ARRAY:
+    case rexsapi::TValueType::ENUM_ARRAY:
+    case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
+      break;
+  }
+}
 
 class TREXSTransmissionModelXmlInterface
 {
@@ -440,8 +514,8 @@ private:
 
   bool fillIntermediateLayerComponents(Data& data, const rexsapi::TComponents& components) const
   {
-    TComponentRules componentRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
-    TAttributeRules attributeRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
+    TComponentRules componentRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
+    TAttributeRules attributeRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
 
     for (const auto& component : components) {
       if (const auto* componentRule = componentRules.getRule(component); componentRule) {
@@ -452,11 +526,54 @@ private:
 
         for (const auto& attribute : component.getAttributes()) {
           if (const auto* attributeRule = attributeRules.getRule(attribute); attributeRule) {
+            if (!((attribute.getUnit().getName() == attributeRule->Attribute_Unit_side_1) ||
+                  (attribute.getUnit().getName() == "none") ||
+                  ((attribute.getUnit().getName() == "") && (attributeRule->Attribute_Unit_side_1 == "none")))) {
+              // add some error message
+            }
+
             auto* new_layer_attribute = new TIntermediateLayerAttribute;
             new_layer_attribute->setAttributeName(attributeRule->Attribute_Name_side_2);
             new_layer_attribute->setAttributeType(attributeRule->Attribute_Type);
             new_layer_attribute->setAttributeDimension(attributeRule->Attribute_Dimension);
-            new_layer_object->IntermediateLayerAttributes.emplace_back(new_layer_attribute);
+            new_layer_attribute->setAttributeUnit(attributeRule->Attribute_Unit_side_2);
+
+            switch (attributeRule->Attribute_Dimension) {
+              case scalar_dimension:
+                if (attributeRule->Attribute_Type != reference_type) {
+                  new_layer_attribute->setAttributeValue(data.IntermediateLayer->convert_value(
+                    attribute.getValueAsString(), attributeRule->Attribute_Type, REXS_component,
+                    attributeRule->Attribute_Unit_side_1, intermediate_layer_object,
+                    attributeRule->Attribute_Unit_side_2));
+                } else {  // Referenz-Typ --> Rexs-ID mit Zwischenschicht-ID ersetzen
+                  std::string layer_id = "reference not found";
+                  // TODO (lcf): solve reference object problem see Issue #33
+                  new_layer_attribute->setAttributeValue(layer_id);
+                }
+                break;
+              case vector_dimension: {
+                /*
+
+                XMLSize_t element_node_list_length = array_element_node_list->getLength();
+                for (XMLSize_t i = 0; i < element_node_list_length; ++i) {
+                  DOMNode* node_i = array_element_node_list->item(i);
+                  DOMElement* array_element_i = dynamic_cast<DOMElement*>(node_i);
+                  std::string rexs_attribute_value_i = XMLCh_to_string(array_element_i->getTextContent());
+                  new_layer_attribute->setAttributeValue(
+                    intermediate_layer->convert_value(rexs_attribute_value_i, attr_rule->Attribute_Type, REXS_component,
+                                                      attr_rule->Attribute_Unit_side_1, intermediate_layer_object,
+                                                      attr_rule->Attribute_Unit_side_2),
+                    static_cast<int>(i));
+                }*/
+                break;
+              }
+              case matrix_2D_dimension:
+                break;
+              default:
+                ASSERT_OTHERWISE_THROW(attributeRule->Attribute_Dimension == matrix_2D_dimension, "REXS import error");
+            }
+
+            new_layer_object->register_attribute(new_layer_attribute);
           }
         }
       }
@@ -469,7 +586,7 @@ private:
   {
     bool success{true};
 
-    TRelationRules relationRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
+    TRelationRules relationRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
 
     for (const auto& relation : relations) {
       if (const auto* relationRule = relationRules.getRule(relation); relationRule) {

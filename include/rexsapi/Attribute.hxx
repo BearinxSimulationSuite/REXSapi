@@ -64,6 +64,11 @@ namespace rexsapi
       return m_Value.getValue<T>();
     }
 
+    [[nodiscard]] std::string getValueAsString() const
+    {
+      return m_Value.asString();
+    }
+
   private:
     const database::TAttribute& m_Attribute;
     TUnit m_Unit;
