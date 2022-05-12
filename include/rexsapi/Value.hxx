@@ -33,10 +33,7 @@ namespace rexsapi
   overload(Ts...) -> overload<Ts...>;
 
   struct Bool {
-    Bool()
-    : m_Value{true}
-    {
-    }
+    Bool() = default;
 
     Bool(bool value)
     : m_Value{value}
@@ -48,7 +45,7 @@ namespace rexsapi
       return m_Value;
     }
 
-    bool m_Value;
+    bool m_Value{false};
   };
 
   template<typename T>
@@ -69,6 +66,25 @@ namespace rexsapi
     std::vector<std::vector<T>> m_Values;
   };
 
+
+  namespace detail
+  {
+    using Variant =
+      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
+                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
+
+    template<typename T>
+    inline const T& value_getter(const Variant& value)
+    {
+      return std::get<T>(value);
+    }
+
+    template<>
+    inline const bool& value_getter<bool>(const Variant& value)
+    {
+      return std::get<Bool>(value).m_Value;
+    }
+  }
 
   class TValue
   {
@@ -93,7 +109,7 @@ namespace rexsapi
     }
 
     explicit TValue(bool val)
-    : m_Value(static_cast<Bool>(val))
+    : m_Value(Bool{val})
     {
     }
 
@@ -110,13 +126,7 @@ namespace rexsapi
     template<typename T>
     const T& getValue() const
     {
-      return std::get<T>(m_Value);
-    }
-
-    template<>
-    const bool& getValue<bool>() const
-    {
-      return std::get<Bool>(m_Value).m_Value;
+      return detail::value_getter<T>(m_Value);
     }
 
     template<typename T>
@@ -137,7 +147,7 @@ namespace rexsapi
                                    return s;
                                  },
                                  [](const Bool& b) -> std::string {
-                                   return fmt::format("{}", (bool)b);
+                                   return fmt::format("{}", static_cast<bool>(b));
                                  },
                                  [](const double& d) -> std::string {
                                    return fmt::format("{}", d);
@@ -167,11 +177,7 @@ namespace rexsapi
     }
 
   private:
-    using Variant =
-      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
-
-    Variant m_Value;
+    detail::Variant m_Value;
   };
 }
 

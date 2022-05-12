@@ -58,6 +58,11 @@ namespace rexsapi
       return !m_Value.isEmpty();
     }
 
+    [[nodiscard]] const TValue& getValue() const
+    {
+      return m_Value;
+    }
+
     template<typename T>
     [[nodiscard]] const T& getValue() const
     {

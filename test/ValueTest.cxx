@@ -96,9 +96,30 @@ TEST_CASE("Value test")
     CHECK(val.getValue<std::vector<rexsapi::Bool>>().size() == 4);
     CHECK_THROWS(val.asString());
   }
-}
 
-std::string someConversionFunction(const std::string& s)
-{
-  return s;
+  SUBCASE("vector of double")
+  {
+    std::vector<double> aofd{42.0, 8.15, 47.11};
+    rexsapi::TValue val{aofd};
+    CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<std::vector<double>>().size() == 3);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("vector of strings")
+  {
+    std::vector<std::string> aofs{"puschel", "hutzli", "putzli"};
+    rexsapi::TValue val{aofs};
+    CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<std::vector<std::string>>().size() == 3);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("matrix of double")
+  {
+    rexsapi::Matrix<double> matrix{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}};
+    rexsapi::TValue val{matrix};
+    CHECK_FALSE(val.isEmpty());
+    CHECK_THROWS(val.asString());
+  }
 }

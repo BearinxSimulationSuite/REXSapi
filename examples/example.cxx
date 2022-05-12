@@ -411,8 +411,8 @@ static inline rexsapi::xml::TXSDSchemaValidator createSchameValidator(const std:
 }
 
 template<typename T>
-void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, const TAttributeRule& attributeRule,
-                       const std::vector<T>& values)
+static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& layerAttribute,
+                              const TAttributeRule& attributeRule, const std::vector<T>& values)
 {
   int i = 0;
   for (const auto& val : values) {
@@ -424,8 +424,9 @@ void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, 
   }
 }
 
-void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, const TAttributeRule& attributeRule,
-                       rexsapi::TValueType type, rexsapi::TValue& value)
+static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& layerAttribute,
+                              const TAttributeRule& attributeRule, rexsapi::TValueType type,
+                              const rexsapi::TValue& value)
 {
   switch (type) {
     case rexsapi::TValueType::FLOATING_POINT:
@@ -442,10 +443,18 @@ void setAttributeValue(Data& data, TIntermediateLayerAttribute& layerAttribute, 
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<rexsapi::Bool>>());
       break;
     case rexsapi::TValueType::FLOATING_POINT_ARRAY:
-    case rexsapi::TValueType::REFERENCE_COMPONENT:
-    case rexsapi::TValueType::FLOATING_POINT_MATRIX:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<double>>());
+      break;
     case rexsapi::TValueType::INTEGER_ARRAY:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<int64_t>>());
+      break;
     case rexsapi::TValueType::ENUM_ARRAY:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<std::string>>());
+      break;
+    case rexsapi::TValueType::REFERENCE_COMPONENT:
+      // TODO (lcf)
+      break;
+    case rexsapi::TValueType::FLOATING_POINT_MATRIX:
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
       break;
   }
@@ -552,19 +561,8 @@ private:
                 }
                 break;
               case vector_dimension: {
-                /*
-
-                XMLSize_t element_node_list_length = array_element_node_list->getLength();
-                for (XMLSize_t i = 0; i < element_node_list_length; ++i) {
-                  DOMNode* node_i = array_element_node_list->item(i);
-                  DOMElement* array_element_i = dynamic_cast<DOMElement*>(node_i);
-                  std::string rexs_attribute_value_i = XMLCh_to_string(array_element_i->getTextContent());
-                  new_layer_attribute->setAttributeValue(
-                    intermediate_layer->convert_value(rexs_attribute_value_i, attr_rule->Attribute_Type, REXS_component,
-                                                      attr_rule->Attribute_Unit_side_1, intermediate_layer_object,
-                                                      attr_rule->Attribute_Unit_side_2),
-                    static_cast<int>(i));
-                }*/
+                setAttributeValue(data, *new_layer_attribute, *attributeRule, attribute.getValueType(),
+                                  attribute.getValue());
                 break;
               }
               case matrix_2D_dimension:
