@@ -3,6 +3,13 @@
 
 #include <iostream>
 
+#define ASSERT_OTHERWISE_THROW(expression, message)                                                                    \
+  {                                                                                                                    \
+    if (!(expression)) {                                                                                               \
+      throw rexsapi::TException{message};                                                                              \
+    }                                                                                                                  \
+  }
+
 struct TREXSVersionNumber {
   TREXSVersionNumber() = default;
 
@@ -12,56 +19,150 @@ struct TREXSVersionNumber {
   {
   }
 
+  bool matches(const TREXSVersionNumber& fromVersion, const TREXSVersionNumber& toVersion) const
+  {
+    return *this >= fromVersion && *this <= toVersion;
+  }
+
+  friend bool operator>=(const TREXSVersionNumber& lhs, const TREXSVersionNumber& rhs)
+  {
+    return (lhs.m_MajorVersionNr > rhs.m_MajorVersionNr ||
+            (lhs.m_MajorVersionNr == rhs.m_MajorVersionNr && lhs.m_MinorVersionNr >= rhs.m_MinorVersionNr));
+  }
+
+  friend bool operator<=(const TREXSVersionNumber& lhs, const TREXSVersionNumber& rhs)
+  {
+    return (lhs.m_MajorVersionNr < rhs.m_MajorVersionNr ||
+            (lhs.m_MajorVersionNr == rhs.m_MajorVersionNr && lhs.m_MinorVersionNr <= rhs.m_MinorVersionNr));
+  }
+
   unsigned int m_MajorVersionNr{0};
   unsigned int m_MinorVersionNr{0};
 };
 
-enum TSideType { REXS_component, REXS_component_group };
+enum object_type { REXS_component, REXS_component_group };
 
-enum TDirection { bidirectional, REXS_to_Bearinx, Bearinx_to_REXS };
+enum direction_type { bidirectional, REXS_to_Bearinx, Bearinx_to_REXS };
 
-enum TAttributeDimension { scalar_dimension };
+enum dimension_of_attribute { scalar_dimension };
 
-enum TAttributeType { integer_type, reference_type };
+enum type_of_attribute { integer_type, reference_type };
+
+enum relation_type { invalid_relation_type, top_level, sub_level };
 
 class TRule
 {
 public:
   virtual ~TRule() = default;
+
+  TREXSVersionNumber From_REXS_Version;
+  TREXSVersionNumber To_REXS_Version;
 };
 
 class TComponentRule : public TRule
 {
 public:
-  TSideType Type_Side_1;
-  TDirection Direction;
+  object_type Type_Side_1;
+  direction_type Direction;
   std::string Name_Side_1;
   std::string Name_Side_2;
-  TREXSVersionNumber From_REXS_Version;
-  TREXSVersionNumber To_REXS_Version;
+};
+
+class TComponentGroupRule : public TRule
+{
+public:
+  object_type Group_Type;
+  std::string Group_Name;
+  std::vector<std::string> Types;
 };
 
 class TAttributeRule : public TRule
 {
 public:
-  TSideType Type_Side_1;
-  TDirection Direction;
+  object_type Type_Side_1;
+  direction_type Direction;
   std::string Attribute_Name_side_1;
   std::string Attribute_Name_side_2;
-  TAttributeType Attribute_Type;
-  TAttributeDimension Attribute_Dimension;
-  TREXSVersionNumber From_REXS_Version;
-  TREXSVersionNumber To_REXS_Version;
+  type_of_attribute Attribute_Type;
+  dimension_of_attribute Attribute_Dimension;
 };
 
 class TRelationRule : public TRule
 {
 public:
-  TSideType Object_Type_1;
-  TSideType Object_Type_2;
-  TDirection Direction;
-  TREXSVersionNumber From_REXS_Version;
-  TREXSVersionNumber To_REXS_Version;
+  std::string getParameter(const unsigned int i) const
+  {
+    std::string param = "invalid";
+    switch (i) {
+      case 0:
+        param = Parameter_1;
+        break;
+      case 1:
+        param = Parameter_2;
+        break;
+      case 2:
+        param = Parameter_3;
+        break;
+      default:
+        ASSERT_OTHERWISE_THROW(false, "unhandled");
+        break;
+    }
+    return param;
+  }
+
+  relation_type getRelationType(const unsigned int i) const
+  {
+    relation_type rel_type = invalid_relation_type;
+    switch (i) {
+      case 0:
+        rel_type = Relation_Type_1;
+        break;
+      case 1:
+        rel_type = Relation_Type_2;
+        break;
+      case 2:
+        rel_type = Relation_Type_3;
+        break;
+      default:
+        ASSERT_OTHERWISE_THROW(false, "unhandled");
+        break;
+    }
+    return rel_type;
+  }
+  std::string getName(const unsigned int i) const
+  {
+    std::string name = "invalid";
+    switch (i) {
+      case 0:
+        name = Name_1;
+        break;
+      case 1:
+        name = Name_2;
+        break;
+      case 2:
+        name = Name_3;
+        break;
+      default:
+        ASSERT_OTHERWISE_THROW(false, "unhandled");
+        break;
+    }
+    return name;
+  }
+
+  std::string Name;
+  object_type Object_Type_1;
+  object_type Object_Type_2;
+  std::string Parameter_1;
+  std::string Parameter_2;
+  std::string Parameter_3;
+  relation_type Relation_Type_1;
+  relation_type Relation_Type_2;
+  relation_type Relation_Type_3;
+  std::string Name_1;
+  std::string Name_2;
+  std::string Name_3;
+  direction_type Direction;
+  std::string Type;
 };
 
 struct TIntermediateLayerAttribute {
@@ -70,19 +171,19 @@ struct TIntermediateLayerAttribute {
     Name = std::move(name);
   }
 
-  void setAttributeType(TAttributeType type)
+  void setAttributeType(type_of_attribute type)
   {
     Type = type;
   }
 
-  void setAttributeDimension(TAttributeDimension dimension)
+  void setAttributeDimension(dimension_of_attribute dimension)
   {
     Dimension = dimension;
   }
 
   std::string Name;
-  TAttributeType Type;
-  TAttributeDimension Dimension;
+  type_of_attribute Type;
+  dimension_of_attribute Dimension;
 };
 
 struct TIntermediateLayerObject {
@@ -92,18 +193,110 @@ struct TIntermediateLayerObject {
   std::vector<TIntermediateLayerAttribute*> IntermediateLayerAttributes;
 };
 
+class TIntermediateLayerRelation
+{
+public:
+  class Component
+  {
+  public:
+    relation_type BearinxRelation_Type = invalid_relation_type;
+    std::string BearinxObjectType;
+    relation_type REXSRelation_Type = invalid_relation_type;
+    std::string REXSObjectType;
+    TIntermediateLayerObject* Object;
+    int ObjectIndex = -1;  // ChildIndex, Order
+  };
+
+  std::string LayerRelationType;
+
+  std::vector<Component*> Comps;
+
+  ~TIntermediateLayerRelation()
+  {
+    for (std::vector<Component*>::iterator it = Comps.begin(); it < Comps.end(); ++it) {
+      delete *it;
+    }
+  }
+};
+
 struct TREXSTransmissionModelIntermediateLayer {
   void setREXSVersion(TREXSVersionNumber version)
   {
     m_Version = version;
   }
 
+  TREXSVersionNumber getREXSVersion() const
+  {
+    return m_Version;
+  }
+
   TREXSVersionNumber m_Version;
+  std::vector<TRule*> Rules;
   std::vector<TIntermediateLayerObject*> IntermediateLayerObjects;
+  std::vector<TIntermediateLayerRelation*> IntermediateLayerRelation;
 };
 
 struct Data {
   TREXSTransmissionModelIntermediateLayer* IntermediateLayer;
+};
+
+static bool is_of_rexs_type(const rexsapi::TComponent& component, const std::string& rexs_type_string,
+                            const TREXSTransmissionModelIntermediateLayer* intermediate_layer)
+{
+  bool of_rexs_type = false;
+  const std::vector<TRule*>& rules = intermediate_layer->Rules;
+  std::string REXS_xml_component_type = component.getId();
+  if (REXS_xml_component_type == rexs_type_string) {
+    of_rexs_type = true;
+  } else {
+    // In Gruppen schauen
+    for (std::vector<TRule*>::const_iterator rule_it_for_groups = rules.begin();
+         (rule_it_for_groups != rules.end()) && (!of_rexs_type); ++rule_it_for_groups) {
+      TComponentGroupRule* comp_group_rule = dynamic_cast<TComponentGroupRule*>(*rule_it_for_groups);
+      if ((comp_group_rule != NULL) && (comp_group_rule->Group_Type == REXS_component_group)) {
+        if (comp_group_rule->Group_Name == rexs_type_string) {
+          for (std::vector<std::string>::iterator types_it = comp_group_rule->Types.begin();
+               types_it != comp_group_rule->Types.end(); ++types_it) {
+            if ((*types_it) == REXS_xml_component_type) {
+              of_rexs_type = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return of_rexs_type;
+}
+class TRelationRules
+{
+public:
+  TRelationRules(const TREXSVersionNumber& rexs_version, const std::vector<TRule*>& rules)
+  {
+    for (const auto* rule : rules) {
+      if (const auto* relationRule = dynamic_cast<const TRelationRule*>(rule); relationRule) {
+        if ((relationRule->Object_Type_1 == REXS_component || relationRule->Object_Type_1 == REXS_component_group) &&
+            (relationRule->Direction == bidirectional || relationRule->Direction == REXS_to_Bearinx) &&
+            rexs_version.matches(relationRule->From_REXS_Version, relationRule->To_REXS_Version)) {
+          m_RelationRules[relationRule->Type] = relationRule;
+        }
+      }
+    }
+  }
+
+  const TRelationRule* getRule(const rexsapi::TRelation& relation) const
+  {
+    auto it = m_RelationRules.find(rexsapi::toRealtionTypeString(relation.getType()));
+    if (it == m_RelationRules.end()) {
+      return nullptr;
+    }
+
+    return it->second;
+  }
+
+private:
+  std::unordered_map<std::string, const TRelationRule*> m_RelationRules;
 };
 
 class TComponentRules
@@ -114,9 +307,8 @@ public:
     for (const auto* rule : rules) {
       if (const auto* componentRule = dynamic_cast<const TComponentRule*>(rule); componentRule) {
         if (componentRule->Type_Side_1 == REXS_component &&
-            ((componentRule->Direction == bidirectional || componentRule->Direction == REXS_to_Bearinx) &&
-             (rexs_version.m_MajorVersionNr >= componentRule->From_REXS_Version.m_MajorVersionNr) &&
-             (rexs_version.m_MajorVersionNr <= componentRule->To_REXS_Version.m_MajorVersionNr))) {
+            (componentRule->Direction == bidirectional || componentRule->Direction == REXS_to_Bearinx) &&
+            rexs_version.matches(componentRule->From_REXS_Version, componentRule->To_REXS_Version)) {
           m_ComponentRules[componentRule->Name_Side_1] = componentRule;
         }
       }
@@ -145,9 +337,8 @@ public:
     for (const auto* rule : rules) {
       if (const auto* attributeRule = dynamic_cast<const TAttributeRule*>(rule); attributeRule) {
         if ((attributeRule->Type_Side_1 == REXS_component || attributeRule->Type_Side_1 == REXS_component_group) &&
-            ((attributeRule->Direction == bidirectional || attributeRule->Direction == REXS_to_Bearinx) &&
-             (rexs_version.m_MajorVersionNr >= attributeRule->From_REXS_Version.m_MajorVersionNr) &&
-             (rexs_version.m_MajorVersionNr <= attributeRule->To_REXS_Version.m_MajorVersionNr))) {
+            (attributeRule->Direction == bidirectional || attributeRule->Direction == REXS_to_Bearinx) &&
+            rexs_version.matches(attributeRule->From_REXS_Version, attributeRule->To_REXS_Version)) {
           m_AttributeRules[attributeRule->Attribute_Name_side_1] = attributeRule;
         }
       }
@@ -240,14 +431,17 @@ private:
     if (success) {
       success = fillIntermediateLayerComponents(data, model.getComponents());
     }
+    if (success) {
+      success = fillIntermediateLayerRelations(data, model.getRelations());
+    }
 
     return true;
   }
 
   bool fillIntermediateLayerComponents(Data& data, const rexsapi::TComponents& components) const
   {
-    TComponentRules componentRules{data.IntermediateLayer->m_Version, m_Rules};
-    TAttributeRules attributeRules{data.IntermediateLayer->m_Version, m_Rules};
+    TComponentRules componentRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
+    TAttributeRules attributeRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
 
     for (const auto& component : components) {
       if (const auto* componentRule = componentRules.getRule(component); componentRule) {
@@ -268,10 +462,100 @@ private:
       }
     }
 
-    return false;
+    return true;
   }
 
-  std::vector<TRule*> m_Rules{};
+  bool fillIntermediateLayerRelations(Data& data, const rexsapi::TRelations& relations) const
+  {
+    bool success{true};
+
+    TRelationRules relationRules{data.IntermediateLayer->m_Version, data.IntermediateLayer->Rules};
+
+    for (const auto& relation : relations) {
+      if (const auto* relationRule = relationRules.getRule(relation); relationRule) {
+        const auto& references = relation.getReferences();
+        ASSERT_OTHERWISE_THROW(references.size() <= 3, "noch nicht behandelt");
+        std::unique_ptr<TIntermediateLayerRelation> new_relation{new TIntermediateLayerRelation};
+        bool relation_ok = true;
+        new_relation->LayerRelationType = relationRule->Name;
+        new_relation->Comps.resize(references.size());
+
+        for (const auto& reference : references) {
+          auto role = reference.getRole();
+          const auto& component = reference.getComponent();
+          TIntermediateLayerObject* layer_object =
+            findIntermediateObject(data.IntermediateLayer->IntermediateLayerObjects, component);
+          TIntermediateLayerRelation::Component* new_relation_component = new TIntermediateLayerRelation::Component;
+          new_relation_component->Object = layer_object;
+
+          auto component_idx = getComponentIndex(*relationRule, role, references.size());
+          relation_type rel_type =
+            rexsapi::getRoleType(role) == rexsapi::TRelationRoleType::TOP_LEVEL ? top_level : sub_level;
+
+          ASSERT_OTHERWISE_THROW(rel_type == relationRule->getRelationType(component_idx), "check failed");
+          ASSERT_OTHERWISE_THROW(rexsapi::toRealtionRoleString(role) == relationRule->getParameter(component_idx),
+                                 "check failed");
+          new_relation_component->REXSRelation_Type = rel_type;
+          std::string rel_rule_name_j = relationRule->getName(component_idx);
+          relation_ok = relation_ok && is_of_rexs_type(component, rel_rule_name_j, data.IntermediateLayer);
+          new_relation_component->REXSObjectType = component.getId();
+
+          ASSERT_OTHERWISE_THROW(new_relation->Comps[component_idx] == nullptr, "check failed");
+          new_relation->Comps[component_idx] = new_relation_component;
+
+          if (hasManufacturingStep(relation)) {
+            int order_idx = static_cast<int>(relation.getOrder().value_or(1));
+            ASSERT_OTHERWISE_THROW((order_idx >= 0) && (order_idx < 5), "Unexpected range!");
+            new_relation->Comps[component_idx]->ObjectIndex = order_idx;
+          }
+          if (relation_ok) {
+            // check, dass alles gesetzt wurde
+            for (uint32_t k = 0; k < references.size(); ++k) {
+              ASSERT_OTHERWISE_THROW(new_relation->Comps[k] != nullptr, "bug");
+            }
+            data.IntermediateLayer->IntermediateLayerRelation.push_back(new_relation.release());
+          }
+        }
+      }
+    }
+
+    return success;
+  }
+
+  static uint32_t getComponentIndex(const TRelationRule& rel_rule, rexsapi::TRelationRole role, size_t nr_of_comps)
+  {
+    uint32_t component_idx = 0;
+    std::string role_string = rexsapi::toRealtionRoleString(role);
+    for (; component_idx < nr_of_comps; ++component_idx) {
+      std::string parameter_string_i = rel_rule.getParameter(component_idx);
+      if (role_string == parameter_string_i) {
+        break;
+      }
+    }
+    ASSERT_OTHERWISE_THROW(component_idx < nr_of_comps, "bug");
+    return component_idx;
+  }
+
+  static TIntermediateLayerObject*
+  findIntermediateObject(const std::vector<TIntermediateLayerObject*>& intermediateLayerObjects,
+                         const rexsapi::TComponent& component)
+  {
+    auto it =
+      std::find_if(intermediateLayerObjects.begin(), intermediateLayerObjects.end(), [&component](const auto* object) {
+        return component.getName() == object->Name;
+      });
+    if (it == intermediateLayerObjects.end()) {
+      // should never happen, maybe assert
+      return nullptr;
+    }
+    return *it;
+  }
+
+  static bool hasManufacturingStep(const rexsapi::TRelation& relation)
+  {
+    return relation.getType() == rexsapi::TRelationType::MANUFACTURING_STEP;
+  }
+
   rexsapi::database::TModelRegistry m_Registry;
   rexsapi::xml::TXSDSchemaValidator m_Validator;
 };

@@ -60,6 +60,7 @@ namespace rexsapi
   };
 
   static TRelationType relationTypeFromString(const std::string& type);
+  static std::string toRealtionTypeString(TRelationType type);
 
 
   enum class TRelationRole {
@@ -86,6 +87,11 @@ namespace rexsapi
   };
 
   static TRelationRole relationRoleFromString(const std::string& role);
+  static std::string toRealtionRoleString(TRelationRole type);
+
+
+  enum class TRelationRoleType { TOP_LEVEL, SUB_LEVEL };
+  static TRelationRoleType getRoleType(TRelationRole role);
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -135,6 +141,44 @@ namespace rexsapi
     }
 
     throw TException{fmt::format("unknown value type '{}'", type)};
+  }
+
+
+  static inline std::string toRealtionTypeString(TRelationType type)
+  {
+    switch (type) {
+      case TRelationType::ASSEMBLY:
+        return "assembly";
+      case TRelationType::CENTRAL_SHAFT:
+        return "central_shaft";
+      case TRelationType::CONNECTION:
+        return "connection";
+      case TRelationType::COUPLING:
+        return "coupling";
+      case TRelationType::FLANK:
+        return "flank";
+      case TRelationType::MANUFACTURING_STEP:
+        return "manufacturing_step";
+      case TRelationType::ORDERED_ASSEMBLY:
+        return "ordered_assembly";
+      case TRelationType::ORDERED_REFERENCE:
+        return "ordered_reference";
+      case TRelationType::PLANET_CARRIER_SHAFT:
+        return "planet_carrier_shaft";
+      case TRelationType::PLANET_PIN:
+        return "planet_pin";
+      case TRelationType::PLANET_SHAFT:
+        return "planet_shaft";
+      case TRelationType::REFERENCE:
+        return "reference";
+      case TRelationType::SIDE:
+        return "side";
+      case TRelationType::STAGE:
+        return "stage";
+      case TRelationType::STAGE_GEAR_DATA:
+        return "stage_gear_data";
+    }
+    throw TException{"unknown relation type"};
   }
 
 
@@ -189,6 +233,53 @@ namespace rexsapi
     throw TException{fmt::format("unknown relation type '{}'", type)};
   }
 
+
+  static inline std::string toRealtionRoleString(TRelationRole role)
+  {
+    switch (role) {
+      case TRelationRole::ASSEMBLY:
+        return "assembly";
+      case TRelationRole::GEAR:
+        return "assembly";
+      case TRelationRole::GEAR_1:
+        return "gear_1";
+      case TRelationRole::GEAR_2:
+        return "gear_2";
+      case TRelationRole::INNER_PART:
+        return "inner_part";
+      case TRelationRole::LEFT:
+        return "left";
+      case TRelationRole::MANUFACTURING_SETTINGS:
+        return "manufacturing_stettings";
+      case TRelationRole::ORIGIN:
+        return "origin";
+      case TRelationRole::OUTER_PART:
+        return "outer_part";
+      case TRelationRole::PART:
+        return "part";
+      case TRelationRole::PLANETARY_STAGE:
+        return "planetary_stage";
+      case TRelationRole::REFERENCED:
+        return "referenced";
+      case TRelationRole::RIGHT:
+        return "right";
+      case TRelationRole::SHAFT:
+        return "shaft";
+      case TRelationRole::SIDE_1:
+        return "side_1";
+      case TRelationRole::SIDE_2:
+        return "side_2";
+      case TRelationRole::STAGE:
+        return "stage";
+      case TRelationRole::STAGE_GEAR_DATA:
+        return "stage_gear_data";
+      case TRelationRole::TOOL:
+        return "tool";
+      case TRelationRole::WORKPIECE:
+        return "workpiece";
+    }
+    throw TException{"unknown relation role"};
+  }
 
   static inline TRelationRole relationRoleFromString(const std::string& role)
   {
@@ -254,6 +345,36 @@ namespace rexsapi
     }
 
     throw TException{fmt::format("unknown relation role '{}'", role)};
+  }
+
+
+  static inline TRelationRoleType getRoleType(TRelationRole role)
+  {
+    switch (role) {
+      case TRelationRole::ASSEMBLY:
+      case TRelationRole::GEAR:
+      case TRelationRole::ORIGIN:
+      case TRelationRole::PLANETARY_STAGE:
+      case TRelationRole::STAGE:
+      case TRelationRole::WORKPIECE:
+        return TRelationRoleType::TOP_LEVEL;
+      case TRelationRole::GEAR_1:
+      case TRelationRole::GEAR_2:
+      case TRelationRole::INNER_PART:
+      case TRelationRole::LEFT:
+      case TRelationRole::MANUFACTURING_SETTINGS:
+      case TRelationRole::OUTER_PART:
+      case TRelationRole::PART:
+      case TRelationRole::REFERENCED:
+      case TRelationRole::RIGHT:
+      case TRelationRole::SHAFT:
+      case TRelationRole::SIDE_1:
+      case TRelationRole::SIDE_2:
+      case TRelationRole::STAGE_GEAR_DATA:
+      case TRelationRole::TOOL:
+        return TRelationRoleType::SUB_LEVEL;
+    }
+    throw TException{"unknown relation role"};
   }
 }
 
