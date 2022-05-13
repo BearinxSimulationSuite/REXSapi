@@ -42,7 +42,7 @@ TEST_CASE("Component test")
 
     rexsapi::database::TComponent component{"cylindrical_gear", "Cylindrical gear", std::move(attributes)};
 
-    CHECK(component.getId() == "cylindrical_gear");
+    CHECK(component.getComponentId() == "cylindrical_gear");
     CHECK(component.getName() == "Cylindrical gear");
     auto atts = component.getAttributes();
     CHECK(atts.size() == 2);
