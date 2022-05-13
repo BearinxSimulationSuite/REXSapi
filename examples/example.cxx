@@ -193,6 +193,13 @@ struct TIntermediateLayerAttribute {
     (void)attribute_value;
     (void)attribute_index;
   }
+  void setAttributeValue(const std::string attribute_value, const int attribute_row_index,
+                         const int attribute_column_index)
+  {
+    (void)attribute_value;
+    (void)attribute_row_index;
+    (void)attribute_column_index;
+  }
 
   std::string Name;
   type_of_attribute Type;
@@ -404,7 +411,7 @@ static inline rexsapi::database::TModelRegistry createModelRegistry(const std::f
 }
 
 
-static inline rexsapi::xml::TXSDSchemaValidator createSchameValidator(const std::filesystem::path& modelSchemaPath)
+static inline rexsapi::xml::TXSDSchemaValidator createSchemaValidator(const std::filesystem::path& modelSchemaPath)
 {
   rexsapi::xml::TFileXsdSchemaLoader schemaLoader{modelSchemaPath};
   return rexsapi::xml::TXSDSchemaValidator{schemaLoader};
@@ -421,6 +428,24 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
                                             REXS_component, attributeRule.Attribute_Unit_side_1,
                                             intermediate_layer_object, attributeRule.Attribute_Unit_side_2),
       i++);
+  }
+}
+
+template<typename T>
+static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& layerAttribute,
+                              const TAttributeRule& attributeRule, const rexsapi::Matrix<T>& values)
+{
+  int i = 0;
+  int j = 0;
+  for (const auto& row : values.m_Values) {
+    for (const auto& col : row) {
+      layerAttribute.setAttributeValue(
+        data.IntermediateLayer->convert_value(rexsapi::TValue{col}.asString(), attributeRule.Attribute_Type,
+                                              REXS_component, attributeRule.Attribute_Unit_side_1,
+                                              intermediate_layer_object, attributeRule.Attribute_Unit_side_2),
+        i, j++);
+    }
+    ++i;
   }
 }
 
@@ -455,6 +480,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       // TODO (lcf)
       break;
     case rexsapi::TValueType::FLOATING_POINT_MATRIX:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::Matrix<double>>());
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
       break;
   }
@@ -472,7 +498,7 @@ public:
 
     TREXSTransmissionModelXmlInterface transmissionInterface{
       createModelRegistry(basePath / "models" / "rexs-dbmodel.xsd", basePath / "models"),
-      createSchameValidator(basePath / "models" / "rexs-schema.xsd")};
+      createSchemaValidator(basePath / "models" / "rexs-schema.xsd")};
 
     if (!transmissionInterface.load(data, modelFile)) {
       // add some message
@@ -549,23 +575,10 @@ private:
 
             switch (attributeRule->Attribute_Dimension) {
               case scalar_dimension:
-                if (attributeRule->Attribute_Type != reference_type) {
-                  new_layer_attribute->setAttributeValue(data.IntermediateLayer->convert_value(
-                    attribute.getValueAsString(), attributeRule->Attribute_Type, REXS_component,
-                    attributeRule->Attribute_Unit_side_1, intermediate_layer_object,
-                    attributeRule->Attribute_Unit_side_2));
-                } else {  // Referenz-Typ --> Rexs-ID mit Zwischenschicht-ID ersetzen
-                  std::string layer_id = "reference not found";
-                  // TODO (lcf): solve reference object problem see Issue #33
-                  new_layer_attribute->setAttributeValue(layer_id);
-                }
-                break;
-              case vector_dimension: {
+              case vector_dimension:
+              case matrix_2D_dimension:
                 setAttributeValue(data, *new_layer_attribute, *attributeRule, attribute.getValueType(),
                                   attribute.getValue());
-                break;
-              }
-              case matrix_2D_dimension:
                 break;
               default:
                 ASSERT_OTHERWISE_THROW(attributeRule->Attribute_Dimension == matrix_2D_dimension, "REXS import error");
