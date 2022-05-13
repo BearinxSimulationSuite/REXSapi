@@ -123,6 +123,7 @@ namespace rexsapi
            doc.select_nodes(fmt::format("/model/relations/relation[@id = '{}']/ref", relationId).c_str())) {
         std::string referenceId = getStringAttribute(reference, "id");
         auto role = relationRoleFromString(getStringAttribute(reference, "role"));
+        std::string hint = getStringAttribute(reference, "hint");
 
         auto it = std::find_if(components.begin(), components.end(), [&referenceId](const auto& component) {
           return component.getId() == referenceId;
@@ -131,7 +132,7 @@ namespace rexsapi
           result.addError(TResourceError{
             fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
         } else {
-          references.emplace_back(TRelationReference{role, *it});
+          references.emplace_back(TRelationReference{role, hint, *it});
         }
       }
 
