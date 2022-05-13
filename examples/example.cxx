@@ -79,6 +79,7 @@ public:
 class TAttributeRule : public TRule
 {
 public:
+  std::string Object_Name_side_1;
   object_type Type_Side_1;
   direction_type Direction;
   std::string Attribute_Name_side_1;
@@ -561,6 +562,9 @@ private:
 
         for (const auto& attribute : component.getAttributes()) {
           if (const auto* attributeRule = attributeRules.getRule(attribute); attributeRule) {
+            if (!is_of_rexs_type(component, attributeRule->Object_Name_side_1, data.IntermediateLayer)) {
+              continue;
+            }
             if (!((attribute.getUnit().getName() == attributeRule->Attribute_Unit_side_1) ||
                   (attribute.getUnit().getName() == "none") ||
                   ((attribute.getUnit().getName() == "") && (attributeRule->Attribute_Unit_side_1 == "none")))) {
