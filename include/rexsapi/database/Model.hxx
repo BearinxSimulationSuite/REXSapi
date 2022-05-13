@@ -177,7 +177,7 @@ namespace rexsapi::database
 
   inline bool TModel::addComponent(TComponent&& component)
   {
-    auto [_, added] = m_Components.try_emplace(component.getId(), std::move(component));
+    auto [_, added] = m_Components.try_emplace(component.getComponentId(), std::move(component));
     return added;
   }
 

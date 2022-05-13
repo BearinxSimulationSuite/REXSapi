@@ -69,13 +69,13 @@ TEST_CASE("Model test")
     CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{"1.4"});
     REQUIRE(model.getComponents().size() == 2);
-    CHECK(model.getComponents()[0].getId() == "gear_casing");
+    CHECK(model.getComponents()[0].getType() == "gear_casing");
     REQUIRE(model.getRelations().size() == 1);
     REQUIRE(model.getRelations()[0].getReferences().size() == 2);
-    CHECK(model.getRelations()[0].getReferences()[0].getComponent().getId() == "gear_casing");
+    CHECK(model.getRelations()[0].getReferences()[0].getComponent().getType() == "gear_casing");
     CHECK(model.getRelations()[0].getReferences()[0].getHint() == "hint0");
     CHECK(model.getRelations()[0].getReferences()[0].getRole() == rexsapi::TRelationRole::ORIGIN);
-    CHECK(model.getRelations()[0].getReferences()[1].getComponent().getId() == "lubricant");
+    CHECK(model.getRelations()[0].getReferences()[1].getComponent().getType() == "lubricant");
     REQUIRE(model.getRelations()[0].getReferences()[1].getComponent().getAttributes().size() == 5);
     const auto& atts = model.getRelations()[0].getReferences()[1].getComponent().getAttributes();
     CHECK(atts[0].getAttributeId() == "density_at_15_degree_celsius");

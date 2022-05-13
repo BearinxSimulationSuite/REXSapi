@@ -25,7 +25,7 @@ namespace rexsapi::database
   {
   public:
     TComponent(std::string id, std::string name, std::vector<std::reference_wrapper<const TAttribute>>&& attributes)
-    : m_Id{std::move(id)}
+    : m_ComponentId{std::move(id)}
     , m_Name{std::move(name)}
     , m_Attributes{std::move(attributes)}
     {
@@ -38,9 +38,9 @@ namespace rexsapi::database
     TComponent& operator=(const TComponent&) = delete;
     TComponent& operator=(TComponent&&) = default;
 
-    [[nodiscard]] const std::string& getId() const
+    [[nodiscard]] const std::string& getComponentId() const
     {
-      return m_Id;
+      return m_ComponentId;
     }
 
     [[nodiscard]] const std::string& getName() const
@@ -59,14 +59,14 @@ namespace rexsapi::database
         return attribute.getAttributeId() == id;
       });
       if (it == m_Attributes.end()) {
-        throw TException{fmt::format("component '{}' does not contain attribute '{}'", m_Id, id)};
+        throw TException{fmt::format("component '{}' does not contain attribute '{}'", m_ComponentId, id)};
       }
 
       return *it;
     }
 
   private:
-    std::string m_Id;
+    std::string m_ComponentId;
     std::string m_Name;
     std::vector<std::reference_wrapper<const TAttribute>> m_Attributes;
   };
