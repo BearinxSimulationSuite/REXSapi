@@ -25,15 +25,16 @@ namespace rexsapi
   class TRelationReference
   {
   public:
-    TRelationReference(TRelationRole role, const TComponent& component)
+    TRelationReference(TRelationRole role, std::string hint, const TComponent& component)
     : m_Role{role}
+    , m_Hint{std::move(hint)}
     , m_Component{component}
     {
     }
 
     [[nodiscard]] const std::string& getHint() const
     {
-      return m_Component.getId();
+      return m_Hint;
     }
 
     [[nodiscard]] TRelationRole getRole() const
@@ -48,6 +49,7 @@ namespace rexsapi
 
   private:
     TRelationRole m_Role;
+    std::string m_Hint;
     const TComponent& m_Component;
   };
 

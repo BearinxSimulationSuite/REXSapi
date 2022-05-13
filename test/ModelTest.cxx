@@ -57,8 +57,8 @@ TEST_CASE("Model test")
     components.emplace_back(rexsapi::TComponent{"lubricant", "S2/220", std::move(attributes)});
 
     rexsapi::TRelationReferences references{
-      rexsapi::TRelationReference{rexsapi::TRelationRole::ORIGIN, components[0]},
-      rexsapi::TRelationReference{rexsapi::TRelationRole::REFERENCED, components[1]}};
+      rexsapi::TRelationReference{rexsapi::TRelationRole::ORIGIN, "hint0", components[0]},
+      rexsapi::TRelationReference{rexsapi::TRelationRole::REFERENCED, "hint1", components[1]}};
 
     rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, {}, std::move(references)}};
 
@@ -73,6 +73,8 @@ TEST_CASE("Model test")
     REQUIRE(model.getRelations().size() == 1);
     REQUIRE(model.getRelations()[0].getReferences().size() == 2);
     CHECK(model.getRelations()[0].getReferences()[0].getComponent().getId() == "gear_casing");
+    CHECK(model.getRelations()[0].getReferences()[0].getHint() == "hint0");
+    CHECK(model.getRelations()[0].getReferences()[0].getRole() == rexsapi::TRelationRole::ORIGIN);
     CHECK(model.getRelations()[0].getReferences()[1].getComponent().getId() == "lubricant");
     REQUIRE(model.getRelations()[0].getReferences()[1].getComponent().getAttributes().size() == 5);
     const auto& atts = model.getRelations()[0].getReferences()[1].getComponent().getAttributes();
