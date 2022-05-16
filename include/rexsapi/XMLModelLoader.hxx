@@ -20,6 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
+#include <rexsapi/ValidityChecker.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
@@ -47,36 +48,6 @@ namespace rexsapi
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
-
-  class TIntervalChecker
-  {
-  public:
-    static bool checkRange(TValueType type, TValue& val, const std::optional<database::TInterval>& interval)
-    {
-      if (interval.has_value()) {
-        switch (type) {
-          case TValueType::FLOATING_POINT:
-            return interval->check(val.getValue<double>());
-          case TValueType::INTEGER:
-            return interval->check(val.getValue<int64_t>());
-          case TValueType::BOOLEAN:
-          case TValueType::ENUM:
-          case TValueType::STRING:
-          case TValueType::FILE_REFERENCE:
-          case TValueType::BOOLEAN_ARRAY:
-          case TValueType::FLOATING_POINT_ARRAY:
-          case TValueType::REFERENCE_COMPONENT:
-          case TValueType::FLOATING_POINT_MATRIX:
-          case TValueType::INTEGER_ARRAY:
-          case TValueType::ENUM_ARRAY:
-          case TValueType::ARRAY_OF_INTEGER_ARRAYS:
-            return true;
-        }
-      }
-
-      return true;
-    }
-  };
 
   inline std::optional<TModel> TXMLModelLoader::load(TLoaderResult& result,
                                                      const rexsapi::database::TModelRegistry& registry,
@@ -124,7 +95,6 @@ namespace rexsapi
         if (!att.getUnit().compare(unit)) {
           result.addError(TResourceError{fmt::format(
             "attribute '{}' of component '{}' does specify the correct unit: '{}'", id, componentId, unit)});
-          continue;
         }
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
@@ -132,7 +102,7 @@ namespace rexsapi
             "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
         }
-        if (!TIntervalChecker::checkRange(att.getValueType(), value.first, att.getInterval())) {
+        if (!TValidityChecker::check(att, value.first)) {
           result.addError(
             TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
         }
