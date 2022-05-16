@@ -109,7 +109,7 @@ TEST_CASE("XML value decoder test")
   {
     auto result = decoder.decode(rexsapi::TValueType::BOOLEAN, enumValue, getNode(doc, "boolean"));
     CHECK(result.second);
-    CHECK(result.first.getValue<bool>());
+    CHECK(result.first.getValue<rexsapi::Bool>());
   }
 
   SUBCASE("Decode integer")
@@ -177,7 +177,7 @@ TEST_CASE("XML value decoder test")
   {
     auto result = decoder.decode(rexsapi::TValueType::BOOLEAN_ARRAY, enumValue, getNode(doc, "boolean array"));
     CHECK(result.second);
-    CHECK(result.first.getValue<std::vector<bool>>().size() == 3);
+    CHECK(result.first.getValue<std::vector<rexsapi::Bool>>().size() == 3);
   }
 
   SUBCASE("Decode enumValue array")

@@ -25,13 +25,16 @@ TEST_CASE("Value test")
   {
     rexsapi::TValue val{};
     CHECK(val.isEmpty());
+    CHECK(val.asString() == "");
   }
 
   SUBCASE("boolean true value")
   {
     rexsapi::TValue val{true};
     CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<rexsapi::Bool>());
     CHECK(val.getValue<bool>());
+    CHECK(val.asString() == "true");
   }
 
   SUBCASE("double value")
@@ -39,6 +42,7 @@ TEST_CASE("Value test")
     rexsapi::TValue val{47.11};
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<double>() == doctest::Approx{47.11});
+    CHECK(val.asString() == "47.11");
   }
 
   SUBCASE("integer value")
@@ -47,6 +51,7 @@ TEST_CASE("Value test")
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<int64_t>() == 4711);
     CHECK(val.getValue<int64_t>(815) == 4711);
+    CHECK(val.asString() == "4711");
   }
 
   SUBCASE("integer default value")
@@ -54,6 +59,7 @@ TEST_CASE("Value test")
     rexsapi::TValue val{};
     CHECK(val.isEmpty());
     CHECK(val.getValue<int64_t>(4711) == 4711);
+    CHECK(val.asString() == "");
   }
 
   SUBCASE("char string value")
@@ -61,6 +67,7 @@ TEST_CASE("Value test")
     rexsapi::TValue val{"My String!"};
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<std::string>() == "My String!");
+    CHECK(val.asString() == "My String!");
   }
 
   SUBCASE("string value")
@@ -69,6 +76,7 @@ TEST_CASE("Value test")
     rexsapi::TValue val{s};
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<std::string>() == "My std String!");
+    CHECK(val.asString() == "My std String!");
   }
 
   SUBCASE("vector of integer")
@@ -77,5 +85,41 @@ TEST_CASE("Value test")
     rexsapi::TValue val{aofi};
     CHECK_FALSE(val.isEmpty());
     CHECK(val.getValue<std::vector<int64_t>>().size() == 3);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("vector of bool")
+  {
+    std::vector<rexsapi::Bool> aofb{true, true, false, true};
+    rexsapi::TValue val{aofb};
+    CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<std::vector<rexsapi::Bool>>().size() == 4);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("vector of double")
+  {
+    std::vector<double> aofd{42.0, 8.15, 47.11};
+    rexsapi::TValue val{aofd};
+    CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<std::vector<double>>().size() == 3);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("vector of strings")
+  {
+    std::vector<std::string> aofs{"puschel", "hutzli", "putzli"};
+    rexsapi::TValue val{aofs};
+    CHECK_FALSE(val.isEmpty());
+    CHECK(val.getValue<std::vector<std::string>>().size() == 3);
+    CHECK_THROWS(val.asString());
+  }
+
+  SUBCASE("matrix of double")
+  {
+    rexsapi::TMatrix<double> matrix{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}};
+    rexsapi::TValue val{matrix};
+    CHECK_FALSE(val.isEmpty());
+    CHECK_THROWS(val.asString());
   }
 }

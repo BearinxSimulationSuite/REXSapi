@@ -28,13 +28,13 @@ TEST_CASE("Unit test")
   {
     rexsapi::TUnit unit{model.findUnitById(2)};
     CHECK_FALSE(unit.isCustomUnit());
-    CHECK(unit.getUnit() == "mm");
+    CHECK(unit.getName() == "mm");
   }
 
   SUBCASE("Custom unit")
   {
     rexsapi::TUnit unit{"hutzli"};
     CHECK(unit.isCustomUnit());
-    CHECK(unit.getUnit() == "hutzli");
+    CHECK(unit.getName() == "hutzli");
   }
 }

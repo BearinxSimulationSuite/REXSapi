@@ -39,7 +39,7 @@ namespace rexsapi
       return m_Unit == nullptr;
     }
 
-    [[nodiscard]] const std::string& getUnit() const
+    [[nodiscard]] const std::string& getName() const
     {
       return m_Unit != nullptr ? m_Unit->getName() : m_CustomUnit;
     }

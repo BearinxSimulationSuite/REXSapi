@@ -74,7 +74,7 @@ namespace rexsapi
     class TBooleanDecoder : public TXMLDecoder
     {
     public:
-      using Type = bool;
+      using Type = Bool;
 
     private:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
