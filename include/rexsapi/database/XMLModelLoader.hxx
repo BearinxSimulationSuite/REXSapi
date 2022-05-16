@@ -39,6 +39,9 @@ namespace rexsapi::database
 
     TLoaderResult load(const std::function<void(TModel)>& callback) const;
 
+  private:
+    std::optional<TInterval> readInterval(const pugi::xpath_node& node) const;
+
     const TResourceLoader& m_Loader;
     const TSchemaLoader& m_SchemaLoader;
   };
@@ -68,42 +71,38 @@ namespace rexsapi::database
       }
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
-      TModel model{TRexsVersion{rexsModel.node().attribute("version").value()},
-                   rexsModel.node().attribute("language").value(), rexsModel.node().attribute("date").value(),
-                   statusFromString(rexsModel.node().attribute("status").value())};
+      TModel model{TRexsVersion{getStringAttribute(rexsModel, "version")}, getStringAttribute(rexsModel, "language"),
+                   getStringAttribute(rexsModel, "date"), statusFromString(getStringAttribute(rexsModel, "status"))};
 
       for (const auto& node : doc.select_nodes("/rexsModel/units/unit")) {
-        auto id = convertToUint64(node.node().attribute("id").value());
-        const auto* name = node.node().attribute("name").value();
+        auto id = convertToUint64(getStringAttribute(node, "id"));
+        auto name = getStringAttribute(node, "name");
         model.addUnit(TUnit{id, name});
       }
 
       for (const auto& node : doc.select_nodes("/rexsModel/valueTypes/valueType")) {
-        auto id = convertToUint64(node.node().attribute("id").value());
-        const auto* name = node.node().attribute("name").value();
+        auto id = convertToUint64(getStringAttribute(node, "id"));
+        auto name = getStringAttribute(node, "name");
         model.addType(id, typeFromString(name));
       }
 
       for (const auto& node : doc.select_nodes("/rexsModel/attributes/attribute")) {
-        const auto* attributeId = node.node().attribute("attributeId").value();
-        const auto* name = node.node().attribute("name").value();
-        auto valueType = model.findValueTypeById(convertToUint64(node.node().attribute("valueType").value()));
-        auto unit = convertToUint64(node.node().attribute("unit").value());
-        std::string symbol;
-        if (const auto& symNode = node.node().attribute("symbol"); !symNode.empty()) {
-          symbol = symNode.value();
-        }
-        // TODO (lcf): get interval
-        std::optional<TInterval> interval;
+        auto attributeId = getStringAttribute(node, "attributeId");
+        auto name = getStringAttribute(node, "name");
+        auto valueType = model.findValueTypeById(convertToUint64(getStringAttribute(node, "valueType")));
+        auto unit = convertToUint64(getStringAttribute(node, "unit"));
+        std::string symbol = getStringAttribute(node, "symbol", "");
+
+        std::optional<TInterval> interval = readInterval(node);
 
         std::optional<TEnumValues> enumValues;
         if (valueType == TValueType::ENUM || valueType == TValueType::ENUM_ARRAY) {
           if (const auto& enums = node.node().first_child();
-              !enums.empty() && std::strncmp(enums.name(), "enumValues", 10) == 0) {
+              !enums.empty() && std::strncmp(enums.name(), "enumValues", ::strlen("enumValues")) == 0) {
             std::vector<TEnumValue> values;
             for (const auto& value : enums.children()) {
-              const auto* enumValue = value.attribute("value").value();
-              const auto* enumName = value.attribute("name").value();
+              auto enumValue = getStringAttribute(value, "value");
+              auto enumName = getStringAttribute(value, "name");
               values.emplace_back(TEnumValue{enumValue, enumName});
             }
             enumValues = TEnumValues{std::move(values)};
@@ -116,21 +115,46 @@ namespace rexsapi::database
 
       std::vector<std::pair<std::string, std::string>> attributeMappings;
       for (const auto& node : doc.select_nodes("/rexsModel/componentAttributeMappings/componentAttributeMapping")) {
-        const auto* componentId = node.node().attribute("componentId").value();
-        const auto* attributeId = node.node().attribute("attributeId").value();
+        auto componentId = getStringAttribute(node, "componentId");
+        auto attributeId = getStringAttribute(node, "attributeId");
         attributeMappings.emplace_back(componentId, attributeId);
       }
       TComponentAttributeMapper attributeMapper{model, std::move(attributeMappings)};
 
       for (const auto& node : doc.select_nodes("/rexsModel/components/component")) {
-        const auto* id = node.node().attribute("componentId").value();
-        const auto* name = node.node().attribute("name").value();
+        auto id = getStringAttribute(node, "componentId");
+        auto name = getStringAttribute(node, "name");
         auto attributes = attributeMapper.getAttributesForComponent(id);
         model.addComponent(TComponent{id, name, std::move(attributes)});
       }
 
       callback(std::move(model));
     });
+  }
+
+  template<typename TResourceLoader, typename TSchemaLoader>
+  std::optional<TInterval>
+  TXmlModelLoader<TResourceLoader, TSchemaLoader>::readInterval(const pugi::xpath_node& node) const
+  {
+    std::optional<TInterval> interval;
+
+    TIntervalEndpoint min;
+    TIntervalEndpoint max;
+
+    if (auto att = node.node().attribute("rangeMin"); !att.empty()) {
+      auto open = getBoolAttribute(node, "rangeMinIntervalOpen", true);
+      min = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
+    }
+    if (auto att = node.node().attribute("rangeMax"); !att.empty()) {
+      auto open = getBoolAttribute(node, "rangeMaxIntervalOpen", true);
+      max = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
+    }
+
+    if (max.isSet() || min.isSet()) {
+      interval = TInterval{min, max};
+    }
+
+    return interval;
   }
 
 }

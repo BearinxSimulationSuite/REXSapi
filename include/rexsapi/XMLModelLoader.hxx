@@ -20,6 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
+#include <rexsapi/ValidityChecker.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
@@ -74,6 +75,7 @@ namespace rexsapi
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
     const auto& dbModel = registry.getModel(info.getVersion(), "en");
+    std::unordered_map<std::string, TComponent*> componentsMapping;
 
     TComponents components;
     for (const auto& component : doc.select_nodes("/model/components/component")) {
@@ -81,16 +83,18 @@ namespace rexsapi
       std::string componentName = getStringAttribute(component, "name", "");
       const auto& componentType = dbModel.findComponentById(getStringAttribute(component, "type"));
 
+      auto attributeNodes =
+        doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
+      components.reserve(attributeNodes.size());
+
       TAttributes attributes;
-      for (const auto& attribute :
-           doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str())) {
+      for (const auto& attribute : attributeNodes) {
         std::string id = getStringAttribute(attribute, "id");
         std::string unit = getStringAttribute(attribute, "unit", "none");
         const auto& att = componentType.findAttributeById(id);
         if (!att.getUnit().compare(unit)) {
           result.addError(TResourceError{fmt::format(
             "attribute '{}' of component '{}' does specify the correct unit: '{}'", id, componentId, unit)});
-          continue;
         }
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
@@ -98,12 +102,17 @@ namespace rexsapi
             "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
         }
+        if (!TValidityChecker::check(att, value.first)) {
+          result.addError(
+            TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
+        }
 
         // TODO (lcf): custom units for custom attributes
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
       }
 
-      components.emplace_back(TComponent{componentId, componentName, std::move(attributes)});
+      components.emplace_back(TComponent{componentType.getComponentId(), componentName, std::move(attributes)});
+      componentsMapping.emplace(componentId, &(components.back()));
     }
 
     TRelations relations;
@@ -125,14 +134,12 @@ namespace rexsapi
         auto role = relationRoleFromString(getStringAttribute(reference, "role"));
         std::string hint = getStringAttribute(reference, "hint");
 
-        auto it = std::find_if(components.begin(), components.end(), [&referenceId](const auto& component) {
-          return component.getId() == referenceId;
-        });
-        if (it == components.end()) {
+        auto it = componentsMapping.find(referenceId);
+        if (it == componentsMapping.end()) {
           result.addError(TResourceError{
             fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
         } else {
-          references.emplace_back(TRelationReference{role, hint, *it});
+          references.emplace_back(TRelationReference{role, hint, *(it->second)});
         }
       }
 

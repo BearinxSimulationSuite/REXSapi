@@ -12,6 +12,7 @@ add_executable(rexsapi_test
   RexsVersionTest.cxx
   TypesTest.cxx
   UnitTest.cxx
+  ValidityCheckerTest.cxx
   ValueTest.cxx
   ValueTypeTest.cxx
   XMLValueDecoderTest.cxx

@@ -287,7 +287,7 @@ static bool is_of_rexs_type(const rexsapi::TComponent& component, const std::str
 {
   bool of_rexs_type = false;
   const std::vector<TRule*>& rules = intermediate_layer->Rules;
-  std::string REXS_xml_component_type = component.getId();
+  std::string REXS_xml_component_type = component.getType();
   if (REXS_xml_component_type == rexs_type_string) {
     of_rexs_type = true;
   } else {
@@ -359,7 +359,7 @@ public:
 
   const TComponentRule* getRule(const rexsapi::TComponent& component) const
   {
-    auto it = m_ComponentRules.find(component.getId());
+    auto it = m_ComponentRules.find(component.getType());
     if (it == m_ComponentRules.end()) {
       return nullptr;
     }
@@ -434,7 +434,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
 
 template<typename T>
 static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& layerAttribute,
-                              const TAttributeRule& attributeRule, const rexsapi::Matrix<T>& values)
+                              const TAttributeRule& attributeRule, const rexsapi::TMatrix<T>& values)
 {
   int i = 0;
   int j = 0;
@@ -481,7 +481,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       // TODO (lcf)
       break;
     case rexsapi::TValueType::FLOATING_POINT_MATRIX:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::Matrix<double>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TMatrix<double>>());
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
       break;
   }
@@ -630,7 +630,7 @@ private:
           new_relation_component->REXSRelation_Type = rel_type;
           std::string rel_rule_name_j = relationRule->getName(component_idx);
           relation_ok = relation_ok && is_of_rexs_type(component, rel_rule_name_j, data.IntermediateLayer);
-          new_relation_component->REXSObjectType = component.getId();
+          new_relation_component->REXSObjectType = component.getType();
 
           ASSERT_OTHERWISE_THROW(new_relation->Comps[component_idx] == nullptr, "check failed");
           new_relation->Comps[component_idx] = new_relation_component;

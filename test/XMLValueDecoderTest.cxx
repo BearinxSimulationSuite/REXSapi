@@ -194,8 +194,8 @@ TEST_CASE("XML value decoder test")
   {
     auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"));
     CHECK(result.second);
-    CHECK(result.first.getValue<rexsapi::Matrix<double>>().m_Values.size() == 3);
-    for (const auto& row : result.first.getValue<rexsapi::Matrix<double>>().m_Values) {
+    CHECK(result.first.getValue<rexsapi::TMatrix<double>>().m_Values.size() == 3);
+    for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {
       CHECK(row.size() == 3);
     }
   }

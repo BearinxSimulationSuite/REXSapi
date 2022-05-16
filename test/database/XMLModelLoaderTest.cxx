@@ -67,7 +67,7 @@ TEST_CASE("XML model loader test")
     });
 
     CHECK(result);
-    CHECK(models.size() == 10);
+    REQUIRE(models.size() == 10);
     std::set<std::string, std::less<>> languages;
     for (const auto& model : models) {
       languages.insert(model.getLanguage());
@@ -75,6 +75,16 @@ TEST_CASE("XML model loader test")
     CHECK(languages.size() == 2);
     CHECK(languages.find("de") != languages.end());
     CHECK(languages.find("en") != languages.end());
+
+    auto it = std::find_if(models.begin(), models.end(), [](const auto& model) {
+      return model.getVersion() == rexsapi::TRexsVersion{1, 4};
+    });
+    REQUIRE(it != models.end());
+
+    const auto& attribute = it->findAttributetById("bulk_temperature");
+    REQUIRE(attribute.getInterval().has_value());
+    CHECK_FALSE(attribute.getInterval()->check(-273.16));
+    CHECK(attribute.getInterval()->check(0));
   }
 
   SUBCASE("Load broken XML")

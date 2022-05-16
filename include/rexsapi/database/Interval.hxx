@@ -43,9 +43,9 @@ namespace rexsapi::database
     bool operator>=(double value) const;
 
   private:
-    const bool m_Set{false};
-    const TIntervalType m_Type{TIntervalType::OPEN};
-    const double m_Value{0.0};
+    bool m_Set{false};
+    TIntervalType m_Type{TIntervalType::OPEN};
+    double m_Value{0.0};
   };
 
 
@@ -66,8 +66,8 @@ namespace rexsapi::database
     }
 
   private:
-    const TIntervalEndpoint m_Min{};
-    const TIntervalEndpoint m_Max{};
+    TIntervalEndpoint m_Min{};
+    TIntervalEndpoint m_Max{};
   };
 
 

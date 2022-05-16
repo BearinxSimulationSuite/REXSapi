@@ -175,7 +175,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
                                        const pugi::xml_node& node) const override
       {
-        Matrix<type> matrix;
+        TMatrix<type> matrix;
         ElementDecoder decoder;
         bool result{true};
 

@@ -49,7 +49,7 @@ namespace rexsapi
   };
 
   template<typename T>
-  struct Matrix {
+  struct TMatrix {
     bool validate() const
     {
       if (m_Values.size()) {
@@ -71,7 +71,7 @@ namespace rexsapi
   {
     using Variant =
       std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
+                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
 
     template<typename T>
     inline const T& value_getter(const Variant& value)
@@ -170,7 +170,7 @@ namespace rexsapi
                                  [](const std::vector<std::vector<int64_t>>&) -> std::string {
                                    throw TException{"cannot convert vector to string"};
                                  },
-                                 [](const Matrix<double>&) -> std::string {
+                                 [](const TMatrix<double>&) -> std::string {
                                    throw TException{"cannot convert matrix to string"};
                                  }},
                         m_Value);
