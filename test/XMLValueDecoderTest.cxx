@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
+#include <rexsapi/Xml.hxx>
 
 #include <doctest.h>
 #include <vector>

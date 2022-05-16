@@ -19,7 +19,7 @@
 
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/LoaderResult.hxx>
-#include <rexsapi/XMLParser.hxx>
+#include <rexsapi/Xml.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
 #include <rexsapi/xml/XSDSchemaValidator.hxx>
 

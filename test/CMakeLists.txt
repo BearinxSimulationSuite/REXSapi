@@ -15,6 +15,7 @@ add_executable(rexsapi_test
   ValidityCheckerTest.cxx
   ValueTest.cxx
   ValueTypeTest.cxx
+  XMLModelSerializerTest.cxx
   XMLValueDecoderTest.cxx
   XSDSchemaValidatorTest.cxx
 

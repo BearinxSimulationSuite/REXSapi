@@ -35,7 +35,7 @@ TEST_CASE("Model test")
                           rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"closed"}}};
 
     rexsapi::TComponents components;
-    components.emplace_back(rexsapi::TComponent{"gear_casing", "Gehäuse", std::move(attributes)});
+    components.emplace_back(rexsapi::TComponent{1, "gear_casing", "Gehäuse", std::move(attributes)});
 
     dbComponent = &dbModel.findComponentById("lubricant");
     attributes = rexsapi::TAttributes{};
@@ -54,7 +54,7 @@ TEST_CASE("Model test")
                                                 rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
                                                 rexsapi::TValue{220.0}});
 
-    components.emplace_back(rexsapi::TComponent{"lubricant", "S2/220", std::move(attributes)});
+    components.emplace_back(rexsapi::TComponent{2, "lubricant", "S2/220", std::move(attributes)});
 
     rexsapi::TRelationReferences references{
       rexsapi::TRelationReference{rexsapi::TRelationRole::ORIGIN, "hint0", components[0]},

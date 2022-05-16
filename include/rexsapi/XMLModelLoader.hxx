@@ -21,8 +21,8 @@
 #include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
 #include <rexsapi/ValidityChecker.hxx>
-#include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
+#include <rexsapi/Xml.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
 #include <rexsapi/xml/XSDSchemaValidator.hxx>
 
@@ -75,7 +75,8 @@ namespace rexsapi
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
     const auto& dbModel = registry.getModel(info.getVersion(), "en");
-    std::unordered_map<std::string, TComponent*> componentsMapping;
+    uint64_t internalComponentId{0};
+    std::unordered_map<std::string, uint64_t> componentsMapping;
 
     TComponents components;
     for (const auto& component : doc.select_nodes("/model/components/component")) {
@@ -111,8 +112,9 @@ namespace rexsapi
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
       }
 
-      components.emplace_back(TComponent{componentType.getComponentId(), componentName, std::move(attributes)});
-      componentsMapping.emplace(componentId, &(components.back()));
+      components.emplace_back(
+        TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});
+      componentsMapping.emplace(componentId, internalComponentId);
     }
 
     TRelations relations;
@@ -139,7 +141,10 @@ namespace rexsapi
           result.addError(TResourceError{
             fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
         } else {
-          references.emplace_back(TRelationReference{role, hint, *(it->second)});
+          auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp){
+            return comp.getInternalId() == it->second;
+          });
+          references.emplace_back(TRelationReference{role, hint, *it_comp});
         }
       }
 

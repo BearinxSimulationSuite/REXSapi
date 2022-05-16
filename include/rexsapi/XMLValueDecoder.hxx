@@ -20,7 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
-#include <rexsapi/XMLParser.hxx>
+#include <rexsapi/Xml.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
 #include <memory>

@@ -23,7 +23,7 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Unit.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Value.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelLoader.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLParser.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Xml.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLValueDecoder.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx

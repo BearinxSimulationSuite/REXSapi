@@ -20,7 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
-#include <rexsapi/XMLParser.hxx>
+#include <rexsapi/Xml.hxx>
 
 #include <filesystem>
 #include <iostream>
