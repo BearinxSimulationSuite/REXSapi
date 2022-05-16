@@ -20,6 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
+#include <rexsapi/ValidityChecker.hxx>
 #include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
@@ -94,13 +95,16 @@ namespace rexsapi
         if (!att.getUnit().compare(unit)) {
           result.addError(TResourceError{fmt::format(
             "attribute '{}' of component '{}' does specify the correct unit: '{}'", id, componentId, unit)});
-          continue;
         }
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
           result.addError(TResourceError{fmt::format(
             "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
+        }
+        if (!TValidityChecker::check(att, value.first)) {
+          result.addError(
+            TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
         }
 
         // TODO (lcf): custom units for custom attributes

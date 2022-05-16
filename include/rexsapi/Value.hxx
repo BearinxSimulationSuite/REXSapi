@@ -24,7 +24,7 @@
 namespace rexsapi
 {
   template<typename T>
-  struct Matrix {
+  struct TMatrix {
     bool validate() const
     {
       if (m_Values.size()) {
@@ -92,7 +92,7 @@ namespace rexsapi
   private:
     using Variant =
       std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, Matrix<double>>;
+                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
 
     Variant m_Value;
   };

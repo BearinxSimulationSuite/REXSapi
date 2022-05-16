@@ -41,6 +41,15 @@ namespace rexsapi
     }
     return def;
   }
+
+  static inline bool getBoolAttribute(const pugi::xpath_node& node, const char* attribute, bool def)
+  {
+    if (auto att = node.node().attribute(attribute); !att.empty()) {
+      std::string val{att.value()};
+      return val == "true" ? true : false;
+    }
+    return def;
+  }
 }
 
 #endif

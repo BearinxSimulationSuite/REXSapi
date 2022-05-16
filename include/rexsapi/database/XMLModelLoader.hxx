@@ -39,6 +39,9 @@ namespace rexsapi::database
 
     TLoaderResult load(const std::function<void(TModel)>& callback) const;
 
+  private:
+    std::optional<TInterval> readInterval(const pugi::xpath_node& node) const;
+
     const TResourceLoader& m_Loader;
     const TSchemaLoader& m_SchemaLoader;
   };
@@ -90,8 +93,7 @@ namespace rexsapi::database
         auto unit = convertToUint64(getStringAttribute(node, "unit"));
         std::string symbol = getStringAttribute(node, "symbol", "");
 
-        // TODO (lcf): get interval
-        std::optional<TInterval> interval;
+        std::optional<TInterval> interval = readInterval(node);
 
         std::optional<TEnumValues> enumValues;
         if (valueType == TValueType::ENUM || valueType == TValueType::ENUM_ARRAY) {
@@ -128,6 +130,31 @@ namespace rexsapi::database
 
       callback(std::move(model));
     });
+  }
+
+  template<typename TResourceLoader, typename TSchemaLoader>
+  std::optional<TInterval>
+  TXmlModelLoader<TResourceLoader, TSchemaLoader>::readInterval(const pugi::xpath_node& node) const
+  {
+    std::optional<TInterval> interval;
+
+    TIntervalEndpoint min;
+    TIntervalEndpoint max;
+
+    if (auto att = node.node().attribute("rangeMin"); !att.empty()) {
+      auto open = getBoolAttribute(node, "rangeMinIntervalOpen", true);
+      min = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
+    }
+    if (auto att = node.node().attribute("rangeMax"); !att.empty()) {
+      auto open = getBoolAttribute(node, "rangeMaxIntervalOpen", true);
+      max = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
+    }
+
+    if (max.isSet() || min.isSet()) {
+      interval = TInterval{min, max};
+    }
+
+    return interval;
   }
 
 }
