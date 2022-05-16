@@ -107,10 +107,16 @@ TEST_CASE("Model loader test")
     rexsapi::TLoaderResult result;
     auto model = loader.load(result, registry);
     CHECK_FALSE(result);
-    REQUIRE(result.getErrors().size() == 2);
+    REQUIRE(result.getErrors().size() == 5);
     CHECK(result.getErrors()[0].m_Message ==
           "value of attribute 'material_type_din_743_2012' of component '238' does not have the correct value type");
     CHECK(result.getErrors()[1].m_Message ==
+          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '238'");
+    CHECK(result.getErrors()[2].m_Message ==
           "value of attribute 'material_type_din_743_2012' of component '239' does not have the correct value type");
+    CHECK(result.getErrors()[3].m_Message ==
+          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '239'");
+    CHECK(result.getErrors()[4].m_Message ==
+          "value is out of range for attribute 'throat_radius_worm_wheel' of component '9'");
   }
 }

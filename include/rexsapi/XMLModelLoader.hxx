@@ -48,6 +48,36 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
+  class TIntervalChecker
+  {
+  public:
+    static bool checkRange(TValueType type, TValue& val, const std::optional<database::TInterval>& interval)
+    {
+      if (interval.has_value()) {
+        switch (type) {
+          case TValueType::FLOATING_POINT:
+            return interval->check(val.getValue<double>());
+          case TValueType::INTEGER:
+            return interval->check(val.getValue<int64_t>());
+          case TValueType::BOOLEAN:
+          case TValueType::ENUM:
+          case TValueType::STRING:
+          case TValueType::FILE_REFERENCE:
+          case TValueType::BOOLEAN_ARRAY:
+          case TValueType::FLOATING_POINT_ARRAY:
+          case TValueType::REFERENCE_COMPONENT:
+          case TValueType::FLOATING_POINT_MATRIX:
+          case TValueType::INTEGER_ARRAY:
+          case TValueType::ENUM_ARRAY:
+          case TValueType::ARRAY_OF_INTEGER_ARRAYS:
+            return true;
+        }
+      }
+
+      return true;
+    }
+  };
+
   inline std::optional<TModel> TXMLModelLoader::load(TLoaderResult& result,
                                                      const rexsapi::database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
@@ -101,6 +131,10 @@ namespace rexsapi
           result.addError(TResourceError{fmt::format(
             "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
           continue;
+        }
+        if (!TIntervalChecker::checkRange(att.getValueType(), value.first, att.getInterval())) {
+          result.addError(
+            TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
         }
 
         // TODO (lcf): custom units for custom attributes
