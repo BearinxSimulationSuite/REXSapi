@@ -59,12 +59,19 @@ namespace rexsapi
       case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
         const auto& values = val.getValue<std::vector<std::vector<int64_t>>>();
         return std::all_of(values.begin(), values.end(), [&interval](const auto& v) {
+          return std::all_of(v.begin(), v.end(), [&interval](const auto& i) {
+            return checkRange(interval, static_cast<double>(i));
+          });
+        });
+      }
+      case TValueType::FLOATING_POINT_MATRIX: {
+        const auto& values = val.getValue<rexsapi::TMatrix<double>>().m_Values;
+        return std::all_of(values.begin(), values.end(), [&interval](const auto& v) {
           return std::all_of(v.begin(), v.end(), [&interval](const auto& d) {
             return checkRange(interval, d);
           });
         });
       }
-      case TValueType::FLOATING_POINT_MATRIX:
       case TValueType::BOOLEAN:
       case TValueType::STRING:
       case TValueType::FILE_REFERENCE:

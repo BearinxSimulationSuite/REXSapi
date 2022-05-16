@@ -23,6 +23,10 @@
 
 TEST_CASE("Validity checker test")
 {
+  rexsapi::database::TInterval interval{
+    rexsapi::database::TIntervalEndpoint{0, rexsapi::database::TIntervalType::CLOSED},
+    rexsapi::database::TIntervalEndpoint{10, rexsapi::database::TIntervalType::CLOSED}};
+
   const auto dbModel = loadModel("1.4");
 
   SUBCASE("double with interval")
@@ -46,6 +50,23 @@ TEST_CASE("Validity checker test")
     CHECK_FALSE(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{std::vector<double>{47.11, 0.815, -57.4}}));
   }
 
+  SUBCASE("double matrix")
+  {
+    rexsapi::database::TAttribute attribute{"double matrix attribute",
+                                            "dm",
+                                            rexsapi::TValueType::FLOATING_POINT_MATRIX,
+                                            rexsapi::database::TUnit{30, "kW"},
+                                            "",
+                                            interval,
+                                            {}};
+    CHECK(rexsapi::TValidityChecker::check(
+      attribute,
+      rexsapi::TValue{rexsapi::TMatrix<double>{std::vector<std::vector<double>>{{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}}}}));
+    CHECK_FALSE(rexsapi::TValidityChecker::check(
+      attribute,
+      rexsapi::TValue{rexsapi::TMatrix<double>{std::vector<std::vector<double>>{{{1, 2, 3}, {4, 57, 6}, {7, 8, 9}}}}}));
+  }
+
   SUBCASE("integer with interval")
   {
     const auto& attribute = dbModel.findAttributetById("gear_shift_index");
@@ -55,10 +76,6 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("integer array")
   {
-    rexsapi::database::TInterval interval{
-      rexsapi::database::TIntervalEndpoint{0, rexsapi::database::TIntervalType::CLOSED},
-      rexsapi::database::TIntervalEndpoint{10, rexsapi::database::TIntervalType::CLOSED}};
-
     rexsapi::database::TAttribute attribute{"integer array attribute",
                                             "ia",
                                             rexsapi::TValueType::INTEGER_ARRAY,
@@ -72,10 +89,6 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("array of integer arrays")
   {
-    rexsapi::database::TInterval interval{
-      rexsapi::database::TIntervalEndpoint{0, rexsapi::database::TIntervalType::CLOSED},
-      rexsapi::database::TIntervalEndpoint{10, rexsapi::database::TIntervalType::CLOSED}};
-
     rexsapi::database::TAttribute attribute{"array of integer array attribute",
                                             "aia",
                                             rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS,
