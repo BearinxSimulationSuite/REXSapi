@@ -1,10 +1,15 @@
-![Supported Platforms](https://img.shields.io/badge/Linux%20%7C%20Windows-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows-blue.svg)
 ![Language: C++17](https://img.shields.io/badge/language-C%2B%2B17-blue.svg)
+![Version:](https://img.shields.io/badge/version-pre--alpha-orange)
 [![GitHub Build Status](https://github.com/BearinxSimulationSuite/REXSapi/workflows/CMake%20Build%20Matrix/badge.svg)](https://github.com/BearinxSimulationSuite/REXSapi/actions)
 
 # REXSapi
 
-C++ implementation of the REXS spezification.
+C++ implementation of the REXS specification.
+
+# Status
+
+The project is still in an early phase and the API may still change considerable in the near future. We wouldn't recommend the usage of the library at the current point in time. 
 
 # Supported REXS Versions
 
@@ -17,6 +22,8 @@ The library can be used on
 - Windows
 
 # Build Instructions
+
+The library is header only. A build is only necessary if you want to run the tests.
 
 ## Linux
 
