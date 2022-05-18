@@ -15,8 +15,52 @@
  */
 
 #include <rexsapi/Types.hxx>
+#include <rexsapi/Value.hxx>
 
 #include <doctest.h>
+#include <iostream>
+#include <type_traits>
+
+namespace rexsapi
+{
+  template<class T>
+  using FloatTag = typename std::is_same<T, detail::Enum2type<TValueType::FLOATING_POINT>>;
+
+  template<class T>
+  using IntTag = typename std::is_same<T, detail::Enum2type<TValueType::INTEGER>>;
+
+  template<class T>
+  using BoolTag = typename std::is_same<T, detail::Enum2type<TValueType::BOOLEAN>>;
+
+  template<typename T>
+  auto dispatcher(const TValue& value)
+  {
+    if constexpr (FloatTag<T>::value)
+      return value.getValue<TFloatType>();
+    if constexpr (IntTag<T>::value)
+      return value.getValue<TIntType>();
+    if constexpr (BoolTag<T>::value)
+      return value.getValue<TBoolType>();
+  }
+
+  using DispatcherFuncs = std::tuple<std::function<void(const TFloatType&)>, std::function<void(const TIntType&)>,
+                                     std::function<void(const bool&)>>;
+
+  template<typename T>
+  T dispatch(TValueType type, const TValue& value, DispatcherFuncs funcs)
+  {
+    switch (type) {
+      case TValueType::FLOATING_POINT:
+        return std::get<0>(funcs)(value.getValue<TFloatType>());
+      case TValueType::INTEGER:
+        return std::get<1>(funcs)(value.getValue<TIntType>());
+      case TValueType::BOOLEAN:
+        return std::get<2>(funcs)(value.getValue<TBoolType>().m_Value);
+      default:
+        break;
+    }
+  }
+}
 
 
 TEST_CASE("Value type test")
@@ -41,5 +85,23 @@ TEST_CASE("Value type test")
   SUBCASE("Type from string")
   {
     CHECK_THROWS_WITH(rexsapi::typeFromString("not existing type"), "unknown value type 'not existing type'");
+  }
+
+  SUBCASE("Type mapping")
+  {
+    rexsapi::TValue v{4711};
+    auto val = rexsapi::dispatcher<rexsapi::detail::Enum2type<rexsapi::TValueType::INTEGER>>(v);
+    static_assert(std::is_same<decltype(val), int64_t>::value);
+
+    rexsapi::dispatch<void>(rexsapi::TValueType::INTEGER, v,
+                            {[](const auto& d) {
+                               std::cout << "float " << d << std::endl;
+                             },
+                             [](const auto& i) {
+                               std::cout << "int " << i << std::endl;
+                             },
+                             [](const auto& b) {
+                               std::cout << "bool " << b << std::endl;
+                             }});
   }
 }

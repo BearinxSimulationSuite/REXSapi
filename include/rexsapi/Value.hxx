@@ -17,8 +17,7 @@
 #ifndef REXSAPI_VALUE_HXX
 #define REXSAPI_VALUE_HXX
 
-#include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.hxx>
+#include <rexsapi/Types.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
 #include <variant>
@@ -31,41 +30,6 @@ namespace rexsapi
   };
   template<class... Ts>
   overload(Ts...) -> overload<Ts...>;
-
-  struct Bool {
-    Bool() = default;
-
-    Bool(bool value)
-    : m_Value{value}
-    {
-    }
-
-    explicit operator bool() const
-    {
-      return m_Value;
-    }
-
-    bool m_Value{false};
-  };
-
-  template<typename T>
-  struct TMatrix {
-    bool validate() const
-    {
-      if (m_Values.size()) {
-        size_t n = m_Values[0].size();
-        for (const auto& row : m_Values) {
-          if (row.size() != n) {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-
-    std::vector<std::vector<T>> m_Values;
-  };
-
 
   namespace detail
   {
@@ -135,7 +99,7 @@ namespace rexsapi
       if (m_Value.index() == 0) {
         return def;
       }
-      return std::get<T>(m_Value);
+      return detail::value_getter<T>(m_Value);
     }
 
     std::string asString() const
