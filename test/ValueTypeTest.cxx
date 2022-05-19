@@ -105,7 +105,7 @@ namespace rexsapi
                                         [](rexsapi::ArrayOfIntArraysTag, const auto& a) -> std::string {
                                           return "array of int arrays " + std::to_string(a.size()) + " entries";
                                         }});
-      CHECK(res == "47.11");
+      CHECK(res == "string 47.11");
     }
   }
 }
