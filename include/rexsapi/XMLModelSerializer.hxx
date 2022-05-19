@@ -5,14 +5,13 @@
 #include <rexsapi/Model.hxx>
 #include <rexsapi/Xml.hxx>
 
-#include <test/TestHelper.hxx>
-
 namespace rexsapi
 {
   class XMLModelSerializer
   {
   public:
-    void serialize(const TModel& model)
+    template<typename TSerializer>
+    void serialize(const TModel& model, TSerializer& serializer)
     {
       createDocument();
       auto models = serialize(model.getInfo());
@@ -20,7 +19,7 @@ namespace rexsapi
       serialize(models, model.getComponents());
       serialize(relationsNode, model.getRelations());
 
-      m_Doc.save_file((projectDir() / "test" / "FVA_worm_stage_1-4.rexs").c_str());
+      serializer.serialize(m_Doc);
     }
 
   private:

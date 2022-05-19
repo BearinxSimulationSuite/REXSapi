@@ -23,6 +23,25 @@
 
 #include <doctest.h>
 
+namespace
+{
+  class XMLSerializer
+  {
+  public:
+    explicit XMLSerializer(std::filesystem::path file)
+    : m_File{std::move(file)}
+    {
+    }
+
+    void serialize(const pugi::xml_document& doc) const
+    {
+      doc.save_file(m_File.c_str());
+    }
+
+  private:
+    std::filesystem::path m_File;
+  };
+}
 
 TEST_CASE("Model loader test")
 {
@@ -35,7 +54,8 @@ TEST_CASE("Model loader test")
 
   SUBCASE("serialize loaded model")
   {
-    rexsapi::XMLModelSerializer serializer;
-    serializer.serialize(*model);
+    XMLSerializer xmlSerializer{projectDir() / "test" / "FVA_worm_stage_1-4.rexs"};
+    rexsapi::XMLModelSerializer modelSerializer;
+    modelSerializer.serialize(*model, xmlSerializer);
   }
 }
