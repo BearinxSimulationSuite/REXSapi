@@ -21,6 +21,8 @@
 #include <rexsapi/Value_Details.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
+#include <functional>
+
 namespace rexsapi
 {
   class TValue
@@ -119,10 +121,15 @@ namespace rexsapi
 
 
   template<typename R>
-  using DispatcherFuncs =
-    std::tuple<std::function<R(FloatTag, const TFloatType&)>, std::function<R(BoolTag, const bool&)>,
-               std::function<R(IntTag, const TIntType&)>, std::function<R(EnumTag, const std::string&)>,
-               std::function<R(StringTag, const std::string&)>>;
+  using DispatcherFuncs = std::tuple<
+    std::function<R(FloatTag, const TFloatType&)>, std::function<R(BoolTag, const bool&)>,
+    std::function<R(IntTag, const TIntType&)>, std::function<R(EnumTag, const std::string&)>,
+    std::function<R(StringTag, const TStringType&)>, std::function<R(FileReferenceTag, const TFileReferenceType&)>,
+    std::function<R(FloatArrayTag, const TFloatArrayType&)>, std::function<R(BoolArrayTag, const TBoolArrayType&)>,
+    std::function<R(IntArrayTag, const TIntArrayType&)>, std::function<R(EnumArrayTag, const TEnumArrayType&)>,
+    std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>,
+    std::function<R(FloatMatrixTag, const TFloatMatrixType&)>,
+    std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
 
   template<typename R>
   auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
@@ -158,9 +165,56 @@ namespace rexsapi
           return c(StringTag(), value.getValue<TStringType>());
         }
       }
-      default:
-        throw TException{"unknown type"};
+      case TValueType::FILE_REFERENCE: {
+        auto c = std::get<std::function<R(FileReferenceTag, const TFileReferenceType&)>>(funcs);
+        if (c) {
+          return c(FileReferenceTag(), value.getValue<TFileReferenceType>());
+        }
+      }
+      case TValueType::FLOATING_POINT_ARRAY: {
+        auto c = std::get<std::function<R(FloatArrayTag, const TFloatArrayType&)>>(funcs);
+        if (c) {
+          return c(FloatArrayTag(), value.getValue<TFloatArrayType>());
+        }
+      }
+      case TValueType::BOOLEAN_ARRAY: {
+        auto c = std::get<std::function<R(BoolArrayTag, const TBoolArrayType&)>>(funcs);
+        if (c) {
+          return c(BoolArrayTag(), value.getValue<TBoolArrayType>());
+        }
+      }
+      case TValueType::INTEGER_ARRAY: {
+        auto c = std::get<std::function<R(IntArrayTag, const TIntArrayType&)>>(funcs);
+        if (c) {
+          return c(IntArrayTag(), value.getValue<TIntArrayType>());
+        }
+      }
+      case TValueType::ENUM_ARRAY: {
+        auto c = std::get<std::function<R(EnumArrayTag, const TEnumArrayType&)>>(funcs);
+        if (c) {
+          return c(EnumArrayTag(), value.getValue<TEnumArrayType>());
+        }
+      }
+      case TValueType::REFERENCE_COMPONENT: {
+        auto c = std::get<std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>>(funcs);
+        if (c) {
+          return c(ReferenceComponentTag(), value.getValue<TReferenceComponentType>());
+        }
+      }
+      case TValueType::FLOATING_POINT_MATRIX: {
+        auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
+        if (c) {
+          return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+        }
+      }
+      case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
+        auto c = std::get<std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>(funcs);
+        if (c) {
+          return c(ArrayOfIntArraysTag(), value.getValue<TArrayOfIntArraysType>());
+        }
+      }
     }
+    throw TException{fmt::format("dispatching unknown value type {}", static_cast<uint8_t>(type))};
   }
 }
 

@@ -18,9 +18,7 @@
 #include <rexsapi/Value.hxx>
 
 #include <doctest.h>
-#include <iostream>
 #include <sstream>
-#include <type_traits>
 
 namespace rexsapi
 {
@@ -52,33 +50,62 @@ namespace rexsapi
     {
       rexsapi::TValue v{"47.11"};
 
-      std::string res = rexsapi::dispatch<std::string>(rexsapi::TValueType::STRING, v,
-                                                       {[](rexsapi::FloatTag, const auto& d) -> std::string {
-                                                          std::stringstream stream;
-                                                          stream << "float " << d;
-                                                          return stream.str();
-                                                        },
-                                                        [](rexsapi::BoolTag, const auto& b) -> std::string {
-                                                          std::stringstream stream;
-                                                          stream << "bool " << b;
-                                                          return stream.str();
-                                                        },
-                                                        [](rexsapi::IntTag, const auto& i) -> std::string {
-                                                          std::stringstream stream;
-                                                          stream << "int " << i;
-                                                          return stream.str();
-                                                        },
-                                                        [](rexsapi::EnumTag, const auto& s) -> std::string {
-                                                          std::stringstream stream;
-                                                          stream << "enum " << s;
-                                                          return stream.str();
-                                                        },
-                                                        [](rexsapi::StringTag, const auto& s) -> std::string {
-                                                          std::stringstream stream;
-                                                          stream << "string " << s;
-                                                          return stream.str();
-                                                        }});
-      std::cout << res << std::endl;
+      std::string res =
+        rexsapi::dispatch<std::string>(rexsapi::TValueType::STRING, v,
+                                       {[](rexsapi::FloatTag, const auto& d) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "float " << d;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::BoolTag, const auto& b) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "bool " << b;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::IntTag, const auto& i) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "int " << i;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::EnumTag, const auto& s) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "enum " << s;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::StringTag, const auto& s) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "string " << s;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::FileReferenceTag, const auto& s) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "file reference " << s;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::FloatArrayTag, const auto& a) -> std::string {
+                                          return "float array " + std::to_string(a.size()) + " entries";
+                                        },
+                                        [](rexsapi::BoolArrayTag, const auto& a) -> std::string {
+                                          return "bool array " + std::to_string(a.size()) + " entries";
+                                        },
+                                        [](rexsapi::IntArrayTag, const auto& a) -> std::string {
+                                          return "int array " + std::to_string(a.size()) + " entries";
+                                        },
+                                        [](rexsapi::EnumArrayTag, const auto& a) -> std::string {
+                                          return "enum array " + std::to_string(a.size()) + " entries";
+                                        },
+                                        [](rexsapi::ReferenceComponentTag, const auto& n) -> std::string {
+                                          std::stringstream stream;
+                                          stream << "reference component " << n;
+                                          return stream.str();
+                                        },
+                                        [](rexsapi::FloatMatrixTag, const auto& m) -> std::string {
+                                          return "float matrix " + std::to_string(m.m_Values.size()) + " entries";
+                                        },
+                                        [](rexsapi::ArrayOfIntArraysTag, const auto& a) -> std::string {
+                                          return "array of int arrays " + std::to_string(a.size()) + " entries";
+                                        }});
+      CHECK(res == "47.11");
     }
   }
 }

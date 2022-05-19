@@ -134,7 +134,7 @@ namespace rexsapi
   using IntArrayTag = detail::Enum2type<TValueType::INTEGER_ARRAY>;
   using EnumArrayTag = detail::Enum2type<TValueType::ENUM_ARRAY>;
   using ReferenceComponentTag = detail::Enum2type<TValueType::REFERENCE_COMPONENT>;
-  using FloatMatrinxTag = detail::Enum2type<TValueType::FLOATING_POINT_MATRIX>;
+  using FloatMatrixTag = detail::Enum2type<TValueType::FLOATING_POINT_MATRIX>;
   using ArrayOfIntArraysTag = detail::Enum2type<TValueType::ARRAY_OF_INTEGER_ARRAYS>;
 }
 
