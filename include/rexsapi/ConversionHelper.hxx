@@ -76,6 +76,15 @@ namespace rexsapi
 
     throw TException{fmt::format("cannot convert string to double: {}", s)};
   }
+
+  static inline std::string format(double d)
+  {
+    auto s = fmt::format("{:0.15G}", d);
+    if (s.find_last_of('.') == std::string::npos) {
+      s += ".0";
+    }
+    return s;
+  }
 }
 
 #endif
