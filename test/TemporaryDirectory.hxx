@@ -63,7 +63,7 @@ private:
 #ifdef WIN32
     WCHAR tmpDir[MAX_PATH];
     if (GetTempFileNameW(tempDirectory.c_str(), L"rexsapi", 0, tmpDir) == 0) {
-      throw TException{GetLastError()};
+      throw rexsapi::TException{fmt::format("cannot create temp directory: {}", GetLastError())};
     }
     std::filesystem::remove(tmpDir);
     std::filesystem::create_directories(tmpDir);
