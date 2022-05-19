@@ -18,6 +18,7 @@
 #include <rexsapi/XMLModelLoader.hxx>
 #include <rexsapi/XMLModelSerializer.hxx>
 
+#include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
 #include <test/TestModelLoader.hxx>
 
@@ -41,21 +42,47 @@ namespace
   private:
     std::filesystem::path m_File;
   };
+
+  class Loader
+  {
+  public:
+    Loader()
+    : m_Registry{createModelRegistry()}
+    {
+    }
+
+    rexsapi::TModel load(const std::filesystem::path& modelFile)
+    {
+      rexsapi::TFileModelLoader loader{validator, modelFile};
+      rexsapi::TLoaderResult result;
+      auto model = loader.load(result, m_Registry);
+      if (!model) {
+        throw rexsapi::TException{"cannot load model"};
+      }
+      return std::move(*model);
+    }
+
+  private:
+    rexsapi::database::TModelRegistry m_Registry;
+    rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
+    rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
+  };
 }
 
 TEST_CASE("Model loader test")
 {
-  const auto registry = createModelRegistry();
-  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
-  rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
-  rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
-  rexsapi::TLoaderResult result;
-  auto model = loader.load(result, registry);
+  Loader loader;
+  auto model = loader.load(projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs");
 
   SUBCASE("serialize loaded model")
   {
-    XMLSerializer xmlSerializer{projectDir() / "test" / "FVA_worm_stage_1-4.rexs"};
+    TemporaryDirectory tmpDir;
+    XMLSerializer xmlSerializer{tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"};
     rexsapi::XMLModelSerializer modelSerializer;
-    modelSerializer.serialize(*model, xmlSerializer);
+    modelSerializer.serialize(model, xmlSerializer);
+    CHECK(std::filesystem::exists(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"));
+    auto roundtripModel = loader.load(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs");
+    CHECK(roundtripModel.getComponents().size() == model.getComponents().size());
+    CHECK(roundtripModel.getRelations().size() == model.getRelations().size());
   }
 }

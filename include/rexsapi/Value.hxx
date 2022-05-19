@@ -77,43 +77,7 @@ namespace rexsapi
       return detail::value_getter<T>(m_Value);
     }
 
-    std::string asString() const
-    {
-      return std::visit(overload{[](const std::monostate&) -> std::string {
-                                   return "";
-                                 },
-                                 [](const std::string& s) {
-                                   return s;
-                                 },
-                                 [](const Bool& b) -> std::string {
-                                   return fmt::format("{}", static_cast<bool>(b));
-                                 },
-                                 [](const double& d) -> std::string {
-                                   return fmt::format("{}", d);
-                                 },
-                                 [](const int64_t& i) -> std::string {
-                                   return fmt::format("{}", i);
-                                 },
-                                 [](const std::vector<double>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<Bool>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<int64_t>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<std::string>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<std::vector<int64_t>>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const TMatrix<double>&) -> std::string {
-                                   throw TException{"cannot convert matrix to string"};
-                                 }},
-                        m_Value);
-    }
+    std::string asString() const;
 
   private:
     detail::Variant m_Value;
@@ -132,7 +96,54 @@ namespace rexsapi
     std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
 
   template<typename R>
-  auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
+  auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs);
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Implementation
+  /////////////////////////////////////////////////////////////////////////////
+
+  inline std::string TValue::asString() const
+
+  {
+    return std::visit(overload{[](const std::monostate&) -> std::string {
+                                 return "";
+                               },
+                               [](const std::string& s) {
+                                 return s;
+                               },
+                               [](const Bool& b) -> std::string {
+                                 return fmt::format("{}", static_cast<bool>(b));
+                               },
+                               [](const double& d) -> std::string {
+                                 return fmt::format("{}", d);
+                               },
+                               [](const int64_t& i) -> std::string {
+                                 return fmt::format("{}", i);
+                               },
+                               [](const std::vector<double>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<Bool>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<int64_t>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<std::string>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<std::vector<int64_t>>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const TMatrix<double>&) -> std::string {
+                                 throw TException{"cannot convert matrix to string"};
+                               }},
+                      m_Value);
+  }
+
+  template<typename R>
+  inline auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
   {
     switch (type) {
       case TValueType::FLOATING_POINT: {

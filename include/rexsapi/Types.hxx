@@ -275,7 +275,7 @@ namespace rexsapi
       case TRelationRole::ASSEMBLY:
         return "assembly";
       case TRelationRole::GEAR:
-        return "assembly";
+        return "gear";
       case TRelationRole::GEAR_1:
         return "gear_1";
       case TRelationRole::GEAR_2:
@@ -285,7 +285,7 @@ namespace rexsapi
       case TRelationRole::LEFT:
         return "left";
       case TRelationRole::MANUFACTURING_SETTINGS:
-        return "manufacturing_stettings";
+        return "manufacturing_settings";
       case TRelationRole::ORIGIN:
         return "origin";
       case TRelationRole::OUTER_PART:
