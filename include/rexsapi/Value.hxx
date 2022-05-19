@@ -18,38 +18,11 @@
 #define REXSAPI_VALUE_HXX
 
 #include <rexsapi/Types.hxx>
+#include <rexsapi/Value_Details.hxx>
 #include <rexsapi/database/EnumValues.hxx>
-
-#include <variant>
 
 namespace rexsapi
 {
-  template<class... Ts>
-  struct overload : Ts... {
-    using Ts::operator()...;
-  };
-  template<class... Ts>
-  overload(Ts...) -> overload<Ts...>;
-
-  namespace detail
-  {
-    using Variant =
-      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
-
-    template<typename T>
-    inline const T& value_getter(const Variant& value)
-    {
-      return std::get<T>(value);
-    }
-
-    template<>
-    inline const bool& value_getter<bool>(const Variant& value)
-    {
-      return std::get<Bool>(value).m_Value;
-    }
-  }
-
   class TValue
   {
   public:
@@ -143,6 +116,52 @@ namespace rexsapi
   private:
     detail::Variant m_Value;
   };
+
+
+  template<typename R>
+  using DispatcherFuncs =
+    std::tuple<std::function<R(FloatTag, const TFloatType&)>, std::function<R(BoolTag, const bool&)>,
+               std::function<R(IntTag, const TIntType&)>, std::function<R(EnumTag, const std::string&)>,
+               std::function<R(StringTag, const std::string&)>>;
+
+  template<typename R>
+  auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
+  {
+    switch (type) {
+      case TValueType::FLOATING_POINT: {
+        auto c = std::get<std::function<R(FloatTag, const TFloatType&)>>(funcs);
+        if (c) {
+          return c(FloatTag(), value.getValue<TFloatType>());
+        }
+      }
+      case TValueType::BOOLEAN: {
+        auto c = std::get<std::function<R(BoolTag, const bool&)>>(funcs);
+        if (c) {
+          return c(BoolTag(), value.getValue<TBoolType>().m_Value);
+        }
+      }
+      case TValueType::INTEGER: {
+        auto c = std::get<std::function<R(IntTag, const TIntType&)>>(funcs);
+        if (c) {
+          return c(IntTag(), value.getValue<TIntType>());
+        }
+      }
+      case TValueType::ENUM: {
+        auto c = std::get<std::function<R(EnumTag, const TEnumType&)>>(funcs);
+        if (c) {
+          return c(EnumTag(), value.getValue<TEnumType>());
+        }
+      }
+      case TValueType::STRING: {
+        auto c = std::get<std::function<R(StringTag, const TStringType&)>>(funcs);
+        if (c) {
+          return c(StringTag(), value.getValue<TStringType>());
+        }
+      }
+      default:
+        throw TException{"unknown type"};
+    }
+  }
 }
 
 #endif

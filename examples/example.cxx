@@ -268,6 +268,40 @@ struct TREXSTransmissionModelIntermediateLayer {
     (void)type_2;
     (void)unit_2;
     return "";
+
+    /*
+    std::string converted_value = value;
+    if (attribute_type == double_value_type) {
+      std::vector<TRule*>::const_iterator r_it = TransformationRules->Rules.begin();
+      for (; r_it != TransformationRules->Rules.end(); ++r_it) {
+        if (dynamic_cast<const TUnitRule*>(*r_it)) {
+          const TUnitRule* unit_rule_i = dynamic_cast<const TUnitRule*>(*r_it);
+
+          if (((unit_rule_i->Object_Type_side_1 == type_1) && (unit_rule_i->Unit_Name_side_1 == unit_1) &&
+               (unit_rule_i->Object_Type_side_2 == type_2) && (unit_rule_i->Unit_Name_side_2 == unit_2)) ||
+              ((unit_rule_i->Object_Type_side_1 == type_2) && (unit_rule_i->Unit_Name_side_1 == unit_2) &&
+               (unit_rule_i->Object_Type_side_2 == type_1) && (unit_rule_i->Unit_Name_side_2 == unit_1))) {
+            break;
+          }
+        }
+      }
+
+      ASSERT_OTHERWISE_THROW(r_it != TransformationRules->Rules.end(), "Regel nicht gefunden");
+      const TUnitRule* unit_rule = dynamic_cast<const TUnitRule*>(*r_it);
+      if (unit_rule->Conversion_Factor_side_1_to_side_2 != 1.0) {
+        double conversion_factor_i_j = unit_rule->Conversion_Factor_side_1_to_side_2;
+        if (unit_rule->Object_Type_side_1 == type_2) {
+          conversion_factor_i_j = 1.0 / conversion_factor_i_j;
+        }
+
+        double value_i = string_to_double(value);
+        double value_j = value_i * conversion_factor_i_j;
+        converted_value = double_to_string(value_j);
+      }
+    }
+    return converted_value;
+    */
+    return value;
   }
 
   std::vector<TRule*> Rules;
@@ -466,22 +500,22 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
         intermediate_layer_object, attributeRule.Attribute_Unit_side_2));
       break;
     case rexsapi::TValueType::BOOLEAN_ARRAY:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<rexsapi::Bool>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TBoolArrayType>());
       break;
     case rexsapi::TValueType::FLOATING_POINT_ARRAY:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<double>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TFloatArrayType>());
       break;
     case rexsapi::TValueType::INTEGER_ARRAY:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<int64_t>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TIntArrayType>());
       break;
     case rexsapi::TValueType::ENUM_ARRAY:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<std::vector<std::string>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TEnumArrayType>());
       break;
     case rexsapi::TValueType::REFERENCE_COMPONENT:
       // TODO (lcf)
       break;
     case rexsapi::TValueType::FLOATING_POINT_MATRIX:
-      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TMatrix<double>>());
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TFloatMatrixType>());
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
       break;
   }

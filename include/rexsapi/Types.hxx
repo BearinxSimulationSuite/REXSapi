@@ -20,6 +20,8 @@
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
 
+#include <vector>
+
 namespace rexsapi
 {
   enum class TValueType {
@@ -29,12 +31,12 @@ namespace rexsapi
     ENUM,
     STRING,
     FILE_REFERENCE,
-    BOOLEAN_ARRAY,
     FLOATING_POINT_ARRAY,
-    REFERENCE_COMPONENT,
-    FLOATING_POINT_MATRIX,
+    BOOLEAN_ARRAY,
     INTEGER_ARRAY,
     ENUM_ARRAY,
+    REFERENCE_COMPONENT,
+    FLOATING_POINT_MATRIX,
     ARRAY_OF_INTEGER_ARRAYS
   };
 
@@ -73,99 +75,6 @@ namespace rexsapi
 
     std::vector<std::vector<T>> m_Values;
   };
-
-  namespace detail
-  {
-    template<TValueType v>
-    struct Enum2type {
-      enum { value = v };
-    };
-
-    template<typename T>
-    struct TypeForValueType {
-      using Type = T;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::FLOATING_POINT>> {
-      using Type = double;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::BOOLEAN>> {
-      using Type = Bool;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::INTEGER>> {
-      using Type = int64_t;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::ENUM>> {
-      using Type = std::string;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::STRING>> {
-      using Type = std::string;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::FILE_REFERENCE>> {
-      using Type = std::string;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::BOOLEAN_ARRAY>> {
-      using Type = std::vector<Bool>;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::FLOATING_POINT_ARRAY>> {
-      using Type = std::vector<double>;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::INTEGER_ARRAY>> {
-      using Type = std::vector<int64_t>;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::ENUM_ARRAY>> {
-      using Type = std::vector<std::string>;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::REFERENCE_COMPONENT>> {
-      using Type = int64_t;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::FLOATING_POINT_MATRIX>> {
-      using Type = TMatrix<double>;
-    };
-
-    template<>
-    struct TypeForValueType<Enum2type<TValueType::ARRAY_OF_INTEGER_ARRAYS>> {
-      using Type = std::vector<std::vector<int64_t>>;
-    };
-  }
-
-  using TFloatType = detail::TypeForValueType<detail::Enum2type<TValueType::FLOATING_POINT>>::Type;
-  using TBoolType = detail::TypeForValueType<detail::Enum2type<TValueType::BOOLEAN>>::Type;
-  using TIntType = detail::TypeForValueType<detail::Enum2type<TValueType::INTEGER>>::Type;
-  using TEnumType = detail::TypeForValueType<detail::Enum2type<TValueType::ENUM>>::Type;
-  using TStringType = detail::TypeForValueType<detail::Enum2type<TValueType::STRING>>::Type;
-  using TFileReferenceType = detail::TypeForValueType<detail::Enum2type<TValueType::FILE_REFERENCE>>::Type;
-  using TBoolArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::BOOLEAN_ARRAY>>::Type;
-  using TFloatArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::FLOATING_POINT_ARRAY>>::Type;
-  using TIntArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::INTEGER_ARRAY>>::Type;
-  using TEnumArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::ENUM_ARRAY>>::Type;
-  using TReferenceComponentType = detail::TypeForValueType<detail::Enum2type<TValueType::REFERENCE_COMPONENT>>::Type;
-  using TFloatMatrixType = detail::TypeForValueType<detail::Enum2type<TValueType::FLOATING_POINT_MATRIX>>::Type;
-  using TArrayOfIntArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::ARRAY_OF_INTEGER_ARRAYS>>::Type;
-
 
   enum class TRelationType {
     ASSEMBLY,

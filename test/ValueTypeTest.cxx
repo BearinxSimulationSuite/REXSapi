@@ -19,89 +19,66 @@
 
 #include <doctest.h>
 #include <iostream>
+#include <sstream>
 #include <type_traits>
 
 namespace rexsapi
 {
-  template<class T>
-  using FloatTag = typename std::is_same<T, detail::Enum2type<TValueType::FLOATING_POINT>>;
-
-  template<class T>
-  using IntTag = typename std::is_same<T, detail::Enum2type<TValueType::INTEGER>>;
-
-  template<class T>
-  using BoolTag = typename std::is_same<T, detail::Enum2type<TValueType::BOOLEAN>>;
-
-  template<typename T>
-  auto dispatcher(const TValue& value)
+  TEST_CASE("Value type test")
   {
-    if constexpr (FloatTag<T>::value)
-      return value.getValue<TFloatType>();
-    if constexpr (IntTag<T>::value)
-      return value.getValue<TIntType>();
-    if constexpr (BoolTag<T>::value)
-      return value.getValue<TBoolType>();
-  }
-
-  using DispatcherFuncs = std::tuple<std::function<void(const TFloatType&)>, std::function<void(const TIntType&)>,
-                                     std::function<void(const bool&)>>;
-
-  template<typename T>
-  T dispatch(TValueType type, const TValue& value, DispatcherFuncs funcs)
-  {
-    switch (type) {
-      case TValueType::FLOATING_POINT:
-        return std::get<0>(funcs)(value.getValue<TFloatType>());
-      case TValueType::INTEGER:
-        return std::get<1>(funcs)(value.getValue<TIntType>());
-      case TValueType::BOOLEAN:
-        return std::get<2>(funcs)(value.getValue<TBoolType>().m_Value);
-      default:
-        break;
+    SUBCASE("Type from string")
+    {
+      CHECK(rexsapi::typeFromString("floating_point") == rexsapi::TValueType::FLOATING_POINT);
+      CHECK(rexsapi::typeFromString("boolean") == rexsapi::TValueType::BOOLEAN);
+      CHECK(rexsapi::typeFromString("integer") == rexsapi::TValueType::INTEGER);
+      CHECK(rexsapi::typeFromString("enum") == rexsapi::TValueType::ENUM);
+      CHECK(rexsapi::typeFromString("string") == rexsapi::TValueType::STRING);
+      CHECK(rexsapi::typeFromString("file_reference") == rexsapi::TValueType::FILE_REFERENCE);
+      CHECK(rexsapi::typeFromString("boolean_array") == rexsapi::TValueType::BOOLEAN_ARRAY);
+      CHECK(rexsapi::typeFromString("floating_point_array") == rexsapi::TValueType::FLOATING_POINT_ARRAY);
+      CHECK(rexsapi::typeFromString("reference_component") == rexsapi::TValueType::REFERENCE_COMPONENT);
+      CHECK(rexsapi::typeFromString("floating_point_matrix") == rexsapi::TValueType::FLOATING_POINT_MATRIX);
+      CHECK(rexsapi::typeFromString("integer_array") == rexsapi::TValueType::INTEGER_ARRAY);
+      CHECK(rexsapi::typeFromString("enum_array") == rexsapi::TValueType::ENUM_ARRAY);
+      CHECK(rexsapi::typeFromString("array_of_integer_arrays") == rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS);
     }
-  }
-}
 
+    SUBCASE("Type from string")
+    {
+      CHECK_THROWS_WITH(rexsapi::typeFromString("not existing type"), "unknown value type 'not existing type'");
+    }
 
-TEST_CASE("Value type test")
-{
-  SUBCASE("Type from string")
-  {
-    CHECK(rexsapi::typeFromString("floating_point") == rexsapi::TValueType::FLOATING_POINT);
-    CHECK(rexsapi::typeFromString("boolean") == rexsapi::TValueType::BOOLEAN);
-    CHECK(rexsapi::typeFromString("integer") == rexsapi::TValueType::INTEGER);
-    CHECK(rexsapi::typeFromString("enum") == rexsapi::TValueType::ENUM);
-    CHECK(rexsapi::typeFromString("string") == rexsapi::TValueType::STRING);
-    CHECK(rexsapi::typeFromString("file_reference") == rexsapi::TValueType::FILE_REFERENCE);
-    CHECK(rexsapi::typeFromString("boolean_array") == rexsapi::TValueType::BOOLEAN_ARRAY);
-    CHECK(rexsapi::typeFromString("floating_point_array") == rexsapi::TValueType::FLOATING_POINT_ARRAY);
-    CHECK(rexsapi::typeFromString("reference_component") == rexsapi::TValueType::REFERENCE_COMPONENT);
-    CHECK(rexsapi::typeFromString("floating_point_matrix") == rexsapi::TValueType::FLOATING_POINT_MATRIX);
-    CHECK(rexsapi::typeFromString("integer_array") == rexsapi::TValueType::INTEGER_ARRAY);
-    CHECK(rexsapi::typeFromString("enum_array") == rexsapi::TValueType::ENUM_ARRAY);
-    CHECK(rexsapi::typeFromString("array_of_integer_arrays") == rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS);
-  }
+    SUBCASE("Type mapping")
+    {
+      rexsapi::TValue v{"47.11"};
 
-  SUBCASE("Type from string")
-  {
-    CHECK_THROWS_WITH(rexsapi::typeFromString("not existing type"), "unknown value type 'not existing type'");
-  }
-
-  SUBCASE("Type mapping")
-  {
-    rexsapi::TValue v{4711};
-    auto val = rexsapi::dispatcher<rexsapi::detail::Enum2type<rexsapi::TValueType::INTEGER>>(v);
-    static_assert(std::is_same<decltype(val), int64_t>::value);
-
-    rexsapi::dispatch<void>(rexsapi::TValueType::INTEGER, v,
-                            {[](const auto& d) {
-                               std::cout << "float " << d << std::endl;
-                             },
-                             [](const auto& i) {
-                               std::cout << "int " << i << std::endl;
-                             },
-                             [](const auto& b) {
-                               std::cout << "bool " << b << std::endl;
-                             }});
+      std::string res = rexsapi::dispatch<std::string>(rexsapi::TValueType::STRING, v,
+                                                       {[](rexsapi::FloatTag, const auto& d) -> std::string {
+                                                          std::stringstream stream;
+                                                          stream << "float " << d;
+                                                          return stream.str();
+                                                        },
+                                                        [](rexsapi::BoolTag, const auto& b) -> std::string {
+                                                          std::stringstream stream;
+                                                          stream << "bool " << b;
+                                                          return stream.str();
+                                                        },
+                                                        [](rexsapi::IntTag, const auto& i) -> std::string {
+                                                          std::stringstream stream;
+                                                          stream << "int " << i;
+                                                          return stream.str();
+                                                        },
+                                                        [](rexsapi::EnumTag, const auto& s) -> std::string {
+                                                          std::stringstream stream;
+                                                          stream << "enum " << s;
+                                                          return stream.str();
+                                                        },
+                                                        [](rexsapi::StringTag, const auto& s) -> std::string {
+                                                          std::stringstream stream;
+                                                          stream << "string " << s;
+                                                          return stream.str();
+                                                        }});
+      std::cout << res << std::endl;
+    }
   }
 }
