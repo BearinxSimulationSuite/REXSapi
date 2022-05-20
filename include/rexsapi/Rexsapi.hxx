@@ -18,6 +18,7 @@
 #define REXSAPI_HXX
 
 #include <rexsapi/Defines.hxx>
+#include <rexsapi/ModelBuilder.hxx>
 #include <rexsapi/ModelLoader.hxx>
 #include <rexsapi/Version.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
