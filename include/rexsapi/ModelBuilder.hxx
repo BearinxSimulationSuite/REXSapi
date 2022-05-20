@@ -60,7 +60,7 @@ namespace rexsapi
 namespace std
 {
   template<>
-  struct std::hash<rexsapi::ComponentId> {
+  struct hash<rexsapi::ComponentId> {
     std::size_t operator()(const rexsapi::ComponentId& id) const noexcept
     {
       return id.hash();
