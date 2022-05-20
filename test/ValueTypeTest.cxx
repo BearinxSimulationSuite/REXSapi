@@ -79,6 +79,10 @@ namespace
                                              return "array of int arrays " + std::to_string(a.size()) + " entries";
                                            }});
   }
+  std::string dispatch_empty(rexsapi::TValueType type, const rexsapi::TValue& value)
+  {
+    return rexsapi::dispatch<std::string>(type, value, {});
+  }
 }
 namespace rexsapi
 {
@@ -111,9 +115,44 @@ namespace rexsapi
       CHECK(::dispatch(rexsapi::TValueType::FLOATING_POINT, rexsapi::TValue{47.11}) == "float 47.11");
       CHECK(::dispatch(rexsapi::TValueType::BOOLEAN, rexsapi::TValue{true}) == "bool 1");
       CHECK(::dispatch(rexsapi::TValueType::INTEGER, rexsapi::TValue{4711}) == "int 4711");
-      CHECK(::dispatch(rexsapi::TValueType::FLOATING_POINT, rexsapi::TValue{47.11}) == "float 47.11");
+      CHECK(::dispatch(rexsapi::TValueType::STRING, rexsapi::TValue{"puschel"}) == "string puschel");
+      CHECK(
+        ::dispatch(rexsapi::TValueType::ENUM, rexsapi::TValue{"heat_treatable_steel_quenched_tempered_condition"}) ==
+        "enum heat_treatable_steel_quenched_tempered_condition");
+      CHECK(::dispatch(rexsapi::TValueType::FILE_REFERENCE, rexsapi::TValue{"./gear.gde"}) ==
+            "file reference ./gear.gde");
+      CHECK(::dispatch(rexsapi::TValueType::REFERENCE_COMPONENT, rexsapi::TValue{15}) == "reference component 15");
+      CHECK(::dispatch(rexsapi::TValueType::FLOATING_POINT_ARRAY,
+                       rexsapi::TValue{rexsapi::TFloatArrayType{1.1, 2.1, 3.1, 4.1}}) == "float array 4 entries");
+      CHECK(::dispatch(rexsapi::TValueType::BOOLEAN_ARRAY,
+                       rexsapi::TValue{rexsapi::TBoolArrayType{true, true, false, true}}) == "bool array 4 entries");
       CHECK(::dispatch(rexsapi::TValueType::INTEGER_ARRAY, rexsapi::TValue{rexsapi::TIntArrayType{1, 2, 3, 4, 5}}) ==
             "int array 5 entries");
+      CHECK(::dispatch(rexsapi::TValueType::ENUM_ARRAY, rexsapi::TValue{rexsapi::TEnumArrayType{"1", "2", "3", "4"}}) ==
+            "enum array 4 entries");
+      CHECK(::dispatch(rexsapi::TValueType::FLOATING_POINT_MATRIX,
+                       rexsapi::TValue{rexsapi::TFloatMatrixType{
+                         {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}}) == "float matrix 3 entries");
+      CHECK(::dispatch(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS,
+                       rexsapi::TValue{rexsapi::TArrayOfIntArraysType{{1, 2, 3}, {4, 5}, {6}}}) ==
+            "array of int arrays 3 entries");
+    }
+
+    SUBCASE("With empty dispatcher funcs")
+    {
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::FLOATING_POINT, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::BOOLEAN, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::INTEGER, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::ENUM, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::STRING, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::FILE_REFERENCE, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::FLOATING_POINT_ARRAY, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::BOOLEAN_ARRAY, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::INTEGER_ARRAY, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::ENUM_ARRAY, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::REFERENCE_COMPONENT, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::FLOATING_POINT_MATRIX, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS, rexsapi::TValue{}));
     }
   }
 }

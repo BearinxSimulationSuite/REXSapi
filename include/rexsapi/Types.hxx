@@ -24,7 +24,7 @@
 
 namespace rexsapi
 {
-  enum class TValueType {
+  enum class TValueType : uint8_t {
     FLOATING_POINT,
     BOOLEAN,
     INTEGER,
@@ -41,6 +41,7 @@ namespace rexsapi
   };
 
   static TValueType typeFromString(const std::string& type);
+  static std::string toTypeString(TValueType type);
 
   struct Bool {
     Bool() = default;
@@ -178,6 +179,39 @@ namespace rexsapi
     throw TException{fmt::format("unknown value type '{}'", type)};
   }
 
+  static inline std::string toTypeString(TValueType type)
+  {
+    switch (type) {
+      case TValueType::FLOATING_POINT:
+        return "floating_point";
+      case TValueType::BOOLEAN:
+        return "boolean";
+      case TValueType::INTEGER:
+        return "integer";
+      case TValueType::STRING:
+        return "string";
+      case TValueType::ENUM:
+        return "enum";
+      case TValueType::FILE_REFERENCE:
+        return "file_reference";
+      case TValueType::FLOATING_POINT_ARRAY:
+        return "floating_point_array";
+      case TValueType::BOOLEAN_ARRAY:
+        return "boolean_array";
+      case TValueType::INTEGER_ARRAY:
+        return "integer_array";
+      case TValueType::ENUM_ARRAY:
+        return "enum_array";
+      case TValueType::REFERENCE_COMPONENT:
+        return "reference_component";
+      case TValueType::FLOATING_POINT_MATRIX:
+        return "floating_point_matrix";
+      case TValueType::ARRAY_OF_INTEGER_ARRAYS:
+        return "array_of_integer_arrays";
+    }
+
+    throw TException{fmt::format("unknown value type '{}'", static_cast<uint8_t>(type))};
+  }
 
   static inline std::string toRealtionTypeString(TRelationType type)
   {

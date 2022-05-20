@@ -38,7 +38,7 @@ static inline rexsapi::database::TModel loadModel(const std::string& version)
 {
   auto models = loadModels();
   auto it = std::find_if(models.begin(), models.end(), [&version](const auto& model) {
-    return rexsapi::TRexsVersion{version} == model.getVersion();
+    return rexsapi::TRexsVersion{version} == model.getVersion() && model.getLanguage() == "en";
   });
 
   if (it == models.end()) {

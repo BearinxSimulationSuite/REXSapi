@@ -17,6 +17,7 @@
 #ifndef REXSAPI_VALUE_HXX
 #define REXSAPI_VALUE_HXX
 
+#include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value_Details.hxx>
 #include <rexsapi/database/EnumValues.hxx>
@@ -116,7 +117,7 @@ namespace rexsapi
                                  return fmt::format("{}", static_cast<bool>(b));
                                },
                                [](const double& d) -> std::string {
-                                 return fmt::format("{}", d);
+                                 return format(d);
                                },
                                [](const int64_t& i) -> std::string {
                                  return fmt::format("{}", i);
@@ -238,7 +239,7 @@ namespace rexsapi
         break;
       }
     }
-    throw TException{fmt::format("dispatching unknown value type {}", static_cast<uint8_t>(type))};
+    throw TException{fmt::format("no function set for {}", rexsapi::toTypeString(type))};
   }
 }
 

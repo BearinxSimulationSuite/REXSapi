@@ -81,9 +81,6 @@ namespace rexsapi
   inline std::optional<TModel> TFileModelLoader::load(TLoaderResult& result,
                                                       const rexsapi::database::TModelRegistry& registry)
   {
-    // TODO (lcf): check path, extension, etc.
-    // TODO (lcf): load file contents into buffer
-    // TODO (lcf): use T to load buffer as model
     if (!std::filesystem::exists(m_Path)) {
       result.addError(TResourceError{fmt::format("'{}' does not exist", m_Path.string())});
       return {};

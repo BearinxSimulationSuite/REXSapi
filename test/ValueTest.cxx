@@ -121,5 +121,18 @@ TEST_CASE("Value test")
     rexsapi::TValue val{matrix};
     CHECK_FALSE(val.isEmpty());
     CHECK_THROWS(val.asString());
+    REQUIRE(val.getValue<rexsapi::TFloatMatrixType>().m_Values.size() == 3);
+    CHECK(val.getValue<rexsapi::TFloatMatrixType>().m_Values[0].size() == 3);
+    CHECK(val.getValue<rexsapi::TFloatMatrixType>().m_Values[1].size() == 3);
+    CHECK(val.getValue<rexsapi::TFloatMatrixType>().m_Values[2].size() == 3);
+  }
+
+  SUBCASE("vector of vectors")
+  {
+    rexsapi::TArrayOfIntArraysType ints{{1, 2, 3}, {4, 5}, {6}};
+    rexsapi::TValue val{ints};
+    CHECK_FALSE(val.isEmpty());
+    CHECK_THROWS(val.asString());
+    CHECK(val.getValue<rexsapi::TArrayOfIntArraysType>().size() == 3);
   }
 }
