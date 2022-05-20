@@ -36,10 +36,40 @@ namespace rexsapi
     {
     }
 
-  private:
-    std::variant<uint64_t, std::string> m_Id;
-  };
+    friend bool operator==(const ComponentId& lhs, const ComponentId& rhs)
+    {
+      return lhs.m_Id == rhs.m_Id;
+    }
 
+    friend bool operator<(const ComponentId& lhs, const ComponentId& rhs)
+    {
+      return lhs.m_Id < rhs.m_Id;
+    }
+
+    std::size_t hash() const
+    {
+      return std::hash<Id>{}(m_Id);
+    }
+
+  private:
+    using Id = std::variant<uint64_t, std::string>;
+    Id m_Id;
+  };
+}
+
+namespace std
+{
+  template<>
+  struct std::hash<rexsapi::ComponentId> {
+    std::size_t operator()(const rexsapi::ComponentId& id) const noexcept
+    {
+      return id.hash();
+    }
+  };
+}
+
+namespace rexsapi
+{
   class TComponentBuilder
   {
   public:
@@ -98,8 +128,9 @@ namespace rexsapi
       return m_Components.back().m_Id;
     }
 
-    TComponents build() const
+    TComponents build()
     {
+      m_ComponentMapping.clear();
       uint64_t internalComponentId{0};
       TComponents components;
 
@@ -112,9 +143,20 @@ namespace rexsapi
         }
         components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
                                            component.m_component->getName(), std::move(attributes)});
+        m_ComponentMapping[component.m_Id] = internalComponentId;
       }
 
       return components;
+    }
+
+    uint64_t getComponentForId(ComponentId id) const
+    {
+      auto it = m_ComponentMapping.find(id);
+      if (it == m_ComponentMapping.end()) {
+        return 0;
+      }
+
+      return it->second;
     }
 
   private:
@@ -155,6 +197,7 @@ namespace rexsapi
     const database::TModel& m_DatabaseModel;
     uint64_t m_ComponentId{0};
     std::vector<ComponentEntry> m_Components;
+    std::unordered_map<ComponentId, uint64_t> m_ComponentMapping;
   };
 
 
@@ -173,14 +216,14 @@ namespace rexsapi
 
     TModelBuilder& addRelation(TRelationType type)
     {
-      (void)type;
+      m_Relations.emplace_back(RelationEntry{type});
       return *this;
     }
 
     TModelBuilder& addRef(TRelationRole role, ComponentId id)
     {
-      (void)role;
-      (void)id;
+      checkRelation();
+      m_Relations.back().m_References.emplace_back(ReferenceEntry{role, id});
       return *this;
     }
 
@@ -226,16 +269,62 @@ namespace rexsapi
       return m_ComponentBuilder.id();
     }
 
-    TModel build(std::string applicationId, std::string applicationVersion) const
+    TModel build(std::string applicationId, std::string applicationVersion)
     {
       TRelations relations;
+      // TODO (lcf): create current date
       rexsapi::TModelInfo info{std::move(applicationId), std::move(applicationVersion), "2022-05-20T08:59:10+01:00",
                                m_ComponentBuilder.m_DatabaseModel.getVersion()};
-      return TModel{info, m_ComponentBuilder.build(), std::move(relations)};
+      auto components = m_ComponentBuilder.build();
+
+      for (const auto& relation : m_Relations) {
+        TRelationReferences references;
+        for (const auto& reference : relation.m_References) {
+          auto id = m_ComponentBuilder.getComponentForId(reference.m_Id);
+          if (id == 0) {
+            // TODO (lcf): stringify id
+            throw TException{"component for id {} not found"};
+          }
+          references.emplace_back(TRelationReference{reference.m_Role, "hint", getComponentForId(components, id)});
+        }
+        relations.emplace_back(rexsapi::TRelation{relation.m_Type, {}, std::move(references)});
+      }
+
+      return TModel{info, std::move(components), std::move(relations)};
     }
 
   private:
+    void checkRelation() const
+    {
+      if (m_Relations.empty()) {
+        throw TException{"no relations added yet"};
+      }
+    }
+
+    static const TComponent& getComponentForId(const TComponents& components, uint64_t id)
+    {
+      auto it = std::find_if(components.begin(), components.end(), [&id](const auto& component) {
+        return component.getInternalId() == id;
+      });
+      if (it == components.end()) {
+        throw TException{fmt::format("no component found for id {}", id)};
+      }
+
+      return *it;
+    }
+
+    struct ReferenceEntry {
+      TRelationRole m_Role;
+      ComponentId m_Id;
+    };
+
+    struct RelationEntry {
+      TRelationType m_Type;
+      std::vector<ReferenceEntry> m_References{};
+    };
+
     TComponentBuilder m_ComponentBuilder;
+    std::vector<RelationEntry> m_Relations;
   };
 }
 
