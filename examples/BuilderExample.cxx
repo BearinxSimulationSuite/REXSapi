@@ -3,9 +3,30 @@
 
 #include <test/TestHelper.hxx>
 
+#include <iostream>
+class XMLStringSerializer
+{
+public:
+  void serialize(const pugi::xml_document& doc)
+  {
+    std::stringstream stream;
+    doc.save(stream, "  ");
+    m_Model = stream.str();
+  }
+
+  const std::string& getModel() const
+  {
+    return m_Model;
+  }
+
+private:
+  std::string m_Model;
+};
+
+
 static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& registry)
 {
-  const rexsapi::database::TModel& databaseModel = registry.getModel(rexsapi::TRexsVersion{"1.4"}, "de");
+  const rexsapi::database::TModel& databaseModel = registry.getModel(rexsapi::TRexsVersion{"1.4"}, "en");
 
   rexsapi::TComponentBuilder componentBuilder{databaseModel};
 
@@ -26,7 +47,7 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("axial_force_absorption").value("negative");
   modelBuilder.addAttribute("inner_diameter").unit("mm").value(30.0);
   modelBuilder.addAttribute("outer_diameter").unit("mm").value(62.0);
-  modelBuilder.addAttribute("radial_force_absorption").value("true");
+  modelBuilder.addAttribute("radial_force_absorption").value(true);
   modelBuilder.addAttribute("width").unit("mm").value(16.0);
   modelBuilder.addAttribute("misalignment_in_v_direction").unit("mum").value(0.0);
   modelBuilder.addAttribute("misalignment_in_w_direction").unit("mum").value(0.0);
@@ -36,15 +57,15 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("u_coordinate_on_shaft_inner_side").unit("mm").value(70.0);
   modelBuilder.addAttribute("u_coordinate_on_shaft_outer_side").unit("mm").value(70.0);
   modelBuilder.addAttribute("w_axis_vector").unit("mm").value(rexsapi::TFloatArrayType{0.0, 0.0, 1.0});
-  modelBuilder.addAttribute("axial_stiffness").unit("mN / mm").value(1.0E20);
-  modelBuilder.addAttribute("radial_stiffness").unit("mN / mm").value(1.0E20);
-  modelBuilder.addAttribute("bending_stiffness").unit("mN / rad").value(0.0);
+  modelBuilder.addAttribute("axial_stiffness").unit("N / mm").value(1.0E20);
+  modelBuilder.addAttribute("radial_stiffness").unit("N / mm").value(1.0E20);
+  modelBuilder.addAttribute("bending_stiffness").unit("N / rad").value(0.0);
 
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
     .addRef(rexsapi::TRelationRole::ORIGIN, casingId)
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
-    .addRef(rexsapi::TRelationRole::ORIGIN, "my-bearing-id")
+    .addRef(rexsapi::TRelationRole::ORIGIN, rexsapi::ComponentId{"my-bearing-id"})
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
 
   return modelBuilder.build("REXSApi Model Builder", "1.0");
@@ -61,7 +82,11 @@ static rexsapi::database::TModelRegistry createModelRegistry()
 
 int main(int, char**)
 {
-  auto model = createModel(createModelRegistry());
-
+  auto registry = createModelRegistry();
+  auto model = createModel(registry);
+  XMLStringSerializer stringSerializer;
+  rexsapi::XMLModelSerializer modelSerializer;
+  modelSerializer.serialize(model, stringSerializer);
+  std::cout << stringSerializer.getModel() << std::endl;
   return 0;
 }

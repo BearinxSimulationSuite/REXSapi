@@ -23,6 +23,23 @@
 
 namespace rexsapi
 {
+  class ComponentId
+  {
+  public:
+    explicit ComponentId(uint64_t id)
+    : m_Id{id}
+    {
+    }
+
+    explicit ComponentId(std::string id)
+    : m_Id{id}
+    {
+    }
+
+  private:
+    std::variant<uint64_t, std::string> m_Id;
+  };
+
   class TComponentBuilder
   {
   public:
@@ -31,52 +48,113 @@ namespace rexsapi
     {
     }
 
-    TComponentBuilder& addComponent(std::string component)
+    TComponentBuilder& addComponent(const std::string& component)
     {
-      (void)component;
+      m_Components.emplace_back(ComponentEntry{getNextComponentId(), &m_DatabaseModel.findComponentById(component)});
       return *this;
     }
 
-    TComponentBuilder& addComponent(std::string component, std::string id)
+    TComponentBuilder& addComponent(const std::string& component, std::string id)
     {
-      (void)component;
-      (void)id;
-      return *this;
-    }
-
-    TComponentBuilder& addAttribute(std::string attribute)
-    {
-      (void)attribute;
+      // TODO (lcf): check duplicate id
+      m_Components.emplace_back(
+        ComponentEntry{ComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
       return *this;
     }
 
     TComponentBuilder& name(std::string name)
     {
-      (void)name;
+      checkComponent();
+      m_Components.back().m_Name = std::move(name);
       return *this;
     }
 
-    TComponentBuilder& unit(std::string unit)
+    TComponentBuilder& addAttribute(const std::string& attribute)
     {
-      (void)unit;
+      checkComponent();
+      m_Components.back().m_Attributes.emplace_back(AttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+      return *this;
+    }
+
+    TComponentBuilder& unit(const std::string& unit)
+    {
+      checkAttribute();
+      m_Components.back().m_Attributes.back().m_Unit = &m_DatabaseModel.findUnitByName(unit);
       return *this;
     }
 
     template<typename T>
     TComponentBuilder& value(T val)
     {
-      (void)val;
+      checkAttribute();
+      // TODO (lcf): check value type valid for attribute
+      m_Components.back().m_Attributes.back().m_Value = TValue{val};
       return *this;
     }
 
-    uint64_t id() const
+    ComponentId id() const
     {
-      return 0;
+      checkComponent();
+      return m_Components.back().m_Id;
+    }
+
+    TComponents build() const
+    {
+      uint64_t internalComponentId{0};
+      TComponents components;
+
+      for (const auto& component : m_Components) {
+        TAttributes attributes;
+        for (const auto& attribute : component.m_Attributes) {
+          // TODO (lcf): check TUnit
+          attributes.emplace_back(
+            TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
+        }
+        components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
+                                           component.m_component->getName(), std::move(attributes)});
+      }
+
+      return components;
     }
 
   private:
+    void checkComponent() const
+    {
+      if (m_Components.empty()) {
+        throw TException{"no components added yet"};
+      }
+    }
+
+    void checkAttribute() const
+    {
+      checkComponent();
+      if (m_Components.back().m_Attributes.empty()) {
+        throw TException{"no attributes added yet"};
+      }
+    }
+
+    ComponentId getNextComponentId()
+    {
+      return ComponentId{++m_ComponentId};
+    }
+
+    struct AttributeEntry {
+      const database::TAttribute* m_Attribute{nullptr};
+      const database::TUnit* m_Unit{nullptr};
+      TValue m_Value{};
+    };
+
+    struct ComponentEntry {
+      ComponentId m_Id;
+      const database::TComponent* m_component{nullptr};
+      std::string m_Name{};
+      std::vector<AttributeEntry> m_Attributes{};
+    };
+
     friend class TModelBuilder;
     const database::TModel& m_DatabaseModel;
+    uint64_t m_ComponentId{0};
+    std::vector<ComponentEntry> m_Components;
   };
 
 
@@ -99,70 +177,61 @@ namespace rexsapi
       return *this;
     }
 
-    TModelBuilder& addRef(TRelationRole role, uint64_t id)
+    TModelBuilder& addRef(TRelationRole role, ComponentId id)
     {
       (void)role;
       (void)id;
       return *this;
     }
 
-    TModelBuilder& addRef(TRelationRole role, const std::string& id)
+    TModelBuilder& addComponent(const std::string& component)
     {
-      (void)role;
-      (void)id;
+      m_ComponentBuilder.addComponent(component);
       return *this;
     }
 
-    TModelBuilder& addComponent(std::string component)
+    TModelBuilder& addComponent(const std::string& component, std::string id)
     {
-      (void)component;
-      return *this;
-    }
-
-    TModelBuilder& addComponent(std::string component, std::string id)
-    {
-      (void)component;
-      (void)id;
-      return *this;
-    }
-
-    TModelBuilder& addAttribute(std::string attribute)
-    {
-      (void)attribute;
+      m_ComponentBuilder.addComponent(component, id);
       return *this;
     }
 
     TModelBuilder& name(std::string name)
     {
-      (void)name;
+      m_ComponentBuilder.name(std::move(name));
       return *this;
     }
 
-    TModelBuilder& unit(std::string unit)
+    TModelBuilder& addAttribute(const std::string& attribute)
     {
-      (void)unit;
+      m_ComponentBuilder.addAttribute(attribute);
+      return *this;
+    }
+
+    TModelBuilder& unit(const std::string& unit)
+    {
+      m_ComponentBuilder.unit(unit);
       return *this;
     }
 
     template<typename T>
     TModelBuilder& value(T val)
     {
-      (void)val;
+      m_ComponentBuilder.value(std::move(val));
       return *this;
     }
 
-    uint64_t id() const
+    ComponentId id() const
     {
-      return 0;
+      return m_ComponentBuilder.id();
     }
 
     TModel build(std::string applicationId, std::string applicationVersion) const
     {
-      rexsapi::TComponents components;
       TRelations relations;
       rexsapi::TModelInfo info{std::move(applicationId), std::move(applicationVersion), "2022-05-20T08:59:10+01:00",
                                m_ComponentBuilder.m_DatabaseModel.getVersion()};
-      return TModel{info, std::move(components), std::move(relations)};
+      return TModel{info, m_ComponentBuilder.build(), std::move(relations)};
     }
 
   private:

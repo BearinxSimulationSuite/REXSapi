@@ -60,6 +60,7 @@ namespace rexsapi
     TRexsVersion m_Version;
   };
 
+  
   class TModel
   {
   public:
@@ -69,6 +70,13 @@ namespace rexsapi
     , m_Relations{std::move(relations)}
     {
     }
+
+    ~TModel() = default;
+
+    TModel(const TModel&) = delete;
+    TModel(TModel&&) = default;
+    TModel& operator=(const TModel&) = delete;
+    TModel& operator=(TModel&&) = default;
 
     [[nodiscard]] const TModelInfo& getInfo() const
     {
