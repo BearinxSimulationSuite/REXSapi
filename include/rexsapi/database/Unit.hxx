@@ -45,6 +45,11 @@ namespace rexsapi::database
       return m_Name == name;
     }
 
+    friend bool operator==(const TUnit& lhs, const TUnit& rhs)
+    {
+      return lhs.compare(rhs.getName());
+    }
+
   private:
     const uint64_t m_Id;
     const std::string m_Name;

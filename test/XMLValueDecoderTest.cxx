@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include <rexsapi/XMLParser.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
+#include <rexsapi/Xml.hxx>
 
 #include <doctest.h>
 #include <vector>
@@ -90,6 +90,22 @@ TEST_CASE("XML value decoder test")
           <c>3.3</c>
         </r>
       </matrix>
+    </attribute>
+    <attribute id="array of integer arrays">
+      <array_of_arrays>
+        <array>
+          <c>1</c>
+          <c>1</c>
+          <c>1</c>
+        </array>
+        <array>
+          <c>2</c>
+          <c>2</c>
+        </array>
+        <array>
+          <c>3</c>
+        </array>
+      </array_of_arrays>
     </attribute>
   </component>
   )";
@@ -198,6 +214,17 @@ TEST_CASE("XML value decoder test")
     for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {
       CHECK(row.size() == 3);
     }
+  }
+
+  SUBCASE("Decode array of integer arrays")
+  {
+    auto result =
+      decoder.decode(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS, enumValue, getNode(doc, "array of integer arrays"));
+    CHECK(result.second);
+    REQUIRE(result.first.getValue<std::vector<std::vector<int64_t>>>().size() == 3);
+    CHECK(result.first.getValue<std::vector<std::vector<int64_t>>>()[0].size() == 3);
+    CHECK(result.first.getValue<std::vector<std::vector<int64_t>>>()[1].size() == 2);
+    CHECK(result.first.getValue<std::vector<std::vector<int64_t>>>()[2].size() == 1);
   }
 }
 

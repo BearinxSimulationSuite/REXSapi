@@ -17,75 +17,15 @@
 #ifndef REXSAPI_VALUE_HXX
 #define REXSAPI_VALUE_HXX
 
-#include <rexsapi/Exception.hxx>
-#include <rexsapi/Format.hxx>
+#include <rexsapi/ConversionHelper.hxx>
+#include <rexsapi/Types.hxx>
+#include <rexsapi/Value_Details.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
-#include <variant>
+#include <functional>
 
 namespace rexsapi
 {
-  template<class... Ts>
-  struct overload : Ts... {
-    using Ts::operator()...;
-  };
-  template<class... Ts>
-  overload(Ts...) -> overload<Ts...>;
-
-  struct Bool {
-    Bool() = default;
-
-    Bool(bool value)
-    : m_Value{value}
-    {
-    }
-
-    explicit operator bool() const
-    {
-      return m_Value;
-    }
-
-    bool m_Value{false};
-  };
-
-  template<typename T>
-  struct TMatrix {
-    bool validate() const
-    {
-      if (m_Values.size()) {
-        size_t n = m_Values[0].size();
-        for (const auto& row : m_Values) {
-          if (row.size() != n) {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-
-    std::vector<std::vector<T>> m_Values;
-  };
-
-
-  namespace detail
-  {
-    using Variant =
-      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
-
-    template<typename T>
-    inline const T& value_getter(const Variant& value)
-    {
-      return std::get<T>(value);
-    }
-
-    template<>
-    inline const bool& value_getter<bool>(const Variant& value)
-    {
-      return std::get<Bool>(value).m_Value;
-    }
-  }
-
   class TValue
   {
   public:
@@ -135,50 +75,172 @@ namespace rexsapi
       if (m_Value.index() == 0) {
         return def;
       }
-      return std::get<T>(m_Value);
+      return detail::value_getter<T>(m_Value);
     }
 
-    std::string asString() const
-    {
-      return std::visit(overload{[](const std::monostate&) -> std::string {
-                                   return "";
-                                 },
-                                 [](const std::string& s) {
-                                   return s;
-                                 },
-                                 [](const Bool& b) -> std::string {
-                                   return fmt::format("{}", static_cast<bool>(b));
-                                 },
-                                 [](const double& d) -> std::string {
-                                   return fmt::format("{}", d);
-                                 },
-                                 [](const int64_t& i) -> std::string {
-                                   return fmt::format("{}", i);
-                                 },
-                                 [](const std::vector<double>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<Bool>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<int64_t>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<std::string>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const std::vector<std::vector<int64_t>>&) -> std::string {
-                                   throw TException{"cannot convert vector to string"};
-                                 },
-                                 [](const TMatrix<double>&) -> std::string {
-                                   throw TException{"cannot convert matrix to string"};
-                                 }},
-                        m_Value);
-    }
+    std::string asString() const;
 
   private:
     detail::Variant m_Value;
   };
+
+
+  template<typename R>
+  using DispatcherFuncs = std::tuple<
+    std::function<R(FloatTag, const TFloatType&)>, std::function<R(BoolTag, const bool&)>,
+    std::function<R(IntTag, const TIntType&)>, std::function<R(EnumTag, const std::string&)>,
+    std::function<R(StringTag, const TStringType&)>, std::function<R(FileReferenceTag, const TFileReferenceType&)>,
+    std::function<R(FloatArrayTag, const TFloatArrayType&)>, std::function<R(BoolArrayTag, const TBoolArrayType&)>,
+    std::function<R(IntArrayTag, const TIntArrayType&)>, std::function<R(EnumArrayTag, const TEnumArrayType&)>,
+    std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>,
+    std::function<R(FloatMatrixTag, const TFloatMatrixType&)>,
+    std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
+
+  template<typename R>
+  auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs);
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Implementation
+  /////////////////////////////////////////////////////////////////////////////
+
+  inline std::string TValue::asString() const
+
+  {
+    return std::visit(overload{[](const std::monostate&) -> std::string {
+                                 return "";
+                               },
+                               [](const std::string& s) {
+                                 return s;
+                               },
+                               [](const Bool& b) -> std::string {
+                                 return fmt::format("{}", static_cast<bool>(b));
+                               },
+                               [](const double& d) -> std::string {
+                                 return format(d);
+                               },
+                               [](const int64_t& i) -> std::string {
+                                 return fmt::format("{}", i);
+                               },
+                               [](const std::vector<double>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<Bool>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<int64_t>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<std::string>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const std::vector<std::vector<int64_t>>&) -> std::string {
+                                 throw TException{"cannot convert vector to string"};
+                               },
+                               [](const TMatrix<double>&) -> std::string {
+                                 throw TException{"cannot convert matrix to string"};
+                               }},
+                      m_Value);
+  }
+
+  template<typename R>
+  inline auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
+  {
+    switch (type) {
+      case TValueType::FLOATING_POINT: {
+        auto c = std::get<std::function<R(FloatTag, const TFloatType&)>>(funcs);
+        if (c) {
+          return c(FloatTag(), value.getValue<TFloatType>());
+        }
+        break;
+      }
+      case TValueType::BOOLEAN: {
+        auto c = std::get<std::function<R(BoolTag, const bool&)>>(funcs);
+        if (c) {
+          return c(BoolTag(), value.getValue<TBoolType>().m_Value);
+        }
+        break;
+      }
+      case TValueType::INTEGER: {
+        auto c = std::get<std::function<R(IntTag, const TIntType&)>>(funcs);
+        if (c) {
+          return c(IntTag(), value.getValue<TIntType>());
+        }
+        break;
+      }
+      case TValueType::ENUM: {
+        auto c = std::get<std::function<R(EnumTag, const TEnumType&)>>(funcs);
+        if (c) {
+          return c(EnumTag(), value.getValue<TEnumType>());
+        }
+        break;
+      }
+      case TValueType::STRING: {
+        auto c = std::get<std::function<R(StringTag, const TStringType&)>>(funcs);
+        if (c) {
+          return c(StringTag(), value.getValue<TStringType>());
+        }
+        break;
+      }
+      case TValueType::FILE_REFERENCE: {
+        auto c = std::get<std::function<R(FileReferenceTag, const TFileReferenceType&)>>(funcs);
+        if (c) {
+          return c(FileReferenceTag(), value.getValue<TFileReferenceType>());
+        }
+        break;
+      }
+      case TValueType::FLOATING_POINT_ARRAY: {
+        auto c = std::get<std::function<R(FloatArrayTag, const TFloatArrayType&)>>(funcs);
+        if (c) {
+          return c(FloatArrayTag(), value.getValue<TFloatArrayType>());
+        }
+        break;
+      }
+      case TValueType::BOOLEAN_ARRAY: {
+        auto c = std::get<std::function<R(BoolArrayTag, const TBoolArrayType&)>>(funcs);
+        if (c) {
+          return c(BoolArrayTag(), value.getValue<TBoolArrayType>());
+        }
+        break;
+      }
+      case TValueType::INTEGER_ARRAY: {
+        auto c = std::get<std::function<R(IntArrayTag, const TIntArrayType&)>>(funcs);
+        if (c) {
+          return c(IntArrayTag(), value.getValue<TIntArrayType>());
+        }
+        break;
+      }
+      case TValueType::ENUM_ARRAY: {
+        auto c = std::get<std::function<R(EnumArrayTag, const TEnumArrayType&)>>(funcs);
+        if (c) {
+          return c(EnumArrayTag(), value.getValue<TEnumArrayType>());
+        }
+        break;
+      }
+      case TValueType::REFERENCE_COMPONENT: {
+        auto c = std::get<std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>>(funcs);
+        if (c) {
+          return c(ReferenceComponentTag(), value.getValue<TReferenceComponentType>());
+        }
+        break;
+      }
+      case TValueType::FLOATING_POINT_MATRIX: {
+        auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
+        if (c) {
+          return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+        }
+        break;
+      }
+      case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
+        auto c = std::get<std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>(funcs);
+        if (c) {
+          return c(ArrayOfIntArraysTag(), value.getValue<TArrayOfIntArraysType>());
+        }
+        break;
+      }
+    }
+    throw TException{fmt::format("no function set for {}", rexsapi::toTypeString(type))};
+  }
 }
 
 #endif

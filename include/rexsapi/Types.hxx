@@ -20,26 +20,62 @@
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
 
+#include <vector>
+
 namespace rexsapi
 {
-  enum class TValueType {
+  enum class TValueType : uint8_t {
     FLOATING_POINT,
     BOOLEAN,
     INTEGER,
     ENUM,
     STRING,
     FILE_REFERENCE,
-    BOOLEAN_ARRAY,
     FLOATING_POINT_ARRAY,
-    REFERENCE_COMPONENT,
-    FLOATING_POINT_MATRIX,
+    BOOLEAN_ARRAY,
     INTEGER_ARRAY,
     ENUM_ARRAY,
+    REFERENCE_COMPONENT,
+    FLOATING_POINT_MATRIX,
     ARRAY_OF_INTEGER_ARRAYS
   };
 
   static TValueType typeFromString(const std::string& type);
+  static std::string toTypeString(TValueType type);
 
+  struct Bool {
+    Bool() = default;
+
+    Bool(bool value)
+    : m_Value{value}
+    {
+    }
+
+    explicit operator bool() const
+    {
+      return m_Value;
+    }
+
+    bool m_Value{false};
+  };
+
+  template<typename T>
+  struct TMatrix {
+    bool validate() const
+    {
+      if (m_Values.size()) {
+        size_t n = m_Values[0].size();
+        for (const auto& row : m_Values) {
+          if (row.size() != n) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    std::vector<std::vector<T>> m_Values;
+  };
 
   enum class TRelationType {
     ASSEMBLY,
@@ -143,6 +179,39 @@ namespace rexsapi
     throw TException{fmt::format("unknown value type '{}'", type)};
   }
 
+  static inline std::string toTypeString(TValueType type)
+  {
+    switch (type) {
+      case TValueType::FLOATING_POINT:
+        return "floating_point";
+      case TValueType::BOOLEAN:
+        return "boolean";
+      case TValueType::INTEGER:
+        return "integer";
+      case TValueType::STRING:
+        return "string";
+      case TValueType::ENUM:
+        return "enum";
+      case TValueType::FILE_REFERENCE:
+        return "file_reference";
+      case TValueType::FLOATING_POINT_ARRAY:
+        return "floating_point_array";
+      case TValueType::BOOLEAN_ARRAY:
+        return "boolean_array";
+      case TValueType::INTEGER_ARRAY:
+        return "integer_array";
+      case TValueType::ENUM_ARRAY:
+        return "enum_array";
+      case TValueType::REFERENCE_COMPONENT:
+        return "reference_component";
+      case TValueType::FLOATING_POINT_MATRIX:
+        return "floating_point_matrix";
+      case TValueType::ARRAY_OF_INTEGER_ARRAYS:
+        return "array_of_integer_arrays";
+    }
+
+    throw TException{fmt::format("unknown value type '{}'", static_cast<uint8_t>(type))};
+  }
 
   static inline std::string toRealtionTypeString(TRelationType type)
   {
@@ -240,7 +309,7 @@ namespace rexsapi
       case TRelationRole::ASSEMBLY:
         return "assembly";
       case TRelationRole::GEAR:
-        return "assembly";
+        return "gear";
       case TRelationRole::GEAR_1:
         return "gear_1";
       case TRelationRole::GEAR_2:
@@ -250,7 +319,7 @@ namespace rexsapi
       case TRelationRole::LEFT:
         return "left";
       case TRelationRole::MANUFACTURING_SETTINGS:
-        return "manufacturing_stettings";
+        return "manufacturing_settings";
       case TRelationRole::ORIGIN:
         return "origin";
       case TRelationRole::OUTER_PART:

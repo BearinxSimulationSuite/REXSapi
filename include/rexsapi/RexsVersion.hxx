@@ -85,7 +85,7 @@ namespace rexsapi
       return m_Minor;
     }
 
-    std::string string() const
+    std::string asString() const
     {
       return fmt::format("{}.{}", m_Major, m_Minor);
     }

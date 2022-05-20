@@ -44,6 +44,15 @@ namespace rexsapi
       return m_Unit != nullptr ? m_Unit->getName() : m_CustomUnit;
     }
 
+    friend bool operator==(const TUnit& lhs, const database::TUnit& rhs)
+    {
+      if (lhs.isCustomUnit()) {
+        return rhs.compare(lhs.m_CustomUnit);
+      }
+
+      return *lhs.m_Unit == rhs;
+    }
+
   private:
     const database::TUnit* m_Unit{nullptr};
     std::string m_CustomUnit;

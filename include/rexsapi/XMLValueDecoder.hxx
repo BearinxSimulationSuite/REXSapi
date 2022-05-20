@@ -20,7 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
-#include <rexsapi/XMLParser.hxx>
+#include <rexsapi/Xml.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
 #include <memory>
@@ -199,6 +199,38 @@ namespace rexsapi
         return std::make_pair(TValue{std::move(matrix)}, result);
       }
     };
+
+    template<typename ElementDecoder>
+    class TArrayOfArraysDecoder : public TXMLDecoder
+    {
+    private:
+      using type = typename ElementDecoder::Type;
+
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
+      {
+        std::vector<std::vector<type>> arrays;
+        ElementDecoder decoder;
+        bool result{true};
+
+        for (const auto& row : node.select_nodes("array_of_arrays/array")) {
+          std::vector<type> r;
+
+          for (const auto& column : row.node().select_nodes("c")) {
+            auto res = decoder.decode(enumValue, column.node());
+            if (res.second) {
+              const TValue& val = res.first;
+              r.emplace_back(std::move(val.getValue<type>()));
+            }
+            result &= res.second;
+          }
+
+          arrays.emplace_back(std::move(r));
+        }
+
+        return std::make_pair(TValue{std::move(arrays)}, result);
+      }
+    };
   }
 
 
@@ -220,6 +252,8 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
+    m_Decoder[TValueType::ARRAY_OF_INTEGER_ARRAYS] =
+      std::make_unique<xml::TArrayOfArraysDecoder<xml::TIntegerDecoder>>();
   }
 
   inline std::pair<TValue, bool> TXMLValueDecoder::decode(TValueType type,

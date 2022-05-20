@@ -20,7 +20,7 @@
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
-#include <rexsapi/XMLParser.hxx>
+#include <rexsapi/Xml.hxx>
 
 #include <filesystem>
 #include <iostream>
@@ -443,6 +443,7 @@ namespace rexsapi::xml
 
   inline void TStringType::validate(const std::string& value, TValidationContext& context) const
   {
+    // nothing to do here
     (void)value;
     (void)context;
   }
@@ -451,7 +452,7 @@ namespace rexsapi::xml
   {
     try {
       std::size_t pos{};
-      std::stoll(value, &pos);
+      (void)std::stoll(value, &pos);
       if (pos != value.length()) {
         context.addError(fmt::format("cannot convert '{}' to integer", value));
       }
@@ -463,7 +464,7 @@ namespace rexsapi::xml
   inline void TNonNegativeIntegerType::validate(const std::string& value, TValidationContext& context) const
   {
     try {
-      convertToUint64(value);
+      (void)convertToUint64(value);
     } catch (const std::exception&) {
       context.addError(fmt::format("cannot convert '{}' to non negative integer", value));
     }
@@ -472,7 +473,7 @@ namespace rexsapi::xml
   inline void TDecimalType::validate(const std::string& value, TValidationContext& context) const
   {
     try {
-      convertToDouble(value);
+      (void)convertToDouble(value);
     } catch (const std::exception&) {
       context.addError(fmt::format("cannot convert '{}' to decimal", value));
     }
@@ -605,6 +606,7 @@ namespace rexsapi::xml
 
   inline void TText::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
+    // nothing to do here
     (void)node;
     (void)context;
   }
