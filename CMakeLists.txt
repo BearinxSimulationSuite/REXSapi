@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(rexsapi VERSION 0.1.14 LANGUAGES CXX)
+project(rexsapi VERSION 0.1.15 LANGUAGES CXX)
 
 if(POLICY CMP0110)
   cmake_policy(SET CMP0110 OLD)
