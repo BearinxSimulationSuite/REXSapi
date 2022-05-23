@@ -17,6 +17,7 @@
 #include <rexsapi/ModelLoader.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
 #include <rexsapi/XMLModelSerializer.hxx>
+#include <rexsapi/XMLSerializer.hxx>
 
 #include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
@@ -26,42 +27,6 @@
 
 namespace
 {
-  class XMLFileSerializer
-  {
-  public:
-    explicit XMLFileSerializer(std::filesystem::path file)
-    : m_File{std::move(file)}
-    {
-    }
-
-    void serialize(const pugi::xml_document& doc) const
-    {
-      doc.save_file(m_File.c_str());
-    }
-
-  private:
-    std::filesystem::path m_File;
-  };
-
-  class XMLStringSerializer
-  {
-  public:
-    void serialize(const pugi::xml_document& doc)
-    {
-      std::stringstream stream;
-      doc.save(stream, "  ");
-      m_Model = stream.str();
-    }
-
-    const std::string& getModel() const
-    {
-      return m_Model;
-    }
-
-  private:
-    std::string m_Model;
-  };
-
   class FileLoader
   {
   public:
@@ -112,7 +77,7 @@ TEST_CASE("Model file serializer test")
   SUBCASE("serialize loaded model")
   {
     TemporaryDirectory tmpDir;
-    XMLFileSerializer xmlSerializer{tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"};
+    rexsapi::XMLFileSerializer xmlSerializer{tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"};
     rexsapi::XMLModelSerializer modelSerializer;
     modelSerializer.serialize(model, xmlSerializer);
     CHECK(std::filesystem::exists(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"));
@@ -229,7 +194,7 @@ TEST_CASE("Serialize new model")
   rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}};
   rexsapi::TModel model{info, std::move(components), std::move(relations)};
 
-  XMLStringSerializer stringSerializer;
+  rexsapi::XMLStringSerializer stringSerializer;
   rexsapi::XMLModelSerializer modelSerializer;
 
   SUBCASE("Serialize model")

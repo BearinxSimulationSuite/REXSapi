@@ -56,7 +56,7 @@ namespace rexsapi
     TValue(const TValue&) = default;
     TValue(TValue&&) = default;
     TValue& operator=(const TValue&) = delete;
-    TValue& operator=(TValue&&) = delete;
+    TValue& operator=(TValue&&) = default;
 
     bool isEmpty() const
     {
@@ -111,6 +111,7 @@ namespace rexsapi
                                  return "";
                                },
                                [](const std::string& s) {
+                                 // TODO (lcf): add "" for string
                                  return s;
                                },
                                [](const Bool& b) -> std::string {
@@ -146,100 +147,104 @@ namespace rexsapi
   template<typename R>
   inline auto dispatch(TValueType type, const TValue& value, DispatcherFuncs<R> funcs)
   {
-    switch (type) {
-      case TValueType::FLOATING_POINT: {
-        auto c = std::get<std::function<R(FloatTag, const TFloatType&)>>(funcs);
-        if (c) {
-          return c(FloatTag(), value.getValue<TFloatType>());
+    try {
+      switch (type) {
+        case TValueType::FLOATING_POINT: {
+          auto c = std::get<std::function<R(FloatTag, const TFloatType&)>>(funcs);
+          if (c) {
+            return c(FloatTag(), value.getValue<TFloatType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::BOOLEAN: {
-        auto c = std::get<std::function<R(BoolTag, const bool&)>>(funcs);
-        if (c) {
-          return c(BoolTag(), value.getValue<TBoolType>().m_Value);
+        case TValueType::BOOLEAN: {
+          auto c = std::get<std::function<R(BoolTag, const bool&)>>(funcs);
+          if (c) {
+            return c(BoolTag(), value.getValue<TBoolType>().m_Value);
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::INTEGER: {
-        auto c = std::get<std::function<R(IntTag, const TIntType&)>>(funcs);
-        if (c) {
-          return c(IntTag(), value.getValue<TIntType>());
+        case TValueType::INTEGER: {
+          auto c = std::get<std::function<R(IntTag, const TIntType&)>>(funcs);
+          if (c) {
+            return c(IntTag(), value.getValue<TIntType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::ENUM: {
-        auto c = std::get<std::function<R(EnumTag, const TEnumType&)>>(funcs);
-        if (c) {
-          return c(EnumTag(), value.getValue<TEnumType>());
+        case TValueType::ENUM: {
+          auto c = std::get<std::function<R(EnumTag, const TEnumType&)>>(funcs);
+          if (c) {
+            return c(EnumTag(), value.getValue<TEnumType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::STRING: {
-        auto c = std::get<std::function<R(StringTag, const TStringType&)>>(funcs);
-        if (c) {
-          return c(StringTag(), value.getValue<TStringType>());
+        case TValueType::STRING: {
+          auto c = std::get<std::function<R(StringTag, const TStringType&)>>(funcs);
+          if (c) {
+            return c(StringTag(), value.getValue<TStringType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::FILE_REFERENCE: {
-        auto c = std::get<std::function<R(FileReferenceTag, const TFileReferenceType&)>>(funcs);
-        if (c) {
-          return c(FileReferenceTag(), value.getValue<TFileReferenceType>());
+        case TValueType::FILE_REFERENCE: {
+          auto c = std::get<std::function<R(FileReferenceTag, const TFileReferenceType&)>>(funcs);
+          if (c) {
+            return c(FileReferenceTag(), value.getValue<TFileReferenceType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::FLOATING_POINT_ARRAY: {
-        auto c = std::get<std::function<R(FloatArrayTag, const TFloatArrayType&)>>(funcs);
-        if (c) {
-          return c(FloatArrayTag(), value.getValue<TFloatArrayType>());
+        case TValueType::FLOATING_POINT_ARRAY: {
+          auto c = std::get<std::function<R(FloatArrayTag, const TFloatArrayType&)>>(funcs);
+          if (c) {
+            return c(FloatArrayTag(), value.getValue<TFloatArrayType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::BOOLEAN_ARRAY: {
-        auto c = std::get<std::function<R(BoolArrayTag, const TBoolArrayType&)>>(funcs);
-        if (c) {
-          return c(BoolArrayTag(), value.getValue<TBoolArrayType>());
+        case TValueType::BOOLEAN_ARRAY: {
+          auto c = std::get<std::function<R(BoolArrayTag, const TBoolArrayType&)>>(funcs);
+          if (c) {
+            return c(BoolArrayTag(), value.getValue<TBoolArrayType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::INTEGER_ARRAY: {
-        auto c = std::get<std::function<R(IntArrayTag, const TIntArrayType&)>>(funcs);
-        if (c) {
-          return c(IntArrayTag(), value.getValue<TIntArrayType>());
+        case TValueType::INTEGER_ARRAY: {
+          auto c = std::get<std::function<R(IntArrayTag, const TIntArrayType&)>>(funcs);
+          if (c) {
+            return c(IntArrayTag(), value.getValue<TIntArrayType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::ENUM_ARRAY: {
-        auto c = std::get<std::function<R(EnumArrayTag, const TEnumArrayType&)>>(funcs);
-        if (c) {
-          return c(EnumArrayTag(), value.getValue<TEnumArrayType>());
+        case TValueType::ENUM_ARRAY: {
+          auto c = std::get<std::function<R(EnumArrayTag, const TEnumArrayType&)>>(funcs);
+          if (c) {
+            return c(EnumArrayTag(), value.getValue<TEnumArrayType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::REFERENCE_COMPONENT: {
-        auto c = std::get<std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>>(funcs);
-        if (c) {
-          return c(ReferenceComponentTag(), value.getValue<TReferenceComponentType>());
+        case TValueType::REFERENCE_COMPONENT: {
+          auto c = std::get<std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>>(funcs);
+          if (c) {
+            return c(ReferenceComponentTag(), value.getValue<TReferenceComponentType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::FLOATING_POINT_MATRIX: {
-        auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
-        if (c) {
-          return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+        case TValueType::FLOATING_POINT_MATRIX: {
+          auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
+          if (c) {
+            return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+          }
+          break;
         }
-        break;
-      }
-      case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
-        auto c = std::get<std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>(funcs);
-        if (c) {
-          return c(ArrayOfIntArraysTag(), value.getValue<TArrayOfIntArraysType>());
+        case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
+          auto c = std::get<std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>(funcs);
+          if (c) {
+            return c(ArrayOfIntArraysTag(), value.getValue<TArrayOfIntArraysType>());
+          }
+          break;
         }
-        break;
       }
+    } catch (const std::bad_variant_access&) {
+      throw TException{fmt::format("wrong value {} for type {}", value.asString(), toTypeString(type))};
     }
-    throw TException{fmt::format("no function set for {}", rexsapi::toTypeString(type))};
+    throw TException{fmt::format("no function set for {}", toTypeString(type))};
   }
 }
 
