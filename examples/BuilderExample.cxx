@@ -4,25 +4,6 @@
 #include <test/TestHelper.hxx>
 
 #include <iostream>
-class XMLStringSerializer
-{
-public:
-  void serialize(const pugi::xml_document& doc)
-  {
-    std::stringstream stream;
-    doc.save(stream, "  ");
-    m_Model = stream.str();
-  }
-
-  const std::string& getModel() const
-  {
-    return m_Model;
-  }
-
-private:
-  std::string m_Model;
-};
-
 
 static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& registry)
 {
@@ -65,7 +46,7 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
     .addRef(rexsapi::TRelationRole::ORIGIN, casingId)
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
-    .addRef(rexsapi::TRelationRole::ORIGIN, rexsapi::ComponentId{"my-bearing-id"})
+    .addRef(rexsapi::TRelationRole::ORIGIN, "my-bearing-id")
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
 
   return modelBuilder.build("REXSApi Model Builder", "1.0");
@@ -84,7 +65,7 @@ int main(int, char**)
 {
   auto registry = createModelRegistry();
   auto model = createModel(registry);
-  XMLStringSerializer stringSerializer;
+  rexsapi::XMLStringSerializer stringSerializer;
   rexsapi::XMLModelSerializer modelSerializer;
   modelSerializer.serialize(model, stringSerializer);
   std::cout << stringSerializer.getModel() << std::endl;
