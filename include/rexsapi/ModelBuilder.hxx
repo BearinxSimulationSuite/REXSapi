@@ -51,6 +51,18 @@ namespace rexsapi
       return std::hash<Id>{}(m_Id);
     }
 
+    std::string asString() const
+    {
+      return std::visit(overload{[](const uint64_t& n) -> std::string {
+                                   return std::to_string(n);
+                                 },
+                                 [](const std::string& s) {
+                                   // TODO (lcf): add "" for string
+                                   return s;
+                                 }},
+                        m_Id);
+    }
+
   private:
     using Id = std::variant<uint64_t, std::string>;
     Id m_Id;
@@ -142,7 +154,7 @@ namespace rexsapi
             TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
         }
         components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
-                                           component.m_component->getName(), std::move(attributes)});
+                                           component.m_Name, std::move(attributes)});
         m_ComponentMapping[component.m_Id] = internalComponentId;
       }
 
@@ -220,10 +232,31 @@ namespace rexsapi
       return *this;
     }
 
+    TModelBuilder& order(uint32_t order)
+    {
+      checkRelation();
+      m_Relations.back().m_Order = order;
+      return *this;
+    }
+
     TModelBuilder& addRef(TRelationRole role, ComponentId id)
     {
       checkRelation();
       m_Relations.back().m_References.emplace_back(ReferenceEntry{role, id});
+      return *this;
+    }
+
+    TModelBuilder& addRef(TRelationRole role, std::string id)
+    {
+      checkRelation();
+      m_Relations.back().m_References.emplace_back(ReferenceEntry{role, ComponentId{std::move(id)}});
+      return *this;
+    }
+
+    TModelBuilder& hint(std::string hint)
+    {
+      checkReference();
+      m_Relations.back().m_References.back().m_Hint = std::move(hint);
       return *this;
     }
 
@@ -277,17 +310,18 @@ namespace rexsapi
                                m_ComponentBuilder.m_DatabaseModel.getVersion()};
       auto components = m_ComponentBuilder.build();
 
+      // TODO (lcf): add model validation. check no components and/or no relations
+
       for (const auto& relation : m_Relations) {
         TRelationReferences references;
         for (const auto& reference : relation.m_References) {
           auto id = m_ComponentBuilder.getComponentForId(reference.m_Id);
           if (id == 0) {
-            // TODO (lcf): stringify id
-            throw TException{"component for id {} not found"};
+            throw TException{fmt::format("component for id '{}' not found", reference.m_Id.asString())};
           }
-          references.emplace_back(TRelationReference{reference.m_Role, "hint", getComponentForId(components, id)});
+          references.emplace_back(TRelationReference{reference.m_Role, reference.m_Hint, getComponentForId(components, id)});
         }
-        relations.emplace_back(rexsapi::TRelation{relation.m_Type, {}, std::move(references)});
+        relations.emplace_back(rexsapi::TRelation{relation.m_Type, relation.m_Order, std::move(references)});
       }
 
       return TModel{info, std::move(components), std::move(relations)};
@@ -298,6 +332,14 @@ namespace rexsapi
     {
       if (m_Relations.empty()) {
         throw TException{"no relations added yet"};
+      }
+    }
+
+    void checkReference() const
+    {
+      checkRelation();
+      if (m_Relations.back().m_References.empty()) {
+        throw TException{"no references added yet"};
       }
     }
 
@@ -316,10 +358,12 @@ namespace rexsapi
     struct ReferenceEntry {
       TRelationRole m_Role;
       ComponentId m_Id;
+      std::string m_Hint{};
     };
 
     struct RelationEntry {
       TRelationType m_Type;
+      std::optional<uint32_t> m_Order{};
       std::vector<ReferenceEntry> m_References{};
     };
 
