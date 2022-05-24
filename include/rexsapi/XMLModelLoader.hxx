@@ -40,6 +40,12 @@ namespace rexsapi
                                std::vector<uint8_t>& buffer) const;
 
   private:
+    const TComponent* getComponent(const std::string& referenceId, TComponents& components,
+                                   const std::unordered_map<std::string, uint64_t>& componentsMapping) const;
+    TAttributes getAttributes(TLoaderResult& result, const database::TModel& dbModel, const std::string& componentId,
+                              const database::TComponent& componentType,
+                              const pugi::xpath_node_set& attributeNodes) const;
+
     const xml::TXSDSchemaValidator& m_Validator;
     rexsapi::TXMLValueDecoder m_Decoder{};
   };
@@ -86,31 +92,9 @@ namespace rexsapi
 
       auto attributeNodes =
         doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
-      components.reserve(attributeNodes.size());
 
-      TAttributes attributes;
-      for (const auto& attribute : attributeNodes) {
-        std::string id = getStringAttribute(attribute, "id");
-        std::string unit = getStringAttribute(attribute, "unit", "none");
-        const auto& att = componentType.findAttributeById(id);
-        if (!att.getUnit().compare(unit)) {
-          result.addError(TResourceError{fmt::format(
-            "attribute '{}' of component '{}' does specify the correct unit: '{}'", id, componentId, unit)});
-        }
-        auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
-        if (!value.second) {
-          result.addError(TResourceError{fmt::format(
-            "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
-          continue;
-        }
-        if (!TValidityChecker::check(att, value.first)) {
-          result.addError(
-            TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
-        }
-
-        // TODO (lcf): custom units for custom attributes
-        attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
-      }
+      TAttributes attributes = getAttributes(result, dbModel, componentId, componentType, attributeNodes);
+      components.reserve(attributes.size());
 
       components.emplace_back(
         TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});
@@ -136,24 +120,106 @@ namespace rexsapi
         auto role = relationRoleFromString(getStringAttribute(reference, "role"));
         std::string hint = getStringAttribute(reference, "hint");
 
-        auto it = componentsMapping.find(referenceId);
-        if (it == componentsMapping.end()) {
+        const auto* component = getComponent(referenceId, components, componentsMapping);
+        if (component == nullptr) {
           result.addError(TResourceError{
             fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
         } else {
-          auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp){
-            return comp.getInternalId() == it->second;
-          });
-          references.emplace_back(TRelationReference{role, hint, *it_comp});
+          references.emplace_back(TRelationReference{role, hint, *component});
         }
       }
 
       relations.emplace_back(TRelation{relationType, order, std::move(references)});
     }
-
     // TODO (lcf): check that all components are used in at least one relation
 
-    return TModel{info, std::move(components), std::move(relations)};
+    TLoadCases loadCases;
+    {
+      for (const auto& loadCase : doc.select_nodes("/model/load_spectrum/load_case")) {
+        std::string loadCaseId = getStringAttribute(loadCase, "id");
+        TLoadComponents loadComponents;
+
+        for (const auto& component : doc.select_nodes(
+               fmt::format("/model/load_spectrum/load_case[@id = '{}']/component", loadCaseId).c_str())) {
+          std::string componentId = getStringAttribute(component, "id");
+
+          const auto* refComponent = getComponent(componentId, components, componentsMapping);
+          if (refComponent == nullptr) {
+            result.addError(
+              TResourceError{fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
+            continue;
+          }
+
+          auto attributeNodes =
+            doc.select_nodes(fmt::format("/model/load_spectrum/load_case[@id = '{}']/component[@id = '{}']/attribute",
+                                         loadCaseId, componentId)
+                               .c_str());
+          TAttributes attributes = getAttributes(result, dbModel, componentId,
+                                                 dbModel.findComponentById(refComponent->getType()), attributeNodes);
+          loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
+        }
+        loadCases.emplace_back(std::move(loadComponents));
+      }
+    }
+
+    return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
+  }
+
+  inline const TComponent*
+  TXMLModelLoader::getComponent(const std::string& referenceId, TComponents& components,
+                                const std::unordered_map<std::string, uint64_t>& componentsMapping) const
+  {
+    auto it = componentsMapping.find(referenceId);
+    if (it == componentsMapping.end()) {
+      return nullptr;
+    }
+    auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
+      return comp.getInternalId() == it->second;
+    });
+    return it_comp.operator->();
+  }
+
+  inline TAttributes TXMLModelLoader::getAttributes(TLoaderResult& result, const database::TModel& dbModel,
+                                                    const std::string& componentId,
+                                                    const database::TComponent& componentType,
+                                                    const pugi::xpath_node_set& attributeNodes) const
+  {
+    TAttributes attributes;
+    for (const auto& attribute : attributeNodes) {
+      std::string id = getStringAttribute(attribute, "id");
+      // TODO (lcf): process custom attributes
+      if (id.substr(0, 7) == "custom_") {
+        continue;
+      }
+
+      auto unit = getStringAttribute(attribute, "unit");
+      const auto& att = componentType.findAttributeById(id);
+
+      if (unit.empty()) {
+        unit = att.getUnit().getName();
+      } else {
+        if (!att.getUnit().compare(unit)) {
+          result.addError(TResourceError{
+            fmt::format("attribute '{}' of component '{}' does not specify the correct unit: '{}'", id, componentId, unit)});
+        }
+      }
+      
+      auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
+      if (!value.second) {
+        result.addError(TResourceError{fmt::format(
+          "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
+        continue;
+      }
+      if (!TValidityChecker::check(att, value.first)) {
+        result.addError(
+          TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
+      }
+
+      // TODO (lcf): custom units for custom attributes
+      attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
+    }
+
+    return attributes;
   }
 }
 

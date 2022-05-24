@@ -424,7 +424,9 @@ namespace rexsapi
       relations.emplace_back(rexsapi::TRelation{relation.m_Type, relation.m_Order, std::move(references)});
     }
 
-    return TModel{info, std::move(components), std::move(relations)};
+    TLoadSpectrum spectrum{TLoadCases{}};
+
+    return TModel{info, std::move(components), std::move(relations), std::move(spectrum)};
   }
 }
 

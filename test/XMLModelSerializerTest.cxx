@@ -192,7 +192,8 @@ TEST_CASE("Serialize new model")
                                  rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint5", components[5]}}});
 
   rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}};
-  rexsapi::TModel model{info, std::move(components), std::move(relations)};
+  rexsapi::TLoadSpectrum spectrum{rexsapi::TLoadCases{}};
+  rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(spectrum)};
 
   rexsapi::XMLStringSerializer stringSerializer;
   rexsapi::XMLModelSerializer modelSerializer;

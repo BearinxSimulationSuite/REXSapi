@@ -17,6 +17,7 @@
 #ifndef REXSAPI_MODEL_HXX
 #define REXSAPI_MODEL_HXX
 
+#include <rexsapi/LoadSpectrum.hxx>
 #include <rexsapi/Relation.hxx>
 #include <rexsapi/RexsVersion.hxx>
 
@@ -60,14 +61,15 @@ namespace rexsapi
     TRexsVersion m_Version;
   };
 
-  
+
   class TModel
   {
   public:
-    TModel(TModelInfo info, TComponents&& components, TRelations&& relations)
+    TModel(TModelInfo info, TComponents&& components, TRelations&& relations, TLoadSpectrum spectrum)
     : m_Info{std::move(info)}
     , m_Components{std::move(components)}
     , m_Relations{std::move(relations)}
+    , m_Spectrum{spectrum}
     {
     }
 
@@ -93,10 +95,16 @@ namespace rexsapi
       return m_Relations;
     }
 
+    [[nodiscard]] const TLoadSpectrum& getLoadSpectrum() const
+    {
+      return m_Spectrum;
+    }
+
   private:
     TModelInfo m_Info;
     TComponents m_Components;
     TRelations m_Relations;
+    TLoadSpectrum m_Spectrum;
   };
 }
 
