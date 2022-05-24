@@ -78,6 +78,12 @@ namespace rexsapi
       return detail::value_getter<T>(m_Value);
     }
 
+    friend bool operator==(const TValue& lhs, const TValue& rhs)
+    {
+      // ATTENTION: will currently compare floating point values with ==
+      return lhs.m_Value == rhs.m_Value;
+    }
+
     std::string asString() const;
 
   private:

@@ -56,6 +56,11 @@ namespace rexsapi
       return m_Value;
     }
 
+    friend bool operator==(const Bool& lhs, const Bool& rhs)
+    {
+      return lhs.m_Value == rhs.m_Value;
+    }
+
     bool m_Value{false};
   };
 
@@ -72,6 +77,11 @@ namespace rexsapi
         }
       }
       return true;
+    }
+
+    friend bool operator==(const TMatrix<T>& lhs, const TMatrix<T>& rhs)
+    {
+      return lhs.m_Values == rhs.m_Values;
     }
 
     std::vector<std::vector<T>> m_Values;
