@@ -36,6 +36,11 @@ namespace rexsapi
       }
     }
 
+    TAttribute clone() const
+    {
+      return TAttribute(m_Attribute, m_Unit, m_Value);
+    }
+
     [[nodiscard]] const std::string& getAttributeId() const
     {
       return m_Attribute.getAttributeId();

@@ -19,7 +19,7 @@
 #include <doctest.h>
 
 
-TEST_CASE("Attribute test")
+TEST_CASE("Database attribute test")
 {
   rexsapi::database::TUnit unit{58, "deg"};
 
