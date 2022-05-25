@@ -72,6 +72,23 @@ namespace std
 
 namespace rexsapi
 {
+  namespace detail
+  {
+    struct AttributeEntry {
+      const database::TAttribute* m_Attribute{nullptr};
+      const database::TUnit* m_Unit{nullptr};
+      TValue m_Value{};
+    };
+
+    struct ComponentEntry {
+      ComponentId m_Id;
+      const database::TComponent* m_component{nullptr};
+      std::string m_Name{};
+      std::vector<AttributeEntry> m_Attributes{};
+    };
+  }
+
+
   class TComponentBuilder
   {
   public:
@@ -79,6 +96,11 @@ namespace rexsapi
     : m_DatabaseModel{databaseModel}
     {
     }
+
+    TComponentBuilder(const TComponentBuilder&) = delete;
+    TComponentBuilder(TComponentBuilder&&) = default;
+    TComponentBuilder& operator=(const TComponentBuilder&) = delete;
+    TComponentBuilder& operator=(TComponentBuilder&&) = delete;
 
     TComponentBuilder& addComponent(const std::string& component);
 
@@ -93,11 +115,11 @@ namespace rexsapi
     template<typename T>
     TComponentBuilder& value(T val);
 
-    ComponentId id() const;
+    [[nodiscard]] ComponentId id() const;
 
-    TComponents build();
+    [[nodiscard]] TComponents build();
 
-    uint64_t getComponentForId(ComponentId id) const;
+    uint64_t getComponentForId(const ComponentId& id) const;
 
   private:
     void checkComponent() const
@@ -115,29 +137,40 @@ namespace rexsapi
       }
     }
 
-    ComponentId getNextComponentId()
+    [[nodiscard]] ComponentId getNextComponentId()
     {
       return ComponentId{++m_ComponentId};
     }
 
-    struct AttributeEntry {
-      const database::TAttribute* m_Attribute{nullptr};
-      const database::TUnit* m_Unit{nullptr};
-      TValue m_Value{};
-    };
-
-    struct ComponentEntry {
-      ComponentId m_Id;
-      const database::TComponent* m_component{nullptr};
-      std::string m_Name{};
-      std::vector<AttributeEntry> m_Attributes{};
-    };
-
     friend class TModelBuilder;
     const database::TModel& m_DatabaseModel;
     uint64_t m_ComponentId{0};
-    std::vector<ComponentEntry> m_Components;
+    std::vector<detail::ComponentEntry> m_Components;
     std::unordered_map<ComponentId, uint64_t> m_ComponentMapping;
+  };
+
+
+  class TLoadCaseBuilder
+  {
+  public:
+    explicit TLoadCaseBuilder(const database::TModel& databaseModel)
+    : m_DatabaseModel{databaseModel}
+    {
+    }
+
+    TLoadCaseBuilder& addComponent(ComponentId id);
+
+    TLoadCaseBuilder& addComponent(std::string id);
+
+    TLoadCaseBuilder& addAttribute(const std::string& attribute);
+
+    TLoadCaseBuilder& unit(const std::string& unit);
+
+    template<typename T>
+    TLoadCaseBuilder& value(T val);
+
+  private:
+    const database::TModel& m_DatabaseModel;
   };
 
 
@@ -153,6 +186,11 @@ namespace rexsapi
     : m_ComponentBuilder{std::move(componentBuilder)}
     {
     }
+
+    TModelBuilder(const TModelBuilder&) = delete;
+    TModelBuilder(TModelBuilder&&) = default;
+    TModelBuilder& operator=(const TModelBuilder&) = delete;
+    TModelBuilder& operator=(TModelBuilder&&) = delete;
 
     TModelBuilder& addRelation(TRelationType type);
 
@@ -177,9 +215,11 @@ namespace rexsapi
     template<typename T>
     TModelBuilder& value(T val);
 
-    ComponentId id() const;
+    [[nodiscard]] TLoadCaseBuilder& addLoadCase();
 
-    TModel build(std::string applicationId, std::string applicationVersion);
+    [[nodiscard]] ComponentId id() const;
+
+    [[nodiscard]] TModel build(std::string applicationId, std::string applicationVersion);
 
   private:
     void checkRelation() const
@@ -223,6 +263,7 @@ namespace rexsapi
 
     TComponentBuilder m_ComponentBuilder;
     std::vector<RelationEntry> m_Relations;
+    std::vector<TLoadCaseBuilder> m_LoadCases;
   };
 
 
@@ -245,7 +286,8 @@ namespace rexsapi
 
   inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component)
   {
-    m_Components.emplace_back(ComponentEntry{getNextComponentId(), &m_DatabaseModel.findComponentById(component)});
+    m_Components.emplace_back(
+      detail::ComponentEntry{getNextComponentId(), &m_DatabaseModel.findComponentById(component)});
     return *this;
   }
 
@@ -253,7 +295,7 @@ namespace rexsapi
   {
     // TODO (lcf): check duplicate id
     m_Components.emplace_back(
-      ComponentEntry{ComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
+      detail::ComponentEntry{ComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
     return *this;
   }
 
@@ -267,7 +309,8 @@ namespace rexsapi
   inline TComponentBuilder& TComponentBuilder::addAttribute(const std::string& attribute)
   {
     checkComponent();
-    m_Components.back().m_Attributes.emplace_back(AttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+    m_Components.back().m_Attributes.emplace_back(
+      detail::AttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
     return *this;
   }
 
@@ -283,7 +326,7 @@ namespace rexsapi
   {
     checkAttribute();
     // TODO (lcf): check value type valid for attribute
-    m_Components.back().m_Attributes.back().m_Value = TValue{val};
+    m_Components.back().m_Attributes.back().m_Value = TValue{std::move(val)};
     return *this;
   }
 
@@ -314,7 +357,7 @@ namespace rexsapi
     return components;
   }
 
-  inline uint64_t TComponentBuilder::getComponentForId(ComponentId id) const
+  inline uint64_t TComponentBuilder::getComponentForId(const ComponentId& id) const
   {
     auto it = m_ComponentMapping.find(id);
     if (it == m_ComponentMapping.end()) {
@@ -322,6 +365,38 @@ namespace rexsapi
     }
 
     return it->second;
+  }
+
+
+  inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(ComponentId id)
+  {
+    (void)id;
+    return *this;
+  }
+
+  inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(std::string id)
+  {
+    (void)id;
+    return *this;
+  }
+
+  inline TLoadCaseBuilder& TLoadCaseBuilder::addAttribute(const std::string& attribute)
+  {
+    (void)attribute;
+    return *this;
+  }
+
+  inline TLoadCaseBuilder& TLoadCaseBuilder::unit(const std::string& unit)
+  {
+    (void)unit;
+    return *this;
+  }
+
+  template<typename T>
+  TLoadCaseBuilder& TLoadCaseBuilder::value(T val)
+  {
+    (void)val;
+    return *this;
   }
 
 
@@ -341,7 +416,7 @@ namespace rexsapi
   inline TModelBuilder& TModelBuilder::addRef(TRelationRole role, ComponentId id)
   {
     checkRelation();
-    m_Relations.back().m_References.emplace_back(ReferenceEntry{role, id});
+    m_Relations.back().m_References.emplace_back(ReferenceEntry{role, std::move(id)});
     return *this;
   }
 
@@ -367,7 +442,7 @@ namespace rexsapi
 
   inline TModelBuilder& TModelBuilder::addComponent(const std::string& component, std::string id)
   {
-    m_ComponentBuilder.addComponent(component, id);
+    m_ComponentBuilder.addComponent(component, std::move(id));
     return *this;
   }
 
@@ -394,6 +469,12 @@ namespace rexsapi
   {
     m_ComponentBuilder.value(std::move(val));
     return *this;
+  }
+
+  inline TLoadCaseBuilder& TModelBuilder::addLoadCase()
+  {
+    m_LoadCases.emplace_back(TLoadCaseBuilder{m_ComponentBuilder.m_DatabaseModel});
+    return m_LoadCases.back();
   }
 
   inline ComponentId TModelBuilder::id() const
