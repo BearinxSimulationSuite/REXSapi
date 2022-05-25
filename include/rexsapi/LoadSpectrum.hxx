@@ -28,6 +28,9 @@ namespace rexsapi
     : m_Component{component}
     , m_Attributes{std::move(attributes)}
     {
+      std::for_each(m_Attributes.begin(), m_Attributes.end(), [this](const auto& attribute) {
+        m_LoadAttributes.emplace_back(attribute.clone());
+      });
       std::for_each(m_Component.getAttributes().begin(), m_Component.getAttributes().end(),
                     [this](const auto& attribute) {
                       m_Attributes.emplace_back(attribute.clone());
@@ -44,9 +47,15 @@ namespace rexsapi
       return m_Attributes;
     }
 
+    const TAttributes& getLoadAttributes() const
+    {
+      return m_LoadAttributes;
+    }
+
   private:
     const TComponent& m_Component;
     TAttributes m_Attributes;
+    TAttributes m_LoadAttributes;
   };
 
   using TLoadComponents = std::vector<TLoadComponent>;

@@ -37,9 +37,13 @@ namespace rexsapi
 
     void serialize(pugi::xml_node& modelNode, const TComponents& components);
 
+    pugi::xml_node serialize(pugi::xml_node& componentsNode, const TComponent& component);
+
     void serialize(pugi::xml_node& compNode, const TAttributes& attributes);
 
     void serialize(pugi::xml_node& attNode, const TAttribute& attribute);
+
+    void serialize(pugi::xml_node& modelNode, const TLoadSpectrum& loadSpectrum);
 
     std::string getNextComponentId()
     {
@@ -72,6 +76,7 @@ namespace rexsapi
     pugi::xml_node relationsNode = models.append_child("relations");
     serialize(models, model.getComponents());
     serialize(relationsNode, model.getRelations());
+    serialize(models, model.getLoadSpectrum());
 
     serializer.serialize(m_Doc);
   }
@@ -118,14 +123,20 @@ namespace rexsapi
   {
     pugi::xml_node componentsNode = modelNode.append_child("components");
     for (const auto& component : components) {
-      pugi::xml_node compNode = componentsNode.append_child("component");
-      auto id = getNextComponentId();
-      m_ComponentMapping.emplace(component.getInternalId(), id);
-      compNode.append_attribute("id").set_value(id.c_str());
-      compNode.append_attribute("name").set_value(component.getName().c_str());
-      compNode.append_attribute("type").set_value(component.getType().c_str());
+      auto compNode = serialize(componentsNode, component);
       serialize(compNode, component.getAttributes());
     }
+  }
+
+  inline pugi::xml_node XMLModelSerializer::serialize(pugi::xml_node& componentsNode, const TComponent& component)
+  {
+    pugi::xml_node compNode = componentsNode.append_child("component");
+    auto id = getNextComponentId();
+    m_ComponentMapping.emplace(component.getInternalId(), id);
+    compNode.append_attribute("id").set_value(id.c_str());
+    compNode.append_attribute("name").set_value(component.getName().c_str());
+    compNode.append_attribute("type").set_value(component.getType().c_str());
+    return compNode;
   }
 
   inline void XMLModelSerializer::serialize(pugi::xml_node& compNode, const TAttributes& attributes)
@@ -211,6 +222,23 @@ namespace rexsapi
            }
          }
        }});
+  }
+
+  inline void XMLModelSerializer::serialize(pugi::xml_node& modelNode, const TLoadSpectrum& loadSpectrum)
+  {
+    if (loadSpectrum.hasLoadCases()) {
+      uint64_t loadCaseId{0};
+      pugi::xml_node loadSpectrumNode = modelNode.append_child("load_spectrum");
+      loadSpectrumNode.append_attribute("id").set_value("1");
+      for (const auto& loadCase : loadSpectrum.getLoadCases()) {
+        pugi::xml_node loadCaseNode = loadSpectrumNode.append_child("load_case");
+        loadCaseNode.append_attribute("id").set_value(std::to_string(++loadCaseId).c_str());
+        for (const auto& loadComponent : loadCase.getLoadComponents()) {
+          auto compNode = serialize(loadCaseNode, loadComponent.getComponent());
+          serialize(compNode, loadComponent.getLoadAttributes());
+        }
+      }
+    }
   }
 
   inline std::string XMLModelSerializer::getComponentId(uint64_t internalId) const

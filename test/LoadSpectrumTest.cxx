@@ -70,9 +70,10 @@ TEST_CASE("Load spectrum test")
     CHECK(loadCase.getLoadComponents()[0].getComponent().getType() == "gear_casing");
     CHECK(loadCase.getLoadComponents()[0].getComponent().getAttributes().size() == 2);
     CHECK(loadCase.getLoadComponents()[0].getAttributes().size() == 4);
+    CHECK(loadCase.getLoadComponents()[0].getLoadAttributes().size() == 2);
     CHECK(loadCase.getLoadComponents()[1].getComponent().getType() == "lubricant");
     CHECK(loadCase.getLoadComponents()[1].getComponent().getAttributes().size() == 2);
-    CHECK(loadCase.getLoadComponents()[1].getAttributes().size() == 3);
+    CHECK(loadCase.getLoadComponents()[1].getLoadAttributes().size() == 1);
 
     rexsapi::TLoadCases loadCases{std::move(loadCase)};
     rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases)};

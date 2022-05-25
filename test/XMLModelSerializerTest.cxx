@@ -93,86 +93,88 @@ TEST_CASE("Serialize new model")
 
   uint64_t componentId = 1;
   rexsapi::TComponents components;
-  const auto* dbComponent = &dbModel.findComponentById("gear_unit");
+  const auto& gearUnitComponent = dbModel.findComponentById("gear_unit");
   rexsapi::TAttributes attributes;
   // BOOLEAN
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("account_for_gravity"),
+  attributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("account_for_gravity"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{true}});
   // INTEGER
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("gear_shift_index"),
+  attributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("gear_shift_index"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{5}});
 
   components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Getriebe", std::move(attributes)});
+    rexsapi::TComponent{componentId++, gearUnitComponent.getComponentId(), "Getriebe", std::move(attributes)});
 
   attributes = rexsapi::TAttributes{};
-  dbComponent = &dbModel.findComponentById("coupling");
+  const auto& couplingComponent = dbModel.findComponentById("coupling");
   // FLOATING_POINT
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("mass_of_component"),
+  attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("mass_of_component"),
                                               rexsapi::TUnit{dbModel.findUnitByName("kg")}, rexsapi::TValue{3.52}});
   // FLOATING_POINT_ARRAY
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("display_color"),
+  attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("display_color"),
                                               rexsapi::TUnit{dbModel.findUnitByName("%")},
                                               rexsapi::TValue{rexsapi::TFloatArrayType{30.0, 10.0, 55.0}}});
   // REFERENCE_COMPONENT
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("reference_component_for_position"),
+  attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("reference_component_for_position"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TReferenceComponentType{1}}});
   components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Kupplung 1", std::move(attributes)});
+    rexsapi::TComponent{componentId++, couplingComponent.getComponentId(), "Kupplung 1", std::move(attributes)});
 
   attributes = rexsapi::TAttributes{};
-  dbComponent = &dbModel.findComponentById("switchable_coupling");
+  const auto& switchableCouplingComponent = dbModel.findComponentById("switchable_coupling");
   // BOOLEAN_ARRAY
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("is_engaged"),
+  attributes.emplace_back(rexsapi::TAttribute{switchableCouplingComponent.findAttributeById("is_engaged"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TBoolArrayType{true, false}}});
-  components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Kupplung 2", std::move(attributes)});
+  components.emplace_back(rexsapi::TComponent{componentId++, switchableCouplingComponent.getComponentId(), "Kupplung 2",
+                                              std::move(attributes)});
 
   attributes = rexsapi::TAttributes{};
-  dbComponent = &dbModel.findComponentById("concept_bearing");
+  const auto& conceptBearingComponent = dbModel.findComponentById("concept_bearing");
   // ENUM
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("axial_force_absorption"),
+  attributes.emplace_back(rexsapi::TAttribute{conceptBearingComponent.findAttributeById("axial_force_absorption"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{"no_direction"}});
   components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Lager", std::move(attributes)});
+    rexsapi::TComponent{componentId++, conceptBearingComponent.getComponentId(), "Lager", std::move(attributes)});
 
   attributes = rexsapi::TAttributes{};
-  dbComponent = &dbModel.findComponentById("element_list");
+  const auto& elementListComponent = dbModel.findComponentById("element_list");
   // ENUM_ARRAY
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("element_types"),
+  attributes.emplace_back(rexsapi::TAttribute{elementListComponent.findAttributeById("element_types"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TEnumArrayType{"line3", "pyramid12"}}});
   // ARRAY_OF_INTEGER_ARRAYS
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("element_structure"),
+  attributes.emplace_back(rexsapi::TAttribute{elementListComponent.findAttributeById("element_structure"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TArrayOfIntArraysType{{1, 2, 3}, {4, 5}, {6}}}});
   // INTEGER_ARRAY
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("element_ids"),
+  attributes.emplace_back(rexsapi::TAttribute{elementListComponent.findAttributeById("element_ids"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TIntArrayType{{1, 2, 3}}}});
   components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Element Typ", std::move(attributes)});
+    rexsapi::TComponent{componentId++, elementListComponent.getComponentId(), "Element Typ", std::move(attributes)});
 
   attributes = rexsapi::TAttributes{};
-  dbComponent = &dbModel.findComponentById("assembly_group");
+  const auto& assemblyGroupComponent = dbModel.findComponentById("assembly_group");
   // FILE_REFERENCE
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("folder"),
+  attributes.emplace_back(rexsapi::TAttribute{assemblyGroupComponent.findAttributeById("folder"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TFileReferenceType("./out")}});
   // STRING
-  attributes.emplace_back(rexsapi::TAttribute{dbComponent->findAttributeById("fem_file_format"),
+  attributes.emplace_back(rexsapi::TAttribute{assemblyGroupComponent.findAttributeById("fem_file_format"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{"puschel"}});
   // FLOATING_POINT_MATRIX
   attributes.emplace_back(rexsapi::TAttribute{
-    dbComponent->findAttributeById("reduced_static_stiffness_matrix"), rexsapi::TUnit{dbModel.findUnitByName("none")},
+    assemblyGroupComponent.findAttributeById("reduced_static_stiffness_matrix"),
+    rexsapi::TUnit{dbModel.findUnitByName("none")},
     rexsapi::TValue{rexsapi::TFloatMatrixType{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}}});
   components.emplace_back(
-    rexsapi::TComponent{componentId++, dbComponent->getComponentId(), "Assembly", std::move(attributes)});
+    rexsapi::TComponent{componentId++, assemblyGroupComponent.getComponentId(), "Assembly", std::move(attributes)});
 
+  // Relations
   rexsapi::TRelations relations;
   relations.emplace_back(
     rexsapi::TRelation{rexsapi::TRelationType::ASSEMBLY,
@@ -191,9 +193,28 @@ TEST_CASE("Serialize new model")
     rexsapi::TRelationReferences{rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint4", components[4]},
                                  rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint5", components[5]}}});
 
+  // Load Spectrum
+  rexsapi::TAttributes loadAttributes;
+  loadAttributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("gravitational_acceleration"),
+                                                  rexsapi::TUnit{dbModel.findUnitByName("m / s^2")},
+                                                  rexsapi::TValue{10.5}});
+  loadAttributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("reference_temperature"),
+                                                  rexsapi::TUnit{dbModel.findUnitByName("C")}, rexsapi::TValue{55.5}});
+
+  rexsapi::TLoadComponents loadComponents;
+  loadComponents.emplace_back(rexsapi::TLoadComponent{components[0], std::move(loadAttributes)});
+
+  loadAttributes = rexsapi::TAttributes{};
+  loadAttributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("mass_of_component"),
+                                                  rexsapi::TUnit{dbModel.findUnitByName("kg")}, rexsapi::TValue{5.5}});
+  loadComponents.emplace_back(rexsapi::TLoadComponent{components[1], std::move(loadAttributes)});
+  rexsapi::TLoadCase loadCase{std::move(loadComponents)};
+  rexsapi::TLoadCases loadCases{std::move(loadCase)};
+  rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases)};
+
   rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}};
-  rexsapi::TLoadSpectrum spectrum{rexsapi::TLoadCases{}};
-  rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(spectrum)};
+
+  rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(loadSpectrum)};
 
   rexsapi::XMLStringSerializer stringSerializer;
   rexsapi::XMLModelSerializer modelSerializer;
@@ -206,5 +227,7 @@ TEST_CASE("Serialize new model")
     auto roundtripModel = loader.load(stringSerializer.getModel());
     CHECK(roundtripModel.getComponents().size() == 6);
     CHECK(roundtripModel.getRelations().size() == 3);
+    CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
+    CHECK(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);
   }
 }
