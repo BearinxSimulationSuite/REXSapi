@@ -41,7 +41,7 @@ namespace rexsapi
       return !m_Unit.has_value();
     }
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return isCustomUnit() ? m_CustomUnit : m_Unit->getName();
     }

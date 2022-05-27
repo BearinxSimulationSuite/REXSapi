@@ -37,17 +37,17 @@ namespace rexsapi
                     });
     }
 
-    const TComponent& getComponent() const
+    const TComponent& getComponent() const&
     {
       return m_Component;
     }
 
-    const TAttributes& getAttributes() const
+    const TAttributes& getAttributes() const&
     {
       return m_Attributes;
     }
 
-    const TAttributes& getLoadAttributes() const
+    const TAttributes& getLoadAttributes() const&
     {
       return m_LoadAttributes;
     }
@@ -69,7 +69,7 @@ namespace rexsapi
     {
     }
 
-    const TLoadComponents& getLoadComponents() const
+    const TLoadComponents& getLoadComponents() const&
     {
       return m_Components;
     }
@@ -94,7 +94,7 @@ namespace rexsapi
       return !m_LoadCases.empty();
     }
 
-    const TLoadCases& getLoadCases() const
+    const TLoadCases& getLoadCases() const&
     {
       return m_LoadCases;
     }

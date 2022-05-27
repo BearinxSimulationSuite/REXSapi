@@ -59,13 +59,13 @@ namespace rexsapi
     }
 
     template<typename T>
-    const T& getValue() const
+    const T& getValue() const&
     {
       return detail::value_getter<T>(m_Value);
     }
 
     template<typename T>
-    const T& getValue(const T& def) const
+    const T& getValue(const T& def) const&
     {
       if (m_Value.index() == 0) {
         return def;

@@ -34,22 +34,22 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] const std::string& getApplicationId() const
+    [[nodiscard]] const std::string& getApplicationId() const&
     {
       return m_ApplicationId;
     }
 
-    [[nodiscard]] const std::string& getApplicationVersion() const
+    [[nodiscard]] const std::string& getApplicationVersion() const&
     {
       return m_ApplicationVersion;
     }
 
-    [[nodiscard]] const std::string& getDate() const
+    [[nodiscard]] const std::string& getDate() const&
     {
       return m_Date;
     }
 
-    [[nodiscard]] const TRexsVersion& getVersion() const
+    [[nodiscard]] const TRexsVersion& getVersion() const&
     {
       return m_Version;
     }
@@ -73,22 +73,22 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] const TModelInfo& getInfo() const
+    [[nodiscard]] const TModelInfo& getInfo() const&
     {
       return m_Info;
     }
 
-    [[nodiscard]] const TComponents& getComponents() const
+    [[nodiscard]] const TComponents& getComponents() const&
     {
       return m_Components;
     }
 
-    [[nodiscard]] const TRelations& getRelations() const
+    [[nodiscard]] const TRelations& getRelations() const&
     {
       return m_Relations;
     }
 
-    [[nodiscard]] const TLoadSpectrum& getLoadSpectrum() const
+    [[nodiscard]] const TLoadSpectrum& getLoadSpectrum() const&
     {
       return m_Spectrum;
     }

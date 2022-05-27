@@ -41,7 +41,7 @@ namespace rexsapi
 
   private:
     const TComponent* getComponent(const std::string& referenceId, TComponents& components,
-                                   const std::unordered_map<std::string, uint64_t>& componentsMapping) const;
+                                   const std::unordered_map<std::string, uint64_t>& componentsMapping) const&;
     TAttributes getAttributes(TLoaderResult& result, const database::TModel& dbModel, const std::string& componentId,
                               const database::TComponent& componentType,
                               const pugi::xpath_node_set& attributeNodes) const;
@@ -167,7 +167,7 @@ namespace rexsapi
 
   inline const TComponent*
   TXMLModelLoader::getComponent(const std::string& referenceId, TComponents& components,
-                                const std::unordered_map<std::string, uint64_t>& componentsMapping) const
+                                const std::unordered_map<std::string, uint64_t>& componentsMapping) const&
   {
     auto it = componentsMapping.find(referenceId);
     if (it == componentsMapping.end()) {
@@ -199,11 +199,11 @@ namespace rexsapi
         unit = att.getUnit().getName();
       } else {
         if (!att.getUnit().compare(unit)) {
-          result.addError(TResourceError{
-            fmt::format("attribute '{}' of component '{}' does not specify the correct unit: '{}'", id, componentId, unit)});
+          result.addError(TResourceError{fmt::format(
+            "attribute '{}' of component '{}' does not specify the correct unit: '{}'", id, componentId, unit)});
         }
       }
-      
+
       auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
       if (!value.second) {
         result.addError(TResourceError{fmt::format(

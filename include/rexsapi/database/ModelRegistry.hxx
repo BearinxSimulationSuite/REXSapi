@@ -29,7 +29,7 @@ namespace rexsapi::database
     TModelRegistry(const TModelRegistry&) = delete;
     TModelRegistry& operator=(const TModelRegistry&) = delete;
     TModelRegistry(TModelRegistry&&) noexcept = default;
-    TModelRegistry& operator=(TModelRegistry&&) = default;
+    TModelRegistry& operator=(TModelRegistry&&) = delete;
 
     [[nodiscard]] const TModel& getModel(const TRexsVersion& version, const std::string& language) const;
 

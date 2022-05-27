@@ -37,17 +37,17 @@ namespace rexsapi
       return m_InternalId;
     }
 
-    const std::string& getType() const
+    const std::string& getType() const&
     {
       return m_Type;
     }
 
-    const std::string& getName() const
+    const std::string& getName() const&
     {
       return m_Name;
     }
 
-    const TAttributes& getAttributes() const
+    const TAttributes& getAttributes() const&
     {
       return m_Attributes;
     }

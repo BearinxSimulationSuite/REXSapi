@@ -32,7 +32,7 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] const std::string& getHint() const
+    [[nodiscard]] const std::string& getHint() const&
     {
       return m_Hint;
     }
@@ -42,7 +42,7 @@ namespace rexsapi
       return m_Role;
     }
 
-    [[nodiscard]] const TComponent& getComponent() const
+    [[nodiscard]] const TComponent& getComponent() const&
     {
       return m_Component;
     }
@@ -76,7 +76,7 @@ namespace rexsapi
       return m_Order;
     }
 
-    [[nodiscard]] const TRelationReferences& getReferences() const
+    [[nodiscard]] const TRelationReferences& getReferences() const&
     {
       return m_References;
     }
