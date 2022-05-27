@@ -29,7 +29,7 @@ TEST_CASE("Attribute test")
     rexsapi::TAttribute attribute{dbModel.findAttributeById("viscosity_at_100_degree_celsius"),
                           rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")}, rexsapi::TValue{5.5}});
 
-    auto clonedAttribute = attribute.clone();
+    auto clonedAttribute = attribute;
     CHECK(clonedAttribute.getAttributeId() == attribute.getAttributeId());
     CHECK(clonedAttribute.getUnit() == attribute.getUnit());
     CHECK(clonedAttribute.getValue() == attribute.getValue());

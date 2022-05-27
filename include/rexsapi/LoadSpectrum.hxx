@@ -29,11 +29,11 @@ namespace rexsapi
     , m_Attributes{std::move(attributes)}
     {
       std::for_each(m_Attributes.begin(), m_Attributes.end(), [this](const auto& attribute) {
-        m_LoadAttributes.emplace_back(attribute.clone());
+        m_LoadAttributes.emplace_back(attribute);
       });
       std::for_each(m_Component.getAttributes().begin(), m_Component.getAttributes().end(),
                     [this](const auto& attribute) {
-                      m_Attributes.emplace_back(attribute.clone());
+                      m_Attributes.emplace_back(attribute);
                     });
     }
 

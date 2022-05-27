@@ -30,7 +30,6 @@ namespace rexsapi
   {
   public:
     TValue() = default;
-    ~TValue() = default;
 
     template<typename T>
     explicit TValue(T&& val)
@@ -53,10 +52,6 @@ namespace rexsapi
     {
     }
 
-    TValue(const TValue&) = default;
-    TValue(TValue&&) = default;
-    TValue& operator=(const TValue&) = delete;
-    TValue& operator=(TValue&&) = default;
 
     bool isEmpty() const
     {

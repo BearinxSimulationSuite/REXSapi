@@ -56,8 +56,8 @@ namespace rexsapi::database
     ~TModel() = default;
 
     TModel(const TModel&) = delete;
-    TModel(TModel&&) = default;
     TModel& operator=(const TModel&) = delete;
+    TModel(TModel&&) = default;
     TModel& operator=(TModel&&) = default;
 
     [[nodiscard]] const TRexsVersion& getVersion() const

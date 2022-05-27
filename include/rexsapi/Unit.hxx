@@ -19,13 +19,15 @@
 
 #include <rexsapi/database/Unit.hxx>
 
+#include <optional>
+
 namespace rexsapi
 {
   class TUnit
   {
   public:
     explicit TUnit(const database::TUnit& unit)
-    : m_Unit{&unit}
+    : m_Unit{unit}
     {
     }
 
@@ -34,14 +36,14 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] bool isCustomUnit() const
+    [[nodiscard]] inline bool isCustomUnit() const
     {
-      return m_Unit == nullptr;
+      return !m_Unit.has_value();
     }
 
     [[nodiscard]] const std::string& getName() const
     {
-      return m_Unit != nullptr ? m_Unit->getName() : m_CustomUnit;
+      return isCustomUnit() ? m_CustomUnit : m_Unit->getName();
     }
 
     friend bool operator==(const TUnit& lhs, const database::TUnit& rhs)
@@ -54,8 +56,8 @@ namespace rexsapi
     }
 
   private:
-    const database::TUnit* m_Unit{nullptr};
-    std::string m_CustomUnit;
+    std::optional<database::TUnit> m_Unit{};
+    std::string m_CustomUnit{};
   };
 }
 

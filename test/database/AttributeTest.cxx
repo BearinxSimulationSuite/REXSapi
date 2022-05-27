@@ -38,7 +38,7 @@ TEST_CASE("Database attribute test")
     CHECK(attribute.getAttributeId() == "axial_force_absorption");
     CHECK(attribute.getName() == "Support of axial loads");
     CHECK(attribute.getValueType() == rexsapi::TValueType::ENUM);
-    CHECK(&(attribute.getUnit()) == &unit);
+    CHECK(attribute.getUnit() == unit);
     CHECK(attribute.getSymbol().empty());
     CHECK_FALSE(attribute.getInterval());
     REQUIRE(attribute.getEnums());
@@ -63,7 +63,7 @@ TEST_CASE("Database attribute test")
     CHECK(attribute.getAttributeId() == "chamfer_angle_worm_wheel");
     CHECK(attribute.getName() == "Chamfer ange");
     CHECK(attribute.getValueType() == rexsapi::TValueType::FLOATING_POINT);
-    CHECK(&(attribute.getUnit()) == &unit);
+    CHECK(attribute.getUnit() == unit);
     CHECK(attribute.getSymbol() == "ϑ");
     REQUIRE(attribute.getInterval());
     CHECK(attribute.getInterval()->check(90));

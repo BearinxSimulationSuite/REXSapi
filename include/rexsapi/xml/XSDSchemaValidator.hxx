@@ -50,6 +50,11 @@ namespace rexsapi::xml
 
     virtual ~TSimpleType() = default;
 
+    TSimpleType(const TSimpleType&) = default;
+    TSimpleType& operator=(const TSimpleType&) = default;
+    TSimpleType(TSimpleType&&) = default;
+    TSimpleType& operator=(TSimpleType&&) = default;
+
     virtual void validate(const std::string& value, TValidationContext& context) const = 0;
 
     [[nodiscard]] const std::string& getName() const
@@ -58,7 +63,7 @@ namespace rexsapi::xml
     }
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
   };
 
 
@@ -74,6 +79,11 @@ namespace rexsapi::xml
 
     virtual ~TElementType() = default;
 
+    TElementType(const TElementType&) = default;
+    TElementType& operator=(const TElementType&) = default;
+    TElementType(TElementType&&) = default;
+    TElementType& operator=(TElementType&&) = default;
+
     virtual void validate(const pugi::xml_node& node, TValidationContext& context) const = 0;
 
     [[nodiscard]] const std::string& getName() const
@@ -82,7 +92,7 @@ namespace rexsapi::xml
     }
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
   };
 
 
@@ -141,9 +151,9 @@ namespace rexsapi::xml
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
     const TSimpleType& m_Type;
-    const bool m_Required;
+    bool m_Required;
   };
 
 
@@ -246,7 +256,7 @@ namespace rexsapi::xml
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
     TElementType::Ptr m_Type;
   };
 

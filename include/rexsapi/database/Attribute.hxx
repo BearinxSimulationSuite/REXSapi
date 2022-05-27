@@ -30,12 +30,12 @@ namespace rexsapi::database
   class TAttribute
   {
   public:
-    TAttribute(std::string attributeId, std::string name, TValueType type, const TUnit& unit, std::string symbol,
+    TAttribute(std::string attributeId, std::string name, TValueType type, TUnit unit, std::string symbol,
                std::optional<const TInterval> interval, std::optional<const TEnumValues> enumValues)
     : m_AttributeId{std::move(attributeId)}
     , m_Name{std::move(name)}
     , m_Type{type}
-    , m_Unit{unit}
+    , m_Unit{std::move(unit)}
     , m_Symbol{std::move(symbol)}
     , m_Interval{std::move(interval)}
     , m_EnumValues{std::move(enumValues)}
@@ -48,8 +48,8 @@ namespace rexsapi::database
     ~TAttribute() = default;
 
     TAttribute(const TAttribute&) = delete;
-    TAttribute(TAttribute&&) = default;
     TAttribute& operator=(const TAttribute&) = delete;
+    TAttribute(TAttribute&&) = default;
     TAttribute& operator=(TAttribute&&) = delete;
 
     [[nodiscard]] const std::string& getAttributeId() const
@@ -91,7 +91,7 @@ namespace rexsapi::database
     std::string m_AttributeId;
     std::string m_Name;
     TValueType m_Type;
-    const TUnit& m_Unit;
+    TUnit m_Unit;
     std::string m_Symbol;
     std::optional<const TInterval> m_Interval;
     std::optional<const TEnumValues> m_EnumValues;
