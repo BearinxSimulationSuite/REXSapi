@@ -61,7 +61,7 @@ namespace rexsapi::database
     TLoaderResult result;
 
     auto resources = findResources(result);
-    std::for_each(resources.begin(), resources.end(), [this, &callback, &result](const auto& resource) {
+    std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
       auto buffer = TFileResourceLoader::load(result, resource);
       if (buffer.size()) {
         callback(result, buffer);
