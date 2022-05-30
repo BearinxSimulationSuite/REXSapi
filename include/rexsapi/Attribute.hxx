@@ -36,17 +36,17 @@ namespace rexsapi
       }
     }
 
-    [[nodiscard]] const std::string& getAttributeId() const
+    [[nodiscard]] const std::string& getAttributeId() const&
     {
       return m_Attribute.getAttributeId();
     }
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Attribute.getName();
     }
 
-    [[nodiscard]] const TUnit& getUnit() const
+    [[nodiscard]] const TUnit& getUnit() const&
     {
       return m_Unit;
     }
@@ -61,13 +61,13 @@ namespace rexsapi
       return !m_Value.isEmpty();
     }
 
-    [[nodiscard]] const TValue& getValue() const
+    [[nodiscard]] const TValue& getValue() const&
     {
       return m_Value;
     }
 
     template<typename T>
-    [[nodiscard]] const T& getValue() const
+    [[nodiscard]] const T& getValue() const&
     {
       return m_Value.getValue<T>();
     }

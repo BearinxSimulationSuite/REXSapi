@@ -62,7 +62,7 @@ namespace rexsapi::database
 
     auto resources = findResources(result);
     std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
-      auto buffer = load(result, resource);
+      auto buffer = TFileResourceLoader::load(result, resource);
       if (buffer.size()) {
         callback(result, buffer);
       }

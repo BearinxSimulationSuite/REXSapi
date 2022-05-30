@@ -38,6 +38,7 @@ TEST_CASE("Model loader test")
           <relation id="1" type="assembly">
             <ref hint="gear_unit" id="1" role="assembly"/>
             <ref hint="gear_casing" id="2" role="part"/>
+            <ref hint="external_load" id="3" role="part"/>
           </relation>
         </relations>
         <components>
@@ -80,7 +81,30 @@ TEST_CASE("Model loader test")
             <attribute id="temperature_lubricant" unit="C">73.2</attribute>
             <attribute id="type_of_gear_casing_construction_vdi_2736_2014" unit="none">closed</attribute>
           </component>
+          <component id="3" name="Load" type="external_load">
+            <attribute id="u_coordinate_on_shaft" unit="mm">0</attribute>
+            <attribute id="transmits_torque" unit="">false</attribute>
+          </component>
         </components>
+        <load_spectrum id="1">
+          <load_case id="1">
+            <component id="2" name="Gehäuse" type="gear_casing">
+              <attribute id="temperature_lubricant" unit="C">70</attribute>
+            </component>
+            <component id="3" name="Load" type="external_load">
+              <attribute id="force_u_direction" unit="N">0</attribute>
+              <attribute id="force_v_direction" unit="N">456</attribute>
+              <attribute id="force_w_direction" unit="N">0</attribute>
+              <attribute id="torque_around_v_axis" unit="N m">0</attribute>
+              <attribute id="torque_around_w_axis" unit="N m">0</attribute>
+            </component>
+          </load_case>
+          <load_case id="2">
+            <component id="1" name="Getriebeeinheit" type="gear_unit">
+              <attribute id="custom_load_duration_fraction" unit="%">30</attribute>
+            </component>
+          </load_case>
+        </load_spectrum>
       </model>
     )";
 
@@ -90,15 +114,20 @@ TEST_CASE("Model loader test")
     CHECK(result);
     REQUIRE(model);
     CHECK(model->getInfo().getApplicationId() == "REXSApi Unit Test");
-    REQUIRE(model->getComponents().size() == 2);
+    REQUIRE(model->getComponents().size() == 3);
     const auto& attribute = model->getComponents()[0].getAttributes()[0];
     CHECK(attribute.getAttributeId() == "account_for_gravity");
     CHECK(attribute.getValueType() == rexsapi::TValueType::BOOLEAN);
     CHECK(attribute.getValue<rexsapi::Bool>());
     REQUIRE(model->getRelations().size() == 1);
-    REQUIRE(model->getRelations()[0].getReferences().size() == 2);
+    REQUIRE(model->getRelations()[0].getReferences().size() == 3);
     CHECK(model->getRelations()[0].getReferences()[0].getComponent().getType() == "gear_unit");
     CHECK(model->getRelations()[0].getReferences()[0].getComponent().getName() == "Getriebeeinheit");
+    CHECK(model->getLoadSpectrum().hasLoadCases());
+    REQUIRE(model->getLoadSpectrum().getLoadCases().size() == 2);
+    REQUIRE(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 3);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[1].getAttributes().size() == 7);
   }
 
   SUBCASE("Load model from file")

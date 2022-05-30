@@ -135,4 +135,31 @@ TEST_CASE("Value test")
     CHECK_THROWS(val.asString());
     CHECK(val.getValue<rexsapi::TArrayOfIntArraysType>().size() == 3);
   }
+
+  SUBCASE("compare")
+  {
+    rexsapi::TValue emptyVal{};
+    rexsapi::TValue boolVal{true};
+    rexsapi::TValue doubleVal{47.11};
+    rexsapi::TValue stringVal{"My String!"};
+    rexsapi::TValue aofiVal{std::vector<int64_t>{42, 815, 4711}};
+
+    CHECK(emptyVal == emptyVal);
+
+    CHECK(boolVal == boolVal);
+    CHECK_FALSE(boolVal == emptyVal);
+    CHECK_FALSE(boolVal == rexsapi::TValue{false});
+
+    CHECK(doubleVal == doubleVal);
+    CHECK_FALSE(doubleVal == boolVal);
+    CHECK_FALSE(stringVal == doubleVal);
+
+    CHECK(stringVal == stringVal);
+    CHECK(stringVal == rexsapi::TValue{"My String!"});
+    CHECK_FALSE(stringVal == rexsapi::TValue{"Not my String!"});
+
+    CHECK(aofiVal == aofiVal);
+    CHECK(aofiVal == rexsapi::TValue{std::vector<int64_t>{42, 815, 4711}});
+    CHECK_FALSE(aofiVal == rexsapi::TValue{std::vector<int64_t>{42, 816, 4711}});
+  }
 }

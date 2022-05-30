@@ -20,6 +20,11 @@
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
 
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 namespace rexsapi
 {
   static inline uint64_t convertToUint64(const std::string& s)
@@ -84,6 +89,21 @@ namespace rexsapi
       s += ".0";
     }
     return s;
+  }
+
+  static inline std::string getTimeStringISO8601(std::chrono::system_clock::time_point now)
+  {
+    const std::time_t t_c = std::chrono::system_clock::to_time_t(now);
+    struct tm buf;
+    std::ostringstream stream;
+#if defined(WIN32)
+    localtime_s(&buf, &t_c);
+    stream << std::put_time(&buf, "%FT%T%z");
+#else
+    stream << std::put_time(localtime_r(&t_c, &buf), "%FT%T%z");
+#endif
+    std::string s{stream.str()};
+    return s.insert(22, ":");
   }
 }
 

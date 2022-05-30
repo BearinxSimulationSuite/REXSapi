@@ -34,9 +34,9 @@ namespace rexsapi::database
     ~TComponent() = default;
 
     TComponent(const TComponent&) = delete;
-    TComponent(TComponent&&) = default;
     TComponent& operator=(const TComponent&) = delete;
-    TComponent& operator=(TComponent&&) = default;
+    TComponent(TComponent&&) = default;
+    TComponent& operator=(TComponent&&) = delete;
 
     [[nodiscard]] const std::string& getComponentId() const
     {

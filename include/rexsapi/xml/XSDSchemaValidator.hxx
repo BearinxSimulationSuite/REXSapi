@@ -52,13 +52,19 @@ namespace rexsapi::xml
 
     virtual void validate(const std::string& value, TValidationContext& context) const = 0;
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
 
+  protected:
+    TSimpleType(const TSimpleType&) = default;
+    TSimpleType& operator=(const TSimpleType&) = delete;
+    TSimpleType(TSimpleType&&) = default;
+    TSimpleType& operator=(TSimpleType&&) = delete;
+
   private:
-    const std::string m_Name;
+    std::string m_Name;
   };
 
 
@@ -76,13 +82,19 @@ namespace rexsapi::xml
 
     virtual void validate(const pugi::xml_node& node, TValidationContext& context) const = 0;
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
 
+  protected:
+    TElementType(const TElementType&) = default;
+    TElementType& operator=(const TElementType&) = delete;
+    TElementType(TElementType&&) = default;
+    TElementType& operator=(TElementType&&) = delete;
+
   private:
-    const std::string m_Name;
+    std::string m_Name;
   };
 
 
@@ -96,7 +108,7 @@ namespace rexsapi::xml
     {
     }
 
-    [[nodiscard]] const std::string& getName() const;
+    [[nodiscard]] const std::string& getName() const&;
 
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
@@ -133,7 +145,7 @@ namespace rexsapi::xml
     {
     }
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
@@ -141,9 +153,9 @@ namespace rexsapi::xml
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
     const TSimpleType& m_Type;
-    const bool m_Required;
+    bool m_Required;
   };
 
 
@@ -238,7 +250,7 @@ namespace rexsapi::xml
     TElement& operator=(const TElement&) = delete;
     TElement& operator=(TElement&&) = delete;
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
@@ -246,7 +258,7 @@ namespace rexsapi::xml
     void validate(const pugi::xml_node& node, TValidationContext& context) const;
 
   private:
-    const std::string m_Name;
+    std::string m_Name;
     TElementType::Ptr m_Type;
   };
 
@@ -271,11 +283,11 @@ namespace rexsapi::xml
     void init();
     void initTypes();
 
-    [[nodiscard]] const TElement* findElement(const std::string& name) const;
+    [[nodiscard]] const TElement* findElement(const std::string& name) const&;
 
     [[nodiscard]] const TElement& findOrRegisterElement(const std::string& name);
 
-    [[nodiscard]] const TSimpleType& findType(const std::string& name) const;
+    [[nodiscard]] const TSimpleType& findType(const std::string& name) const&;
 
     [[nodiscard]] TElement parseElement(const pugi::xml_node& node);
 
@@ -393,7 +405,7 @@ namespace rexsapi::xml
     {
     }
 
-    [[nodiscard]] const TElement* findElement(const std::string& name) const;
+    [[nodiscard]] const TElement* findElement(const std::string& name) const&;
 
     void pushElement(std::string element);
 
@@ -547,7 +559,7 @@ namespace rexsapi::xml
   }
 
 
-  [[nodiscard]] inline const std::string& TElementRef::getName() const
+  [[nodiscard]] inline const std::string& TElementRef::getName() const&
   {
     return m_Element.getName();
   }
@@ -672,7 +684,7 @@ namespace rexsapi::xml
     context.popElement();
   }
 
-  [[nodiscard]] inline const TElement* TValidationContext::findElement(const std::string& name) const
+  [[nodiscard]] inline const TElement* TValidationContext::findElement(const std::string& name) const&
   {
     auto it = m_Elements.find(name);
     if (it == m_Elements.end()) {
@@ -789,7 +801,7 @@ namespace rexsapi::xml
     m_Types.try_emplace(type5->getName(), std::move(type5));
   }
 
-  inline const TElement* TXSDSchemaValidator::findElement(const std::string& name) const
+  inline const TElement* TXSDSchemaValidator::findElement(const std::string& name) const&
   {
     auto it = m_Elements.find(name);
     return it == m_Elements.end() ? nullptr : &(it->second);
@@ -811,7 +823,7 @@ namespace rexsapi::xml
     return it->second;
   }
 
-  inline const TSimpleType& TXSDSchemaValidator::findType(const std::string& name) const
+  inline const TSimpleType& TXSDSchemaValidator::findType(const std::string& name) const&
   {
     auto it = m_Types.find(name);
     if (it == m_Types.end()) {

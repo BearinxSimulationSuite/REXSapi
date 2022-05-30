@@ -17,6 +17,7 @@
 #ifndef REXSAPI_MODEL_HXX
 #define REXSAPI_MODEL_HXX
 
+#include <rexsapi/LoadSpectrum.hxx>
 #include <rexsapi/Relation.hxx>
 #include <rexsapi/RexsVersion.hxx>
 
@@ -33,22 +34,22 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] const std::string& getApplicationId() const
+    [[nodiscard]] const std::string& getApplicationId() const&
     {
       return m_ApplicationId;
     }
 
-    [[nodiscard]] const std::string& getApplicationVersion() const
+    [[nodiscard]] const std::string& getApplicationVersion() const&
     {
       return m_ApplicationVersion;
     }
 
-    [[nodiscard]] const std::string& getDate() const
+    [[nodiscard]] const std::string& getDate() const&
     {
       return m_Date;
     }
 
-    [[nodiscard]] const TRexsVersion& getVersion() const
+    [[nodiscard]] const TRexsVersion& getVersion() const&
     {
       return m_Version;
     }
@@ -60,43 +61,43 @@ namespace rexsapi
     TRexsVersion m_Version;
   };
 
-  
+
   class TModel
   {
   public:
-    TModel(TModelInfo info, TComponents&& components, TRelations&& relations)
+    TModel(TModelInfo info, TComponents&& components, TRelations&& relations, TLoadSpectrum spectrum)
     : m_Info{std::move(info)}
     , m_Components{std::move(components)}
     , m_Relations{std::move(relations)}
+    , m_Spectrum{spectrum}
     {
     }
 
-    ~TModel() = default;
-
-    TModel(const TModel&) = delete;
-    TModel(TModel&&) = default;
-    TModel& operator=(const TModel&) = delete;
-    TModel& operator=(TModel&&) = default;
-
-    [[nodiscard]] const TModelInfo& getInfo() const
+    [[nodiscard]] const TModelInfo& getInfo() const&
     {
       return m_Info;
     }
 
-    [[nodiscard]] const TComponents& getComponents() const
+    [[nodiscard]] const TComponents& getComponents() const&
     {
       return m_Components;
     }
 
-    [[nodiscard]] const TRelations& getRelations() const
+    [[nodiscard]] const TRelations& getRelations() const&
     {
       return m_Relations;
+    }
+
+    [[nodiscard]] const TLoadSpectrum& getLoadSpectrum() const&
+    {
+      return m_Spectrum;
     }
 
   private:
     TModelInfo m_Info;
     TComponents m_Components;
     TRelations m_Relations;
+    TLoadSpectrum m_Spectrum;
   };
 }
 

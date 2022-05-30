@@ -84,8 +84,8 @@ TEST_CASE("Component builder test")
     REQUIRE(components[0].getAttributes().size() == 2);
     CHECK(components[0].getAttributes()[0].getAttributeId() == "conversion_factor");
     CHECK(components[0].getAttributes()[0].getValueAsString() == "2.11");
-    CHECK(components[0].getInternalId() == builder.getComponentForId(gearId));
-    CHECK(components[1].getInternalId() == builder.getComponentForId(casingId));
+    CHECK(components[1].getInternalId() == builder.getComponentForId(components, casingId).getInternalId());
+    CHECK(components[0].getInternalId() == builder.getComponentForId(components, gearId).getInternalId());
   }
 
   SUBCASE("Component builder errors")
@@ -104,7 +104,7 @@ TEST_CASE("Model builder test")
   rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
   rexsapi::TModelBuilder builder{registry.getModel({1, 4}, "de")};
 
-  SUBCASE("Model builder")
+  SUBCASE("Model builder no load cases")
   {
     auto id =
       builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11).id();
@@ -121,6 +121,29 @@ TEST_CASE("Model builder test")
     REQUIRE(model.getRelations().size() == 1);
     CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
     CHECK(model.getRelations()[0].getOrder().has_value());
+    CHECK_FALSE(model.getLoadSpectrum().hasLoadCases());
+  }
+
+  SUBCASE("Model builder with load cases")
+  {
+    auto id =
+      builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11).id();
+    builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
+    builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0);
+    builder.addRelation(rexsapi::TRelationType::ASSEMBLY).addRef(rexsapi::TRelationRole::GEAR, id);
+    builder.addRef(rexsapi::TRelationRole::PART, "my-id").order(1);
+    builder.hint("some hint");
+    builder.addLoadCase().addComponent(id).addAttribute("torque_acting_on_shaft_u").value(4.77);
+    builder.addLoadCase().addComponent("my-id").addAttribute("operating_viscosity").value(0.11);
+    auto model = builder.build("Test Appl", "1.35");
+    CHECK(model.getInfo().getApplicationId() == "Test Appl");
+    CHECK(model.getInfo().getApplicationVersion() == "1.35");
+    CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
+    CHECK(model.getComponents().size() == 2);
+    REQUIRE(model.getRelations().size() == 1);
+    CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
+    CHECK(model.getRelations()[0].getOrder().has_value());
+    CHECK(model.getLoadSpectrum().hasLoadCases());
   }
 
   SUBCASE("Model builder errors")
@@ -138,6 +161,6 @@ TEST_CASE("Model builder test")
     CHECK_THROWS_WITH(builder.hint("hint"), "no references added yet");
     builder.addRef(rexsapi::TRelationRole::GEAR, gearId);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id");
-    CHECK_THROWS_WITH(builder.build("Test Appl", "1.35"), "component for id 'my-id' not found");
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35"), "no component found for id 'my-id'");
   }
 }

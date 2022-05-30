@@ -51,7 +51,7 @@ namespace rexsapi
       m_Model = stream.str();
     }
 
-    const std::string& getModel() const
+    const std::string& getModel() const&
     {
       return m_Model;
     }

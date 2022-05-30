@@ -30,7 +30,6 @@ namespace rexsapi
   {
   public:
     TValue() = default;
-    ~TValue() = default;
 
     template<typename T>
     explicit TValue(T&& val)
@@ -53,10 +52,6 @@ namespace rexsapi
     {
     }
 
-    TValue(const TValue&) = default;
-    TValue(TValue&&) = default;
-    TValue& operator=(const TValue&) = delete;
-    TValue& operator=(TValue&&) = default;
 
     bool isEmpty() const
     {
@@ -64,18 +59,24 @@ namespace rexsapi
     }
 
     template<typename T>
-    const T& getValue() const
+    const T& getValue() const&
     {
       return detail::value_getter<T>(m_Value);
     }
 
     template<typename T>
-    const T& getValue(const T& def) const
+    const T& getValue(const T& def) const&
     {
       if (m_Value.index() == 0) {
         return def;
       }
       return detail::value_getter<T>(m_Value);
+    }
+
+    friend bool operator==(const TValue& lhs, const TValue& rhs)
+    {
+      // ATTENTION: will currently compare floating point values with ==
+      return lhs.m_Value == rhs.m_Value;
     }
 
     std::string asString() const;
