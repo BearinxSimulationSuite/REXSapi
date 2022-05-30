@@ -84,8 +84,8 @@ TEST_CASE("Component builder test")
     REQUIRE(components[0].getAttributes().size() == 2);
     CHECK(components[0].getAttributes()[0].getAttributeId() == "conversion_factor");
     CHECK(components[0].getAttributes()[0].getValueAsString() == "2.11");
-    CHECK(components[0].getInternalId() == builder.getComponentForId(gearId));
-    CHECK(components[1].getInternalId() == builder.getComponentForId(casingId));
+    CHECK(components[1].getInternalId() == builder.getComponentForId(components, casingId).getInternalId());
+    CHECK(components[0].getInternalId() == builder.getComponentForId(components, gearId).getInternalId());
   }
 
   SUBCASE("Component builder errors")
@@ -138,6 +138,6 @@ TEST_CASE("Model builder test")
     CHECK_THROWS_WITH(builder.hint("hint"), "no references added yet");
     builder.addRef(rexsapi::TRelationRole::GEAR, gearId);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id");
-    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35"), "component for id 'my-id' not found");
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35"), "no component found for id 'my-id'");
   }
 }

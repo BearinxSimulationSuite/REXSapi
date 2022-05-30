@@ -49,6 +49,10 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
     .addRef(rexsapi::TRelationRole::ORIGIN, "my-bearing-id")
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
 
+  auto loadCase = modelBuilder.addLoadCase();
+  loadCase.addComponent(casingId).addAttribute("temperature_lubricant").unit("C").value(36.7);
+  loadCase.addComponent(casingId).addAttribute("operating_viscosity").value(3.3);
+
   return modelBuilder.build("REXSApi Model Builder", "1.0");
 }
 
