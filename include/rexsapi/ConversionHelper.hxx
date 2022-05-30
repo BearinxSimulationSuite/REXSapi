@@ -97,13 +97,13 @@ namespace rexsapi
     struct tm buf;
     std::ostringstream stream;
 #if defined(WIN32)
-    stream << std::put_time(localtime_s(&t_c, &buf), "%FT%T%z");
+    localtime_s(&buf, &t_c);
+    stream << std::put_time(&buf, "%FT%T%z");
 #else
     stream << std::put_time(localtime_r(&t_c, &buf), "%FT%T%z");
 #endif
     std::string s{stream.str()};
-    s.insert(22, ":");
-    return s;
+    return s.insert(22, ":");
   }
 }
 
