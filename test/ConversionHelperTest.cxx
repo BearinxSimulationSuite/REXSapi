@@ -18,6 +18,7 @@
 
 #include <doctest.h>
 #include <limits>
+#include <regex>
 
 TEST_CASE("Conversion unsigned integer test")
 {
@@ -87,5 +88,16 @@ TEST_CASE("Conversion double test")
   {
     CHECK_THROWS_WITH(rexsapi::convertToDouble("a47.11"), "cannot convert string 'a47.11' to double: invalid argument");
     CHECK_THROWS_WITH(rexsapi::convertToDouble("47.11puschel"), "cannot convert string to double: 47.11puschel");
+  }
+}
+
+TEST_CASE("Time helper")
+{
+  SUBCASE("ISO8601 date")
+  {
+    auto s = rexsapi::getTimeStringISO8601(std::chrono::system_clock::now());
+    std::regex reg_expr(R"(^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})[+-](\d{2}):(\d{2})$)");
+    std::smatch match;
+    REQUIRE(std::regex_match(s, match, reg_expr));
   }
 }
