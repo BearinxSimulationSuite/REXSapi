@@ -33,8 +33,8 @@ TEST_CASE("Component attribute mapper")
 
     rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 
-    REQUIRE(mapper.getAttributesForComponent("planet_carrier").size() == 2);
-    REQUIRE(mapper.getAttributesForComponent("profile_crowning").size() == 1);
+    CHECK(mapper.getAttributesForComponent("planet_carrier").size() == 2);
+    CHECK(mapper.getAttributesForComponent("profile_crowning").size() == 1);
     CHECK(mapper.getAttributesForComponent("point_list").empty());
   }
 

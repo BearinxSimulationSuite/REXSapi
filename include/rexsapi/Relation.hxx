@@ -59,7 +59,7 @@ namespace rexsapi
   class TRelation
   {
   public:
-    TRelation(TRelationType type, std::optional<uint32_t> order, TRelationReferences&& references)
+    TRelation(TRelationType type, std::optional<uint32_t> order, TRelationReferences references)
     : m_Type{type}
     , m_Order{std::move(order)}
     , m_References{std::move(references)}
