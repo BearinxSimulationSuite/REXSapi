@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-void usage()
+static void usage()
 {
   std::cout << "model_checker <model database path> <model file> [<model file>]" << std::endl;
 }
