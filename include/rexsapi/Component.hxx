@@ -24,7 +24,7 @@ namespace rexsapi
   class TComponent
   {
   public:
-    TComponent(uint64_t internalId, std::string type, std::string name, TAttributes&& attributes)
+    TComponent(uint64_t internalId, std::string type, std::string name, TAttributes attributes)
     : m_InternalId{internalId}
     , m_Type{std::move(type)}
     , m_Name{std::move(name)}

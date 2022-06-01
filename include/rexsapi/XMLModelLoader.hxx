@@ -85,6 +85,7 @@ namespace rexsapi
     std::unordered_map<std::string, uint64_t> componentsMapping;
 
     TComponents components;
+    components.reserve(10);
     for (const auto& component : doc.select_nodes("/model/components/component")) {
       auto componentId = getStringAttribute(component, "id");
       std::string componentName = getStringAttribute(component, "name", "");
@@ -94,7 +95,6 @@ namespace rexsapi
         doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
 
       TAttributes attributes = getAttributes(result, dbModel, componentId, componentType, attributeNodes);
-      components.reserve(attributes.size());
 
       components.emplace_back(
         TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});

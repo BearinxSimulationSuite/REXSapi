@@ -24,7 +24,7 @@ namespace rexsapi
   class TLoadComponent
   {
   public:
-    TLoadComponent(const TComponent& component, TAttributes&& attributes)
+    TLoadComponent(const TComponent& component, TAttributes attributes)
     : m_Component{component}
     , m_Attributes{std::move(attributes)}
     {
@@ -64,7 +64,7 @@ namespace rexsapi
   class TLoadCase
   {
   public:
-    explicit TLoadCase(TLoadComponents&& components)
+    explicit TLoadCase(TLoadComponents components)
     : m_Components{std::move(components)}
     {
     }
@@ -84,7 +84,7 @@ namespace rexsapi
   class TLoadSpectrum
   {
   public:
-    explicit TLoadSpectrum(TLoadCases&& loadCases)
+    explicit TLoadSpectrum(TLoadCases loadCases)
     : m_LoadCases{std::move(loadCases)}
     {
     }

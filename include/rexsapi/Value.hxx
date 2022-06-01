@@ -52,7 +52,6 @@ namespace rexsapi
     {
     }
 
-
     bool isEmpty() const
     {
       return m_Value.index() == 0;
@@ -111,7 +110,7 @@ namespace rexsapi
     return std::visit(overload{[](const std::monostate&) -> std::string {
                                  return "";
                                },
-                               [](const std::string& s) {
+                               [](const std::string& s) -> std::string {
                                  // TODO (lcf): add "" for string
                                  return s;
                                },
