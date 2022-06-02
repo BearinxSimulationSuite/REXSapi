@@ -67,7 +67,7 @@ namespace rexsapi
     }
 
     template<typename T>
-    [[nodiscard]] const T& getValue() const&
+    [[nodiscard]] const auto& getValue() const&
     {
       return m_Value.getValue<T>();
     }

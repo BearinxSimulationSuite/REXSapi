@@ -74,7 +74,7 @@ namespace rexsapi
     class TBooleanDecoder : public TXMLDecoder
     {
     public:
-      using Type = Bool;
+      using Type = bool;
 
     private:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
@@ -166,6 +166,27 @@ namespace rexsapi
       }
     };
 
+    class TBoolArrayDecoder : public TXMLDecoder
+    {
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
+      {
+        std::vector<Bool> array;
+        TBooleanDecoder decoder;
+        bool result{true};
+        for (const auto& arrayNode : node.select_nodes("array/c")) {
+          auto res = decoder.decode(enumValue, arrayNode.node());
+          if (res.second) {
+            const TValue& val = res.first;
+            array.emplace_back(std::move(val.getValue<bool>()));
+          }
+          result &= res.second;
+        }
+        return std::make_pair(TValue{std::move(array)}, result);
+      }
+    };
+
     template<typename ElementDecoder>
     class TMatrixDecoder : public TXMLDecoder
     {
@@ -247,7 +268,7 @@ namespace rexsapi
     m_Decoder[TValueType::ENUM] = std::make_unique<xml::TEnumDecoder>();
     m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TIntegerDecoder>>();
     m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
-    m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TBooleanDecoder>>();
+    m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TBoolArrayDecoder>();
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();

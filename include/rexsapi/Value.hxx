@@ -47,8 +47,8 @@ namespace rexsapi
     {
     }
 
-    explicit TValue(bool val)
-    : m_Value(Bool{val})
+    explicit TValue(Bool val)
+    : m_Value(val.m_Value)
     {
     }
 
@@ -58,13 +58,13 @@ namespace rexsapi
     }
 
     template<typename T>
-    const T& getValue() const&
+    const auto& getValue() const&
     {
       return detail::value_getter<T>(m_Value);
     }
 
     template<typename T>
-    const T& getValue(const T& def) const&
+    const auto& getValue(const T& def) const&
     {
       if (m_Value.index() == 0) {
         return def;
@@ -114,8 +114,8 @@ namespace rexsapi
                                  // TODO (lcf): add "" for string
                                  return s;
                                },
-                               [](const Bool& b) -> std::string {
-                                 return fmt::format("{}", static_cast<bool>(b));
+                               [](const bool& b) -> std::string {
+                                 return fmt::format("{}", b);
                                },
                                [](const double& d) -> std::string {
                                  return format(d);
@@ -159,7 +159,7 @@ namespace rexsapi
         case TValueType::BOOLEAN: {
           auto c = std::get<std::function<R(BoolTag, const bool&)>>(funcs);
           if (c) {
-            return c(BoolTag(), value.getValue<TBoolType>().m_Value);
+            return c(BoolTag(), value.getValue<TBoolType>());
           }
           break;
         }

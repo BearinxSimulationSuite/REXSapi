@@ -33,19 +33,19 @@ namespace rexsapi
   namespace detail
   {
     using Variant =
-      std::variant<std::monostate, double, Bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
+      std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
                    std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
 
     template<typename T>
-    inline const T& value_getter(const Variant& value)
+    inline const auto& value_getter(const Variant& value)
     {
       return std::get<T>(value);
     }
 
     template<>
-    inline const bool& value_getter<bool>(const Variant& value)
+    inline const auto& value_getter<Bool>(const Variant& value)
     {
-      return std::get<Bool>(value).m_Value;
+      return std::get<bool>(value);
     }
 
     template<TValueType v>
@@ -65,7 +65,7 @@ namespace rexsapi
 
     template<>
     struct TypeForValueType<Enum2type<TValueType::BOOLEAN>> {
-      using Type = Bool;
+      using Type = bool;
     };
 
     template<>
