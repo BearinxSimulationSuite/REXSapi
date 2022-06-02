@@ -55,6 +55,21 @@ namespace rexsapi
       return *lhs.m_Unit == rhs;
     }
 
+    friend bool operator==(const TUnit& lhs, const TUnit& rhs)
+    {
+      if (lhs.isCustomUnit() && rhs.isCustomUnit()) {
+        return lhs.m_CustomUnit == rhs.m_CustomUnit;
+      }
+      if (!(lhs.isCustomUnit() || rhs.isCustomUnit())) {
+        return *lhs.m_Unit == *rhs.m_Unit;
+      }
+      if (lhs.isCustomUnit()) {
+        return rhs.m_Unit->compare(lhs.m_CustomUnit);
+      }
+
+      return lhs.m_Unit->compare(rhs.m_CustomUnit);
+    }
+
   private:
     std::optional<database::TUnit> m_Unit{};
     std::string m_CustomUnit{};

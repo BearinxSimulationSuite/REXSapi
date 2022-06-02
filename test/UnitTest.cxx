@@ -32,6 +32,8 @@ TEST_CASE("Unit test")
 
     CHECK(unit == model.findUnitById(2));
     CHECK_FALSE(unit == model.findUnitById(5));
+    CHECK(unit == rexsapi::TUnit{model.findUnitById(2)});
+    CHECK(unit == rexsapi::TUnit{"mm"});
   }
 
   SUBCASE("Custom unit")
@@ -41,5 +43,6 @@ TEST_CASE("Unit test")
     CHECK(unit.getName() == "hutzli");
     CHECK_FALSE(unit == model.findUnitById(56));
     CHECK(rexsapi::TUnit{"kg"} == model.findUnitById(56));
+    CHECK(unit == rexsapi::TUnit{"hutzli"});
   }
 }
