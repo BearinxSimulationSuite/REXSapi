@@ -319,3 +319,18 @@ TEST_CASE("XML value decoder error test")
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix")).second);
   }
 }
+
+TEST_CASE("XML unknown value decoder test")
+{
+  rexsapi::TXMLValueDecoder decoder;
+  pugi::xml_document doc;
+
+  SUBCASE("Decode string")
+  {
+    auto node = doc.append_child("attribute");
+    node.append_child(pugi::node_pcdata).set_value("test");
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::STRING);
+    CHECK(res.first == rexsapi::TValue{"test"});
+  }
+}

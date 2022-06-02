@@ -221,7 +221,8 @@ namespace rexsapi
         }
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
       } else {
-        attributes.emplace_back(TAttribute{id, TUnit{unit}, TValueType::STRING, TValue{}});
+        auto [value, type] = m_Decoder.decodeUnknown(attribute.node());
+        attributes.emplace_back(TAttribute{id, TUnit{unit}, type, std::move(value)});
       }
     }
 

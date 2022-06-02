@@ -28,6 +28,7 @@
 
 namespace rexsapi
 {
+  // TODO (lcf): rename to TError. Add message() method. Hide member.
   struct TResourceError {
     explicit TResourceError(std::string message, ssize_t position = -1)
     : m_Message{std::move(message)}
