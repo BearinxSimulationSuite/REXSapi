@@ -237,7 +237,8 @@ namespace rexsapi
 
     [[nodiscard]] ComponentId id() const;
 
-    [[nodiscard]] TModel build(std::string applicationId, std::string applicationVersion);
+    [[nodiscard]] TModel build(std::string applicationId, std::string applicationVersion,
+                               std::optional<std::string> applicationLanguage);
 
   private:
     void checkRelation() const
@@ -526,12 +527,13 @@ namespace rexsapi
     return m_ComponentBuilder.id();
   }
 
-  inline TModel TModelBuilder::build(std::string applicationId, std::string applicationVersion)
+  inline TModel TModelBuilder::build(std::string applicationId, std::string applicationVersion,
+                                     std::optional<std::string> language)
   {
     TRelations relations;
     const rexsapi::TModelInfo info{std::move(applicationId), std::move(applicationVersion),
                                    getTimeStringISO8601(std::chrono::system_clock::now()),
-                                   m_ComponentBuilder.m_DatabaseModel.getVersion()};
+                                   m_ComponentBuilder.m_DatabaseModel.getVersion(), std::move(language)};
     auto components = m_ComponentBuilder.build();
 
     // TODO (lcf): add model validation. check no components and/or no relations

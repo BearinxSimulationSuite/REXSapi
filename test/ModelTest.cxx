@@ -63,12 +63,13 @@ TEST_CASE("Model test")
     rexsapi::TRelations relations{rexsapi::TRelation{rexsapi::TRelationType::REFERENCE, {}, std::move(references)}};
 
     rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00",
-                             rexsapi::TRexsVersion{"1.4"}};
+                             rexsapi::TRexsVersion{"1.4"}, "de"};
     rexsapi::TLoadSpectrum spectrum{rexsapi::TLoadCases{}};
     rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(spectrum)};
 
     CHECK(model.getInfo().getApplicationId() == "FVA Workbench");
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{"1.4"});
+    CHECK(*model.getInfo().getApplicationLanguage() == "de");
     REQUIRE(model.getComponents().size() == 2);
     CHECK(model.getComponents()[0].getType() == "gear_casing");
     REQUIRE(model.getRelations().size() == 1);

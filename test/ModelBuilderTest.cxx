@@ -113,9 +113,10 @@ TEST_CASE("Model builder test")
     builder.addRelation(rexsapi::TRelationType::ASSEMBLY).addRef(rexsapi::TRelationRole::GEAR, id);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id").order(1);
     builder.hint("some hint");
-    auto model = builder.build("Test Appl", "1.35");
+    auto model = builder.build("Test Appl", "1.35", "en");
     CHECK(model.getInfo().getApplicationId() == "Test Appl");
     CHECK(model.getInfo().getApplicationVersion() == "1.35");
+    CHECK(*model.getInfo().getApplicationLanguage() == "en");
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
     CHECK(model.getComponents().size() == 2);
     REQUIRE(model.getRelations().size() == 1);
@@ -135,9 +136,10 @@ TEST_CASE("Model builder test")
     builder.hint("some hint");
     builder.addLoadCase().addComponent(id).addAttribute("torque_acting_on_shaft_u").value(4.77);
     builder.addLoadCase().addComponent("my-id").addAttribute("operating_viscosity").value(0.11);
-    auto model = builder.build("Test Appl", "1.35");
+    auto model = builder.build("Test Appl", "1.35", {});
     CHECK(model.getInfo().getApplicationId() == "Test Appl");
     CHECK(model.getInfo().getApplicationVersion() == "1.35");
+    CHECK_FALSE(model.getInfo().getApplicationLanguage());
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
     CHECK(model.getComponents().size() == 2);
     REQUIRE(model.getRelations().size() == 1);
@@ -161,6 +163,6 @@ TEST_CASE("Model builder test")
     CHECK_THROWS_WITH(builder.hint("hint"), "no references added yet");
     builder.addRef(rexsapi::TRelationRole::GEAR, gearId);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id");
-    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35"), "no component found for id 'my-id'");
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no component found for id 'my-id'");
   }
 }

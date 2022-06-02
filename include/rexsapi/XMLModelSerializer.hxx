@@ -97,6 +97,9 @@ namespace rexsapi
     modelNode.append_attribute("applicationVersion").set_value(info.getApplicationVersion().c_str());
     modelNode.append_attribute("date").set_value(info.getDate().c_str());
     modelNode.append_attribute("version").set_value(info.getVersion().asString().c_str());
+    if (info.getApplicationLanguage().has_value()) {
+      modelNode.append_attribute("applicationLanguage").set_value(info.getApplicationLanguage()->c_str());
+    }
     return modelNode;
   }
 

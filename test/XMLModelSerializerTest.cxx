@@ -212,7 +212,7 @@ TEST_CASE("Serialize new model")
   rexsapi::TLoadCases loadCases{std::move(loadCase)};
   rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases)};
 
-  rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}};
+  rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}, "en"};
 
   rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(loadSpectrum)};
 
@@ -225,6 +225,12 @@ TEST_CASE("Serialize new model")
     CHECK_FALSE(stringSerializer.getModel().empty());
     StringLoader loader;
     auto roundtripModel = loader.load(stringSerializer.getModel());
+    CHECK(roundtripModel.getInfo().getApplicationId() == "REXSApi Unit Test");
+    CHECK(roundtripModel.getInfo().getApplicationVersion() == "1.0");
+    CHECK(roundtripModel.getInfo().getDate() == "2022-05-20T08:59:10+01:00");
+    CHECK(roundtripModel.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
+    REQUIRE(roundtripModel.getInfo().getApplicationLanguage().has_value());
+    CHECK(*roundtripModel.getInfo().getApplicationLanguage() == "en");
     CHECK(roundtripModel.getComponents().size() == 6);
     CHECK(roundtripModel.getRelations().size() == 3);
     CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
