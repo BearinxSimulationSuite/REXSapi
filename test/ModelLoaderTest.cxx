@@ -33,7 +33,7 @@ TEST_CASE("Model loader test")
   {
     std::string buffer = R"(
       <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-      <model applicationId="REXSApi Unit Test" applicationVersion="1.0" date="2022-05-05T10:35:00+02:00" version="1.4">
+      <model applicationId="REXSApi Unit Test" applicationVersion="1.0" date="2022-05-05T10:35:00+02:00" version="1.4" applicationLanguage="de">
         <relations>
           <relation id="1" type="assembly">
             <ref hint="gear_unit" id="1" role="assembly"/>
@@ -114,6 +114,11 @@ TEST_CASE("Model loader test")
     CHECK(result);
     REQUIRE(model);
     CHECK(model->getInfo().getApplicationId() == "REXSApi Unit Test");
+    REQUIRE(model->getInfo().getApplicationLanguage().has_value());
+    CHECK(*model->getInfo().getApplicationLanguage() == "de");
+    CHECK(model->getInfo().getApplicationVersion() == "1.0");
+    CHECK(model->getInfo().getDate() == "2022-05-05T10:35:00+02:00");
+    CHECK(model->getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
     REQUIRE(model->getComponents().size() == 3);
     const auto& attribute = model->getComponents()[0].getAttributes()[0];
     CHECK(attribute.getAttributeId() == "account_for_gravity");

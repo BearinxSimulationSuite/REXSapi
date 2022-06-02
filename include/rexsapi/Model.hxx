@@ -26,11 +26,13 @@ namespace rexsapi
   class TModelInfo
   {
   public:
-    TModelInfo(std::string applicationId, std::string applicationVersion, std::string date, TRexsVersion version)
+    TModelInfo(std::string applicationId, std::string applicationVersion, std::string date, TRexsVersion version,
+               std::optional<std::string> language)
     : m_ApplicationId{std::move(applicationId)}
     , m_ApplicationVersion{std::move(applicationVersion)}
     , m_Date{std::move(date)}
     , m_Version{std::move(version)}
+    , m_Language{std::move(language)}
     {
     }
 
@@ -42,6 +44,11 @@ namespace rexsapi
     [[nodiscard]] const std::string& getApplicationVersion() const&
     {
       return m_ApplicationVersion;
+    }
+
+    [[nodiscard]] const std::optional<std::string>& getApplicationLanguage() const&
+    {
+      return m_Language;
     }
 
     [[nodiscard]] const std::string& getDate() const&
@@ -59,6 +66,7 @@ namespace rexsapi
     std::string m_ApplicationVersion;
     std::string m_Date;
     TRexsVersion m_Version;
+    std::optional<std::string> m_Language;
   };
 
 
