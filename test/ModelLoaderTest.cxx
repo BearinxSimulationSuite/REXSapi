@@ -80,6 +80,7 @@ TEST_CASE("Model loader test")
           <component id="2" name="Gehäuse" type="gear_casing">
             <attribute id="temperature_lubricant" unit="C">73.2</attribute>
             <attribute id="type_of_gear_casing_construction_vdi_2736_2014" unit="none">closed</attribute>
+            <attribute id="custom_load_duration_fraction" unit="%">30</attribute>
           </component>
           <component id="3" name="Load" type="external_load">
             <attribute id="u_coordinate_on_shaft" unit="mm">0</attribute>
@@ -132,11 +133,11 @@ TEST_CASE("Model loader test")
     CHECK(model->getLoadSpectrum().hasLoadCases());
     REQUIRE(model->getLoadSpectrum().getLoadCases().size() == 2);
     REQUIRE(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
-    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 3);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 4);
     CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[1].getAttributes().size() == 7);
   }
 
-  SUBCASE("Load model from file")
+  SUBCASE("Load simple model from file")
   {
     rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
     rexsapi::TLoaderResult result;
@@ -153,5 +154,25 @@ TEST_CASE("Model loader test")
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '239'");
     CHECK(result.getErrors()[4].m_Message ==
           "value is out of range for attribute 'throat_radius_worm_wheel' of component '9'");
+  }
+
+  SUBCASE("Load complex model from file")
+  {
+    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
+                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
+    rexsapi::TLoaderResult result;
+    auto model = loader.load(result, registry);
+    CHECK_FALSE(result);
+    REQUIRE(result.getErrors().size() == 5);
+    CHECK(result.getErrors()[0].m_Message ==
+          "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '33'");
+    CHECK(result.getErrors()[1].m_Message ==
+          "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '37'");
+    CHECK(result.getErrors()[2].m_Message ==
+          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '57'");
+    CHECK(result.getErrors()[3].m_Message ==
+          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '58'");
+    CHECK(result.getErrors()[4].m_Message ==
+          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '59'");
   }
 }

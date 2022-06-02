@@ -189,36 +189,40 @@ namespace rexsapi
     TAttributes attributes;
     for (const auto& attribute : attributeNodes) {
       std::string id = getStringAttribute(attribute, "id");
-      // TODO (lcf): process custom attributes
+
+      bool isCustom{false};
       if (id.substr(0, 7) == "custom_") {
-        continue;
+        isCustom = true;
       }
 
       auto unit = getStringAttribute(attribute, "unit");
-      const auto& att = componentType.findAttributeById(id);
 
-      if (unit.empty()) {
-        unit = att.getUnit().getName();
-      } else {
-        if (!att.getUnit().compare(unit)) {
-          result.addError(TResourceError{fmt::format(
-            "attribute '{}' of component '{}' does not specify the correct unit: '{}'", id, componentId, unit)});
+      if (!isCustom) {
+        const auto& att = componentType.findAttributeById(id);
+
+        if (unit.empty()) {
+          unit = att.getUnit().getName();
+        } else {
+          if (!att.getUnit().compare(unit)) {
+            result.addError(TResourceError{fmt::format(
+              "attribute '{}' of component '{}' does not specify the correct unit: '{}'", id, componentId, unit)});
+          }
         }
-      }
 
-      auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
-      if (!value.second) {
-        result.addError(TResourceError{fmt::format(
-          "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
-        continue;
+        auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
+        if (!value.second) {
+          result.addError(TResourceError{fmt::format(
+            "value of attribute '{}' of component '{}' does not have the correct value type", id, componentId)});
+          continue;
+        }
+        if (!TValidityChecker::check(att, value.first)) {
+          result.addError(
+            TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
+        }
+        attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
+      } else {
+        attributes.emplace_back(TAttribute{id, TUnit{unit}, TValueType::STRING, TValue{}});
       }
-      if (!TValidityChecker::check(att, value.first)) {
-        result.addError(
-          TResourceError{fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
-      }
-
-      // TODO (lcf): custom units for custom attributes
-      attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
     }
 
     return attributes;
