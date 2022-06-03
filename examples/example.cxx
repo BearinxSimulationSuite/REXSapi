@@ -40,20 +40,33 @@ struct TREXSVersionNumber {
   unsigned int m_MinorVersionNr{0};
 };
 
-enum object_type { REXS_component, REXS_component_group, intermediate_layer_object };
+enum object_type { REXS_component, REXS_component_group, intermediate_layer_object, invalid_object_type };
 
 enum direction_type { bidirectional, REXS_to_Bearinx, Bearinx_to_REXS };
 
 enum dimension_of_attribute { scalar_dimension, vector_dimension, matrix_2D_dimension };
 
-enum type_of_attribute { integer_type, reference_type };
+enum type_of_attribute { int_value_type, reference_type, boolean_type, double_value_type, enum_type, string_type };
 
 enum relation_type { invalid_relation_type, top_level, sub_level };
+
+enum type_of_attribute_rule { transfer };
 
 class TRule
 {
 public:
   virtual ~TRule() = default;
+
+  void set_from_to_REXS_version(const std::string& from_rexs_version, const std::string& to_rexs_version)
+  {
+    std::regex reg_expr("^(\\d+)\\.(\\d+)$");
+    std::smatch s_match_from, s_match_to;
+    std::regex_search(from_rexs_version, s_match_from, reg_expr);
+    std::regex_search(to_rexs_version, s_match_to, reg_expr);
+    ASSERT_OTHERWISE_THROW((s_match_from.size() == 3) && (s_match_to.size() == 3), "bug");
+    From_REXS_Version = TREXSVersionNumber((uint)std::stoi(s_match_from[1]), (uint)std::stoi(s_match_from[2]));
+    To_REXS_Version = TREXSVersionNumber((uint)std::stoi(s_match_to[1]), (uint)std::stoi(s_match_to[2]));
+  }
 
   TREXSVersionNumber From_REXS_Version;
   TREXSVersionNumber To_REXS_Version;
@@ -62,8 +75,20 @@ public:
 class TComponentRule : public TRule
 {
 public:
-  object_type Type_Side_1;
+  TComponentRule(direction_type dir, object_type side_1, std::string name_1, object_type side_2, std::string name_2,
+                 const std::string from_rexs_version, const std::string to_rexs_version)
+  : Direction(dir)
+  , Type_Side_1(side_1)
+  , Type_Side_2(side_2)
+  , Name_Side_1(name_1)
+  , Name_Side_2(name_2)
+  {
+    set_from_to_REXS_version(from_rexs_version, to_rexs_version);
+  }
+
   direction_type Direction;
+  object_type Type_Side_1;
+  object_type Type_Side_2;
   std::string Name_Side_1;
   std::string Name_Side_2;
 };
@@ -71,6 +96,13 @@ public:
 class TComponentGroupRule : public TRule
 {
 public:
+  TComponentGroupRule(object_type group_type, std::string group_name, std::vector<std::string> types)
+  : Group_Type(group_type)
+  , Group_Name(group_name)
+  {
+    Types = types;
+  }
+
   object_type Group_Type;
   std::string Group_Name;
   std::vector<std::string> Types;
@@ -79,20 +111,114 @@ public:
 class TAttributeRule : public TRule
 {
 public:
-  std::string Object_Name_side_1;
-  object_type Type_Side_1;
+  TAttributeRule(const direction_type direction, const type_of_attribute_rule rule_type, const object_type object_t_1,
+                 const std::string object_n_1, const std::string attribute_1, const std::string unit_1,
+                 const object_type object_t_2, const std::string object_n_2, const std::string attribute_2,
+                 const std::string unit_2, const type_of_attribute attribute_type,
+                 const dimension_of_attribute attribute_dimension, const std::string from_rexs_version,
+                 const std::string to_rexs_version)
+  : Direction(direction)
+  , Attribute_Rule_Type(rule_type)
+  , Object_Type_side_1(object_t_1)
+  , Object_Name_side_1(object_n_1)
+  , Attribute_Name_side_1(attribute_1)
+  , Attribute_Unit_side_1(unit_1)
+  , Object_Type_side_2(object_t_2)
+  , Object_Name_side_2(object_n_2)
+  , Attribute_Name_side_2(attribute_2)
+  , Attribute_Unit_side_2(unit_2)
+  , Attribute_Type(attribute_type)
+  , Attribute_Dimension(attribute_dimension)
+  {
+    set_from_to_REXS_version(from_rexs_version, to_rexs_version);
+  }
+
+  TAttributeRule(const direction_type direction, const type_of_attribute_rule rule_type, const std::string comment,
+                 const object_type object_t, const std::string object_n, const std::string attribute,
+                 const std::string value, const std::string unit, const type_of_attribute attribute_type,
+                 const dimension_of_attribute attribute_dimension, const std::string from_rexs_version,
+                 const std::string to_rexs_version)
+  : Direction(direction)
+  , Attribute_Rule_Type(rule_type)
+  , Object_Type_side_1(object_t)
+  , Object_Name_side_1(object_n)
+  , Attribute_Name_side_1(attribute)
+  , Attribute_Value_side_1(value)
+  , Attribute_Unit_side_1(unit)
+  , Object_Type_side_2(invalid_object_type)
+  , Object_Name_side_2("")
+  , Attribute_Name_side_2("")
+  , Attribute_Unit_side_2("")
+  , Attribute_Type(attribute_type)
+  , Attribute_Dimension(attribute_dimension)
+  {
+    (void)comment;
+    set_from_to_REXS_version(from_rexs_version, to_rexs_version);
+  }
+
   direction_type Direction;
+  type_of_attribute_rule Attribute_Rule_Type;
+  object_type Object_Type_side_1;
+  std::string Object_Name_side_1;
   std::string Attribute_Name_side_1;
+  std::string Attribute_Value_side_1;
+  std::string Attribute_Unit_side_1;
+  object_type Object_Type_side_2;
+  std::string Object_Name_side_2;
   std::string Attribute_Name_side_2;
+  std::string Attribute_Unit_side_2;
   type_of_attribute Attribute_Type;
   dimension_of_attribute Attribute_Dimension;
-  std::string Attribute_Unit_side_1;
-  std::string Attribute_Unit_side_2;
 };
 
 class TRelationRule : public TRule
 {
 public:
+  TRelationRule(std::string name, direction_type direction, std::string type, object_type o_type_1,
+                relation_type r_type_1, std::string name_1, std::string param_1, object_type o_type_2,
+                relation_type r_type_2, std::string name_2, std::string param_2, const std::string from_rexs_version,
+                const std::string to_rexs_version)
+  : Name(name)
+  , Direction(direction)
+  , Type(type)
+  , Nr_of_Objects(2)
+  , Object_Type_1(o_type_1)
+  , Relation_Type_1(r_type_1)
+  , Name_1(name_1)
+  , Parameter_1(param_1)
+  , Object_Type_2(o_type_2)
+  , Relation_Type_2(r_type_2)
+  , Name_2(name_2)
+  , Parameter_2(param_2)
+  {
+    set_from_to_REXS_version(from_rexs_version, to_rexs_version);
+  }
+
+  TRelationRule(std::string name, direction_type direction, std::string type, object_type o_type_1,
+                relation_type r_type_1, std::string name_1, std::string param_1, object_type o_type_2,
+                relation_type r_type_2, std::string name_2, std::string param_2, object_type o_type_3,
+                relation_type r_type_3, std::string name_3, std::string param_3, const std::string from_rexs_version,
+                const std::string to_rexs_version)
+  : Name(name)
+  , Direction(direction)
+  , Type(type)
+  , Nr_of_Objects(3)
+  , Object_Type_1(o_type_1)
+  , Relation_Type_1(r_type_1)
+  , Name_1(name_1)
+  , Parameter_1(param_1)
+  , Object_Type_2(o_type_2)
+  , Relation_Type_2(r_type_2)
+  , Name_2(name_2)
+  , Parameter_2(param_2)
+  , Object_Type_3(o_type_3)
+  , Relation_Type_3(r_type_3)
+  , Name_3(name_3)
+  , Parameter_3(param_3)
+  {
+    set_from_to_REXS_version(from_rexs_version, to_rexs_version);
+  }
+
   std::string getParameter(const unsigned int i) const
   {
     std::string param = "invalid";
@@ -153,19 +279,55 @@ public:
   }
 
   std::string Name;
-  object_type Object_Type_1;
-  object_type Object_Type_2;
-  std::string Parameter_1;
-  std::string Parameter_2;
-  std::string Parameter_3;
-  relation_type Relation_Type_1;
-  relation_type Relation_Type_2;
-  relation_type Relation_Type_3;
-  std::string Name_1;
-  std::string Name_2;
-  std::string Name_3;
   direction_type Direction;
   std::string Type;
+  const unsigned int Nr_of_Objects;
+  object_type Object_Type_1;
+  relation_type Relation_Type_1;
+  std::string Name_1;
+  std::string Parameter_1;
+  object_type Object_Type_2;
+  relation_type Relation_Type_2;
+  std::string Name_2;
+  std::string Parameter_2;
+  object_type Object_Type_3;
+  relation_type Relation_Type_3;
+  std::string Name_3;
+  std::string Parameter_3;
+};
+
+
+class TUnitRule : public TRule
+{
+public:
+  object_type Object_Type_side_1;
+  std::string Unit_Name_side_1;
+  object_type Object_Type_side_2;
+  std::string Unit_Name_side_2;
+  double Conversion_Factor_side_1_to_side_2;
+
+  TUnitRule(const object_type type_1, const std::string unit_1, const object_type type_2, const std::string unit_2,
+            const double factor_1_2)
+  : Object_Type_side_1(type_1)
+  , Unit_Name_side_1(unit_1)
+  , Object_Type_side_2(type_2)
+  , Unit_Name_side_2(unit_2)
+  , Conversion_Factor_side_1_to_side_2(factor_1_2)
+  {
+  }
+};
+
+class TREXSTransmissionModelTransformationRules
+{
+public:
+  void set_Rules()
+  {
+#if __has_include("REXSTransmissionModelTransformationRulesGeneratedCode_reduced.hxx")
+  #include "REXSTransmissionModelTransformationRulesGeneratedCode_reduced.hxx"
+#endif
+  }
+
+  std::vector<TRule*> Rules;
 };
 
 struct TIntermediateLayerAttribute {
@@ -211,6 +373,7 @@ struct TIntermediateLayerAttribute {
 struct TIntermediateLayerObject {
   std::string LayerObjectType;
   std::string Name;
+  uint64_t Id{0};
 
   void register_attribute(TIntermediateLayerAttribute* new_attribute)
   {
@@ -248,6 +411,11 @@ public:
 };
 
 struct TREXSTransmissionModelIntermediateLayer {
+  TREXSTransmissionModelIntermediateLayer()
+  {
+    TransformationRules.set_Rules();
+  }
+
   void setREXSVersion(TREXSVersionNumber version)
   {
     m_Version = version;
@@ -267,44 +435,15 @@ struct TREXSTransmissionModelIntermediateLayer {
     (void)unit_1;
     (void)type_2;
     (void)unit_2;
-    return "";
-
-    /*
-    std::string converted_value = value;
-    if (attribute_type == double_value_type) {
-      std::vector<TRule*>::const_iterator r_it = TransformationRules->Rules.begin();
-      for (; r_it != TransformationRules->Rules.end(); ++r_it) {
-        if (dynamic_cast<const TUnitRule*>(*r_it)) {
-          const TUnitRule* unit_rule_i = dynamic_cast<const TUnitRule*>(*r_it);
-
-          if (((unit_rule_i->Object_Type_side_1 == type_1) && (unit_rule_i->Unit_Name_side_1 == unit_1) &&
-               (unit_rule_i->Object_Type_side_2 == type_2) && (unit_rule_i->Unit_Name_side_2 == unit_2)) ||
-              ((unit_rule_i->Object_Type_side_1 == type_2) && (unit_rule_i->Unit_Name_side_1 == unit_2) &&
-               (unit_rule_i->Object_Type_side_2 == type_1) && (unit_rule_i->Unit_Name_side_2 == unit_1))) {
-            break;
-          }
-        }
-      }
-
-      ASSERT_OTHERWISE_THROW(r_it != TransformationRules->Rules.end(), "Regel nicht gefunden");
-      const TUnitRule* unit_rule = dynamic_cast<const TUnitRule*>(*r_it);
-      if (unit_rule->Conversion_Factor_side_1_to_side_2 != 1.0) {
-        double conversion_factor_i_j = unit_rule->Conversion_Factor_side_1_to_side_2;
-        if (unit_rule->Object_Type_side_1 == type_2) {
-          conversion_factor_i_j = 1.0 / conversion_factor_i_j;
-        }
-
-        double value_i = string_to_double(value);
-        double value_j = value_i * conversion_factor_i_j;
-        converted_value = double_to_string(value_j);
-      }
-    }
-    return converted_value;
-    */
     return value;
   }
 
-  std::vector<TRule*> Rules;
+  const std::vector<TRule*>& getRules() const
+  {
+    return TransformationRules.Rules;
+  }
+
+  TREXSTransmissionModelTransformationRules TransformationRules;
   std::vector<TIntermediateLayerObject*> IntermediateLayerObjects;
   std::vector<TIntermediateLayerRelation*> IntermediateLayerRelation;
 
@@ -320,7 +459,7 @@ static bool is_of_rexs_type(const rexsapi::TComponent& component, const std::str
                             const TREXSTransmissionModelIntermediateLayer* intermediate_layer)
 {
   bool of_rexs_type = false;
-  const std::vector<TRule*>& rules = intermediate_layer->Rules;
+  const std::vector<TRule*>& rules = intermediate_layer->getRules();
   std::string REXS_xml_component_type = component.getType();
   if (REXS_xml_component_type == rexs_type_string) {
     of_rexs_type = true;
@@ -355,24 +494,28 @@ public:
         if ((relationRule->Object_Type_1 == REXS_component || relationRule->Object_Type_1 == REXS_component_group) &&
             (relationRule->Direction == bidirectional || relationRule->Direction == REXS_to_Bearinx) &&
             rexs_version.matches(relationRule->From_REXS_Version, relationRule->To_REXS_Version)) {
-          m_RelationRules[relationRule->Type] = relationRule;
+          m_RelationRules.emplace_back(relationRule);
         }
       }
     }
   }
 
-  const TRelationRule* getRule(const rexsapi::TRelation& relation) const
+  std::vector<const TRelationRule*> getRules(const rexsapi::TRelation& relation) const
   {
-    auto it = m_RelationRules.find(rexsapi::toRealtionTypeString(relation.getType()));
-    if (it == m_RelationRules.end()) {
-      return nullptr;
-    }
+    std::vector<const TRelationRule*> rules;
 
-    return it->second;
+    std::for_each(m_RelationRules.begin(), m_RelationRules.end(),
+                  [&rules, type = rexsapi::toRealtionTypeString(relation.getType())](const auto& rule) {
+                    if (rule->Type == type) {
+                      rules.emplace_back(rule);
+                    }
+                  });
+
+    return rules;
   }
 
 private:
-  std::unordered_map<std::string, const TRelationRule*> m_RelationRules;
+  std::vector<const TRelationRule*> m_RelationRules;
 };
 
 class TComponentRules
@@ -412,7 +555,8 @@ public:
   {
     for (const auto* rule : rules) {
       if (const auto* attributeRule = dynamic_cast<const TAttributeRule*>(rule); attributeRule) {
-        if ((attributeRule->Type_Side_1 == REXS_component || attributeRule->Type_Side_1 == REXS_component_group) &&
+        if ((attributeRule->Object_Type_side_1 == REXS_component ||
+             attributeRule->Object_Type_side_1 == REXS_component_group) &&
             (attributeRule->Direction == bidirectional || attributeRule->Direction == REXS_to_Bearinx) &&
             rexs_version.matches(attributeRule->From_REXS_Version, attributeRule->To_REXS_Version)) {
           m_AttributeRules[attributeRule->Attribute_Name_side_1] = attributeRule;
@@ -511,6 +655,9 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
     case rexsapi::TValueType::ENUM_ARRAY:
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TEnumArrayType>());
       break;
+    case rexsapi::TValueType::STRING_ARRAY:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TStringArrayType>());
+      break;
     case rexsapi::TValueType::REFERENCE_COMPONENT:
       // TODO (lcf)
       break;
@@ -557,10 +704,11 @@ private:
     rexsapi::TLoaderResult result;
     auto model = loader.load(result, m_Registry);
 
+    /* only bail out on critical errors
     if (!result) {
       // add some message
       return false;
-    }
+    }*/
 
     return fillIntermediateLayer(data, *model);
   }
@@ -584,12 +732,13 @@ private:
 
   bool fillIntermediateLayerComponents(Data& data, const rexsapi::TComponents& components) const
   {
-    TComponentRules componentRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
-    TAttributeRules attributeRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
+    TComponentRules componentRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->getRules()};
+    TAttributeRules attributeRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->getRules()};
 
     for (const auto& component : components) {
       if (const auto* componentRule = componentRules.getRule(component); componentRule) {
         auto* new_layer_object = new TIntermediateLayerObject;
+        new_layer_object->Id = component.getInternalId();
         new_layer_object->LayerObjectType = componentRule->Name_Side_2;
         new_layer_object->Name = component.getName();
         data.IntermediateLayer->IntermediateLayerObjects.emplace_back(new_layer_object);
@@ -635,10 +784,10 @@ private:
   {
     bool success{true};
 
-    TRelationRules relationRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->Rules};
+    TRelationRules relationRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->getRules()};
 
     for (const auto& relation : relations) {
-      if (const auto* relationRule = relationRules.getRule(relation); relationRule) {
+      for (const auto* relationRule : relationRules.getRules(relation)) {
         const auto& references = relation.getReferences();
         ASSERT_OTHERWISE_THROW(references.size() <= 3, "noch nicht behandelt");
         std::unique_ptr<TIntermediateLayerRelation> new_relation{new TIntermediateLayerRelation};
@@ -674,13 +823,13 @@ private:
             ASSERT_OTHERWISE_THROW((order_idx >= 0) && (order_idx < 5), "Unexpected range!");
             new_relation->Comps[component_idx]->ObjectIndex = order_idx;
           }
-          if (relation_ok) {
-            // check, dass alles gesetzt wurde
-            for (uint32_t k = 0; k < references.size(); ++k) {
-              ASSERT_OTHERWISE_THROW(new_relation->Comps[k] != nullptr, "bug");
-            }
-            data.IntermediateLayer->IntermediateLayerRelation.push_back(new_relation.release());
+        }
+        if (relation_ok) {
+          // check, dass alles gesetzt wurde
+          for (uint32_t k = 0; k < references.size(); ++k) {
+            ASSERT_OTHERWISE_THROW(new_relation->Comps[k] != nullptr, "bug");
           }
+          data.IntermediateLayer->IntermediateLayerRelation.push_back(new_relation.release());
         }
       }
     }
@@ -708,7 +857,7 @@ private:
   {
     auto it =
       std::find_if(intermediateLayerObjects.begin(), intermediateLayerObjects.end(), [&component](const auto* object) {
-        return component.getName() == object->Name;
+        return component.getInternalId() == object->Id;
       });
     if (it == intermediateLayerObjects.end()) {
       // should never happen, maybe assert

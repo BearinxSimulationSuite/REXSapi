@@ -202,6 +202,13 @@ namespace rexsapi
            child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element).c_str());
          }
        },
+       [&attNode](rexsapi::StringArrayTag, const auto& a) -> void {
+         auto arrayNode = attNode.append_child("array");
+         for (const auto& element : a) {
+           auto child = arrayNode.append_child("c");
+           child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element).c_str());
+         }
+       },
        [&attNode](rexsapi::ReferenceComponentTag, const auto& n) -> void {
          attNode.append_child(pugi::node_pcdata).set_value(fmt::format("{}", n).c_str());
        },

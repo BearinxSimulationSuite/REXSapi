@@ -67,6 +67,9 @@ namespace
                                            [](rexsapi::EnumArrayTag, const auto& a) -> std::string {
                                              return "enum array " + std::to_string(a.size()) + " entries";
                                            },
+                                           [](rexsapi::StringArrayTag, const auto& a) -> std::string {
+                                             return "string array " + std::to_string(a.size()) + " entries";
+                                           },
                                            [](rexsapi::ReferenceComponentTag, const auto& n) -> std::string {
                                              std::stringstream stream;
                                              stream << "reference component " << n;
@@ -102,12 +105,30 @@ namespace rexsapi
       CHECK(rexsapi::typeFromString("floating_point_matrix") == rexsapi::TValueType::FLOATING_POINT_MATRIX);
       CHECK(rexsapi::typeFromString("integer_array") == rexsapi::TValueType::INTEGER_ARRAY);
       CHECK(rexsapi::typeFromString("enum_array") == rexsapi::TValueType::ENUM_ARRAY);
+      CHECK(rexsapi::typeFromString("string_array") == rexsapi::TValueType::STRING_ARRAY);
       CHECK(rexsapi::typeFromString("array_of_integer_arrays") == rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS);
+
+      CHECK_THROWS_WITH(rexsapi::typeFromString("not existing type"), "unknown value type 'not existing type'");
     }
 
-    SUBCASE("Type from string")
+    SUBCASE("Type to string")
     {
-      CHECK_THROWS_WITH(rexsapi::typeFromString("not existing type"), "unknown value type 'not existing type'");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::FLOATING_POINT) == "floating_point");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::BOOLEAN) == "boolean");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::INTEGER) == "integer");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::ENUM) == "enum");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::STRING) == "string");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::FILE_REFERENCE) == "file_reference");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::BOOLEAN_ARRAY) == "boolean_array");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::FLOATING_POINT_ARRAY) == "floating_point_array");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::INTEGER_ARRAY) == "integer_array");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::ENUM_ARRAY) == "enum_array");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::STRING_ARRAY) == "string_array");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::REFERENCE_COMPONENT) == "reference_component");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::FLOATING_POINT_MATRIX) == "floating_point_matrix");
+      CHECK(rexsapi::toTypeString(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS) == "array_of_integer_arrays");
+
+      CHECK_THROWS_WITH(rexsapi::toTypeString(static_cast<rexsapi::TValueType>(4711)), "unknown value type '103'");
     }
 
     SUBCASE("Type mapping")
@@ -130,6 +151,8 @@ namespace rexsapi
             "int array 5 entries");
       CHECK(::dispatch(rexsapi::TValueType::ENUM_ARRAY, rexsapi::TValue{rexsapi::TEnumArrayType{"1", "2", "3", "4"}}) ==
             "enum array 4 entries");
+      CHECK(::dispatch(rexsapi::TValueType::STRING_ARRAY, rexsapi::TValue{rexsapi::TStringArrayType{"a", "b", "c"}}) ==
+            "string array 3 entries");
       CHECK(::dispatch(rexsapi::TValueType::FLOATING_POINT_MATRIX,
                        rexsapi::TValue{rexsapi::TFloatMatrixType{
                          {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}}) == "float matrix 3 entries");
@@ -150,6 +173,7 @@ namespace rexsapi
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::BOOLEAN_ARRAY, rexsapi::TValue{}));
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::INTEGER_ARRAY, rexsapi::TValue{}));
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::ENUM_ARRAY, rexsapi::TValue{}));
+      CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::STRING_ARRAY, rexsapi::TValue{}));
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::REFERENCE_COMPONENT, rexsapi::TValue{}));
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::FLOATING_POINT_MATRIX, rexsapi::TValue{}));
       CHECK_THROWS(::dispatch_empty(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS, rexsapi::TValue{}));

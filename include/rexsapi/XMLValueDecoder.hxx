@@ -64,6 +64,9 @@ namespace rexsapi
   {
     class TStringDecoder : public TXMLDecoder
     {
+    public:
+      using Type = std::string;
+
     private:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const pugi::xml_node& node) const override
@@ -272,6 +275,7 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TBoolArrayDecoder>();
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
+    m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
@@ -308,7 +312,8 @@ namespace rexsapi
   inline std::pair<TValue, TValueType> TXMLValueDecoder::decodeUnknown(const pugi::xml_node& node) const
   {
     if (isArray(node)) {
-      return std::make_pair(TValue{}, TValueType::INTEGER_ARRAY);
+      auto [value, success] = m_Decoder.at(TValueType::STRING_ARRAY)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::STRING_ARRAY);
     }
     if (isMatrix(node)) {
       return std::make_pair(TValue{}, TValueType::FLOATING_POINT_MATRIX);

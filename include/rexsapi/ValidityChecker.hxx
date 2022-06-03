@@ -47,32 +47,32 @@ namespace rexsapi
 
     switch (attribute.getValueType()) {
       case TValueType::FLOATING_POINT:
-        return checkRange(interval, val.getValue<double>());
+        return checkRange(interval, val.getValue<TFloatType>());
       case TValueType::INTEGER:
-        return checkRange(interval, static_cast<double>(val.getValue<int64_t>()));
+        return checkRange(interval, static_cast<double>(val.getValue<TIntType>()));
       case TValueType::ENUM:
-        return attribute.getEnums()->check(val.getValue<std::string>());
+        return attribute.getEnums()->check(val.getValue<TEnumType>());
       case TValueType::ENUM_ARRAY: {
         const auto& enums = attribute.getEnums();
-        const auto& values = val.getValue<std::vector<std::string>>();
+        const auto& values = val.getValue<TEnumArrayType>();
         return std::all_of(values.begin(), values.end(), [&enums](const auto& enum_val) {
           return enums->check(enum_val);
         });
       }
       case TValueType::FLOATING_POINT_ARRAY: {
-        const auto& values = val.getValue<std::vector<double>>();
+        const auto& values = val.getValue<TFloatArrayType>();
         return std::all_of(values.begin(), values.end(), [&interval](const auto& d) {
           return checkRange(interval, d);
         });
       }
       case TValueType::INTEGER_ARRAY: {
-        const auto& values = val.getValue<std::vector<int64_t>>();
+        const auto& values = val.getValue<TIntArrayType>();
         return std::all_of(values.begin(), values.end(), [&interval](const auto& i) {
           return checkRange(interval, static_cast<double>(i));
         });
       }
       case TValueType::ARRAY_OF_INTEGER_ARRAYS: {
-        const auto& values = val.getValue<std::vector<std::vector<int64_t>>>();
+        const auto& values = val.getValue<TArrayOfIntArraysType>();
         return std::all_of(values.begin(), values.end(), [&interval](const auto& v) {
           return std::all_of(v.begin(), v.end(), [&interval](const auto& i) {
             return checkRange(interval, static_cast<double>(i));
@@ -80,7 +80,7 @@ namespace rexsapi
         });
       }
       case TValueType::FLOATING_POINT_MATRIX: {
-        const auto& values = val.getValue<rexsapi::TMatrix<double>>().m_Values;
+        const auto& values = val.getValue<TFloatMatrixType>().m_Values;
         return std::all_of(values.begin(), values.end(), [&interval](const auto& v) {
           return std::all_of(v.begin(), v.end(), [&interval](const auto& d) {
             return checkRange(interval, d);
@@ -91,6 +91,7 @@ namespace rexsapi
       case TValueType::STRING:
       case TValueType::FILE_REFERENCE:
       case TValueType::BOOLEAN_ARRAY:
+      case TValueType::STRING_ARRAY:
       case TValueType::REFERENCE_COMPONENT:
         return true;
     }

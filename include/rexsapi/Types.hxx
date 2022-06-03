@@ -34,6 +34,7 @@ namespace rexsapi
     FLOATING_POINT_ARRAY,
     BOOLEAN_ARRAY,
     INTEGER_ARRAY,
+    STRING_ARRAY,
     ENUM_ARRAY,
     REFERENCE_COMPONENT,
     FLOATING_POINT_MATRIX,
@@ -170,17 +171,20 @@ namespace rexsapi
     if (type == "floating_point_array") {
       return TValueType::FLOATING_POINT_ARRAY;
     }
-    if (type == "reference_component") {
-      return TValueType::REFERENCE_COMPONENT;
-    }
-    if (type == "floating_point_matrix") {
-      return TValueType::FLOATING_POINT_MATRIX;
-    }
     if (type == "integer_array") {
       return TValueType::INTEGER_ARRAY;
     }
     if (type == "enum_array") {
       return TValueType::ENUM_ARRAY;
+    }
+    if (type == "string_array") {
+      return TValueType::STRING_ARRAY;
+    }
+    if (type == "reference_component") {
+      return TValueType::REFERENCE_COMPONENT;
+    }
+    if (type == "floating_point_matrix") {
+      return TValueType::FLOATING_POINT_MATRIX;
     }
     if (type == "array_of_integer_arrays") {
       return TValueType::ARRAY_OF_INTEGER_ARRAYS;
@@ -212,6 +216,8 @@ namespace rexsapi
         return "integer_array";
       case TValueType::ENUM_ARRAY:
         return "enum_array";
+      case TValueType::STRING_ARRAY:
+        return "string_array";
       case TValueType::REFERENCE_COMPONENT:
         return "reference_component";
       case TValueType::FLOATING_POINT_MATRIX:
@@ -220,7 +226,7 @@ namespace rexsapi
         return "array_of_integer_arrays";
     }
 
-    throw TException{fmt::format("unknown value type '{}'", static_cast<uint8_t>(type))};
+    throw TException{fmt::format("unknown value type '{}'", static_cast<int64_t>(type))};
   }
 
   static inline std::string toRealtionTypeString(TRelationType type)

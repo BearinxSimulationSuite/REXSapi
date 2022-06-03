@@ -333,4 +333,21 @@ TEST_CASE("XML unknown value decoder test")
     CHECK(res.second == rexsapi::TValueType::STRING);
     CHECK(res.first == rexsapi::TValue{"test"});
   }
+
+  SUBCASE("Decode array")
+  {
+    auto node = doc.append_child("attribute");
+    auto arrayNode = node.append_child("array");
+    auto child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("1");
+    child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("2");
+    child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("3");
+
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::STRING_ARRAY);
+    auto val = res.first.getValue<rexsapi::TStringArrayType>();
+    CHECK(val.size() == 3);
+  }
 }

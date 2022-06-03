@@ -92,6 +92,7 @@ namespace rexsapi
     std::function<R(StringTag, const TStringType&)>, std::function<R(FileReferenceTag, const TFileReferenceType&)>,
     std::function<R(FloatArrayTag, const TFloatArrayType&)>, std::function<R(BoolArrayTag, const TBoolArrayType&)>,
     std::function<R(IntArrayTag, const TIntArrayType&)>, std::function<R(EnumArrayTag, const TEnumArrayType&)>,
+    std::function<R(StringArrayTag, const TStringArrayType&)>,
     std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>,
     std::function<R(FloatMatrixTag, const TFloatMatrixType&)>,
     std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
@@ -216,6 +217,13 @@ namespace rexsapi
           auto c = std::get<std::function<R(EnumArrayTag, const TEnumArrayType&)>>(funcs);
           if (c) {
             return c(EnumArrayTag(), value.getValue<TEnumArrayType>());
+          }
+          break;
+        }
+        case TValueType::STRING_ARRAY: {
+          auto c = std::get<std::function<R(StringArrayTag, const TStringArrayType&)>>(funcs);
+          if (c) {
+            return c(StringArrayTag(), value.getValue<TStringArrayType>());
           }
           break;
         }
