@@ -14,7 +14,9 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   auto casingId = componentBuilder.addComponent("gear_casing").name("Gehäuse").id();
   componentBuilder.addAttribute("temperature_lubricant").unit("C").value(73.2);
   componentBuilder.addAttribute("type_of_gear_casing_construction_vdi_2736_2014").value("closed");
-  componentBuilder.addCustomAttribute("custom_load_duration_fraction", rexsapi::TValueType::FLOATING_POINT).unit("%").value(30.0);
+  componentBuilder.addCustomAttribute("custom_load_duration_fraction", rexsapi::TValueType::FLOATING_POINT)
+    .unit("%")
+    .value(30.0);
 
   auto lubricantId = componentBuilder.addComponent("lubricant").name("S2/220").id();
   componentBuilder.addAttribute("density_at_15_degree_celsius").unit("kg / dm^3").value(1.02);
@@ -39,9 +41,9 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("u_coordinate_on_shaft_inner_side").unit("mm").value(70.0);
   modelBuilder.addAttribute("u_coordinate_on_shaft_outer_side").unit("mm").value(70.0);
   modelBuilder.addAttribute("w_axis_vector").unit("mm").value(rexsapi::TFloatArrayType{0.0, 0.0, 1.0});
-  modelBuilder.addAttribute("axial_stiffness").unit("N / mm").value(1.0E20);
-  modelBuilder.addAttribute("radial_stiffness").unit("N / mm").value(1.0E20);
-  modelBuilder.addAttribute("bending_stiffness").unit("N / rad").value(0.0);
+  modelBuilder.addAttribute("axial_stiffness").unit("N / m").value(1.0E20);
+  modelBuilder.addAttribute("radial_stiffness").unit("N / m").value(1.0E20);
+  modelBuilder.addAttribute("bending_stiffness").unit("N mm / rad").value(0.0);
 
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
     .addRef(rexsapi::TRelationRole::ORIGIN, casingId)

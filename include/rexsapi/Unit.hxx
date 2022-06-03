@@ -26,6 +26,8 @@ namespace rexsapi
   class TUnit
   {
   public:
+    TUnit() = default;
+
     explicit TUnit(const database::TUnit& unit)
     : m_Unit{unit}
     {

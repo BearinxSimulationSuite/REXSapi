@@ -26,34 +26,34 @@ TEST_CASE("Component id test")
 {
   SUBCASE("Int id")
   {
-    rexsapi::ComponentId id{42};
+    rexsapi::TComponentId id{42};
     CHECK(id.asString() == "42");
-    CHECK(id == rexsapi::ComponentId{42});
-    CHECK_FALSE(id == rexsapi::ComponentId{43});
-    CHECK(id < rexsapi::ComponentId{43});
-    CHECK_FALSE(rexsapi::ComponentId{43} < id);
-    CHECK_FALSE(id < rexsapi::ComponentId{42});
-    CHECK(id.hash() == rexsapi::ComponentId{42}.hash());
-    CHECK_FALSE(id.hash() == rexsapi::ComponentId{40}.hash());
+    CHECK(id == rexsapi::TComponentId{42});
+    CHECK_FALSE(id == rexsapi::TComponentId{43});
+    CHECK(id < rexsapi::TComponentId{43});
+    CHECK_FALSE(rexsapi::TComponentId{43} < id);
+    CHECK_FALSE(id < rexsapi::TComponentId{42});
+    CHECK(id.hash() == rexsapi::TComponentId{42}.hash());
+    CHECK_FALSE(id.hash() == rexsapi::TComponentId{40}.hash());
   }
 
   SUBCASE("String id")
   {
-    rexsapi::ComponentId id{"puschel"};
+    rexsapi::TComponentId id{"puschel"};
     CHECK(id.asString() == "puschel");
-    CHECK(id == rexsapi::ComponentId{"puschel"});
-    CHECK_FALSE(id == rexsapi::ComponentId{"hutzli"});
-    CHECK(id < rexsapi::ComponentId{"putzli"});
-    CHECK_FALSE(rexsapi::ComponentId{"putzli"} < id);
-    CHECK_FALSE(id < rexsapi::ComponentId{"puschel"});
-    CHECK(id.hash() == rexsapi::ComponentId{"puschel"}.hash());
-    CHECK_FALSE(id.hash() == rexsapi::ComponentId{"putzli"}.hash());
+    CHECK(id == rexsapi::TComponentId{"puschel"});
+    CHECK_FALSE(id == rexsapi::TComponentId{"hutzli"});
+    CHECK(id < rexsapi::TComponentId{"putzli"});
+    CHECK_FALSE(rexsapi::TComponentId{"putzli"} < id);
+    CHECK_FALSE(id < rexsapi::TComponentId{"puschel"});
+    CHECK(id.hash() == rexsapi::TComponentId{"puschel"}.hash());
+    CHECK_FALSE(id.hash() == rexsapi::TComponentId{"putzli"}.hash());
   }
 
   SUBCASE("String and int id")
   {
-    rexsapi::ComponentId nid{815};
-    rexsapi::ComponentId sid{"815"};
+    rexsapi::TComponentId nid{815};
+    rexsapi::TComponentId sid{"815"};
     CHECK_FALSE(nid == sid);
     CHECK(nid < sid);
     CHECK_FALSE(sid < nid);
@@ -74,7 +74,7 @@ TEST_CASE("Component builder test")
     builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
     auto casingId =
       builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0).id();
-    CHECK(casingId == rexsapi::ComponentId{"my-id"});
+    CHECK(casingId == rexsapi::TComponentId{"my-id"});
     auto components = builder.build();
     REQUIRE(components.size() == 2);
     CHECK(components[0].getName() == "Zylinder");
@@ -109,6 +109,7 @@ TEST_CASE("Model builder test")
     auto id =
       builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11).id();
     builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
+    builder.addCustomAttribute("custom_puschel", rexsapi::TValueType::STRING).value("hutzli");
     builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0);
     builder.addRelation(rexsapi::TRelationType::ASSEMBLY).addRef(rexsapi::TRelationRole::GEAR, id);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id").order(1);
@@ -118,7 +119,11 @@ TEST_CASE("Model builder test")
     CHECK(model.getInfo().getApplicationVersion() == "1.35");
     CHECK(*model.getInfo().getApplicationLanguage() == "en");
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
-    CHECK(model.getComponents().size() == 2);
+    REQUIRE(model.getComponents().size() == 2);
+    REQUIRE(model.getComponents()[0].getAttributes().size() == 3);
+    CHECK(model.getComponents()[0].getAttributes()[0].getAttributeId() == "conversion_factor");
+    CHECK(model.getComponents()[0].getAttributes()[1].getAttributeId() == "display_color");
+    CHECK(model.getComponents()[0].getAttributes()[2].getAttributeId() == "custom_puschel");
     REQUIRE(model.getRelations().size() == 1);
     CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
     CHECK(model.getRelations()[0].getOrder().has_value());
@@ -130,6 +135,7 @@ TEST_CASE("Model builder test")
     auto id =
       builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11).id();
     builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
+    builder.addCustomAttribute("custom_puschel", rexsapi::TValueType::STRING).unit("m").value("hutzli");
     builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0);
     builder.addRelation(rexsapi::TRelationType::ASSEMBLY).addRef(rexsapi::TRelationRole::GEAR, id);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id").order(1);
@@ -141,7 +147,11 @@ TEST_CASE("Model builder test")
     CHECK(model.getInfo().getApplicationVersion() == "1.35");
     CHECK_FALSE(model.getInfo().getApplicationLanguage());
     CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
-    CHECK(model.getComponents().size() == 2);
+    REQUIRE(model.getComponents().size() == 2);
+    REQUIRE(model.getComponents()[0].getAttributes().size() == 3);
+    CHECK(model.getComponents()[0].getAttributes()[0].getAttributeId() == "conversion_factor");
+    CHECK(model.getComponents()[0].getAttributes()[1].getAttributeId() == "display_color");
+    CHECK(model.getComponents()[0].getAttributes()[2].getAttributeId() == "custom_puschel");
     REQUIRE(model.getRelations().size() == 1);
     CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
     CHECK(model.getRelations()[0].getOrder().has_value());
