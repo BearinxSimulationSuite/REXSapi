@@ -14,6 +14,7 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   auto casingId = componentBuilder.addComponent("gear_casing").name("Gehäuse").id();
   componentBuilder.addAttribute("temperature_lubricant").unit("C").value(73.2);
   componentBuilder.addAttribute("type_of_gear_casing_construction_vdi_2736_2014").value("closed");
+  componentBuilder.addCustomAttribute("custom_load_duration_fraction", rexsapi::TValueType::FLOATING_POINT).unit("%").value(30.0);
 
   auto lubricantId = componentBuilder.addComponent("lubricant").name("S2/220").id();
   componentBuilder.addAttribute("density_at_15_degree_celsius").unit("kg / dm^3").value(1.02);

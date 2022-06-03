@@ -77,6 +77,8 @@ namespace rexsapi
   {
     struct AttributeEntry {
       const database::TAttribute* m_Attribute{nullptr};
+      std::string m_AttributeId{};
+      std::optional<TValueType> m_ValueType{};
       const database::TUnit* m_Unit{nullptr};
       TValue m_Value{};
     };
@@ -105,6 +107,8 @@ namespace rexsapi
     TComponentBuilder& name(std::string name) &;
 
     TComponentBuilder& addAttribute(const std::string& attribute) &;
+
+    TComponentBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
 
     TComponentBuilder& unit(const std::string& unit) &;
 
@@ -169,6 +173,8 @@ namespace rexsapi
 
     TLoadCaseBuilder& addAttribute(const std::string& attribute) &;
 
+    TLoadCaseBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
+
     TLoadCaseBuilder& unit(const std::string& unit) &;
 
     template<typename T>
@@ -227,6 +233,8 @@ namespace rexsapi
     TModelBuilder& name(std::string name) &;
 
     TModelBuilder& addAttribute(const std::string& attribute) &;
+
+    TModelBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
 
     TModelBuilder& unit(const std::string& unit) &;
 
@@ -321,6 +329,13 @@ namespace rexsapi
     return *this;
   }
 
+  inline TComponentBuilder& TComponentBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
+  {
+    checkComponent();
+    m_Components.back().m_Attributes.emplace_back(detail::AttributeEntry{nullptr, attribute, type});
+    return *this;
+  }
+
   inline TComponentBuilder& TComponentBuilder::unit(const std::string& unit) &
   {
     checkAttribute();
@@ -354,8 +369,13 @@ namespace rexsapi
       for (const auto& attribute : component.m_Attributes) {
         // TODO (lcf): check TUnit
         // TODO (lcf): check value, may not be set
-        attributes.emplace_back(
-          TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
+        if (attribute.m_Attribute != nullptr) {
+          attributes.emplace_back(
+            TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
+        } else {
+          attributes.emplace_back(
+            TAttribute{attribute.m_AttributeId, TUnit{*attribute.m_Unit}, *attribute.m_ValueType, attribute.m_Value});
+        }
       }
       components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
                                          component.m_Name, std::move(attributes)});
@@ -410,6 +430,13 @@ namespace rexsapi
     return *this;
   }
 
+  inline TLoadCaseBuilder& TLoadCaseBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
+  {
+    checkComponent();
+    m_Components.back().m_Attributes.emplace_back(detail::AttributeEntry{nullptr, attribute, type});
+    return *this;
+  }
+
   inline TLoadCaseBuilder& TLoadCaseBuilder::unit(const std::string& unit) &
   {
     checkAttribute();
@@ -434,8 +461,13 @@ namespace rexsapi
       TAttributes loadAttributes;
 
       for (const auto& attribute : component.m_Attributes) {
-        loadAttributes.emplace_back(
-          TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
+        if (attribute.m_Attribute != nullptr) {
+          loadAttributes.emplace_back(
+            TAttribute{*attribute.m_Attribute, TUnit{attribute.m_Attribute->getUnit()}, attribute.m_Value});
+        } else {
+          loadAttributes.emplace_back(
+            TAttribute{attribute.m_AttributeId, TUnit{*attribute.m_Unit}, *attribute.m_ValueType, attribute.m_Value});
+        }
       }
       loadComponents.emplace_back(
         TLoadComponent{componentBuilder.getComponentForId(components, component.m_Id), std::move(loadAttributes)});
@@ -500,6 +532,12 @@ namespace rexsapi
   inline TModelBuilder& TModelBuilder::addAttribute(const std::string& attribute) &
   {
     m_ComponentBuilder.addAttribute(attribute);
+    return *this;
+  }
+
+  inline TModelBuilder& TModelBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
+  {
+    m_ComponentBuilder.addCustomAttribute(attribute, type);
     return *this;
   }
 

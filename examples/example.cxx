@@ -64,8 +64,8 @@ public:
     std::regex_search(from_rexs_version, s_match_from, reg_expr);
     std::regex_search(to_rexs_version, s_match_to, reg_expr);
     ASSERT_OTHERWISE_THROW((s_match_from.size() == 3) && (s_match_to.size() == 3), "bug");
-    From_REXS_Version = TREXSVersionNumber((uint)std::stoi(s_match_from[1]), (uint)std::stoi(s_match_from[2]));
-    To_REXS_Version = TREXSVersionNumber((uint)std::stoi(s_match_to[1]), (uint)std::stoi(s_match_to[2]));
+    From_REXS_Version = TREXSVersionNumber((uint32_t)std::stoi(s_match_from[1]), (uint32_t)std::stoi(s_match_from[2]));
+    To_REXS_Version = TREXSVersionNumber((uint32_t)std::stoi(s_match_to[1]), (uint32_t)std::stoi(s_match_to[2]));
   }
 
   TREXSVersionNumber From_REXS_Version;
