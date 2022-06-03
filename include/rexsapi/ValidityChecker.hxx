@@ -92,6 +92,7 @@ namespace rexsapi
       case TValueType::FILE_REFERENCE:
       case TValueType::BOOLEAN_ARRAY:
       case TValueType::STRING_ARRAY:
+      case TValueType::STRING_MATRIX:
       case TValueType::REFERENCE_COMPONENT:
         return true;
     }

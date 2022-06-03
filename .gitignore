@@ -3,3 +3,4 @@ build
 .vs
 linux-build
 out
+build_xcode

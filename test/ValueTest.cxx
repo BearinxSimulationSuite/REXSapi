@@ -127,6 +127,18 @@ TEST_CASE("Value test")
     CHECK(val.getValue<rexsapi::TFloatMatrixType>().m_Values[2].size() == 3);
   }
 
+  SUBCASE("matrix of string")
+  {
+    rexsapi::TMatrix<std::string> matrix{{{"a", "b", "c"}, {"d", "e", "f"}, {"g", "h", "i"}}};
+    rexsapi::TValue val{matrix};
+    CHECK_FALSE(val.isEmpty());
+    CHECK_THROWS(val.asString());
+    REQUIRE(val.getValue<rexsapi::TStringMatrixType>().m_Values.size() == 3);
+    CHECK(val.getValue<rexsapi::TStringMatrixType>().m_Values[0].size() == 3);
+    CHECK(val.getValue<rexsapi::TStringMatrixType>().m_Values[1].size() == 3);
+    CHECK(val.getValue<rexsapi::TStringMatrixType>().m_Values[2].size() == 3);
+  }
+
   SUBCASE("vector of vectors")
   {
     rexsapi::TArrayOfIntArraysType ints{{1, 2, 3}, {4, 5}, {6}};

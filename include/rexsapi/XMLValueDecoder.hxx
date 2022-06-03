@@ -277,6 +277,7 @@ namespace rexsapi
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
     m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::STRING_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
     m_Decoder[TValueType::ARRAY_OF_INTEGER_ARRAYS] =
@@ -316,10 +317,12 @@ namespace rexsapi
       return std::make_pair(std::move(value), TValueType::STRING_ARRAY);
     }
     if (isMatrix(node)) {
-      return std::make_pair(TValue{}, TValueType::FLOATING_POINT_MATRIX);
+      auto [value, success] = m_Decoder.at(TValueType::STRING_MATRIX)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::STRING_MATRIX);
     }
     if (isArrayOfArrays(node)) {
-      return std::make_pair(TValue{}, TValueType::ARRAY_OF_INTEGER_ARRAYS);
+      auto [value, success] = m_Decoder.at(TValueType::ARRAY_OF_INTEGER_ARRAYS)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::ARRAY_OF_INTEGER_ARRAYS);
     }
 
     return std::make_pair(TValue{node.child_value()}, TValueType::STRING);

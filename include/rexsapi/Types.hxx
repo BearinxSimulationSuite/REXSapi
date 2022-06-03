@@ -38,6 +38,7 @@ namespace rexsapi
     ENUM_ARRAY,
     REFERENCE_COMPONENT,
     FLOATING_POINT_MATRIX,
+    STRING_MATRIX,
     ARRAY_OF_INTEGER_ARRAYS
   };
 
@@ -186,6 +187,9 @@ namespace rexsapi
     if (type == "floating_point_matrix") {
       return TValueType::FLOATING_POINT_MATRIX;
     }
+    if (type == "string_matrix") {
+      return TValueType::STRING_MATRIX;
+    }
     if (type == "array_of_integer_arrays") {
       return TValueType::ARRAY_OF_INTEGER_ARRAYS;
     }
@@ -222,6 +226,8 @@ namespace rexsapi
         return "reference_component";
       case TValueType::FLOATING_POINT_MATRIX:
         return "floating_point_matrix";
+      case TValueType::STRING_MATRIX:
+        return "string_matrix";
       case TValueType::ARRAY_OF_INTEGER_ARRAYS:
         return "array_of_integer_arrays";
     }

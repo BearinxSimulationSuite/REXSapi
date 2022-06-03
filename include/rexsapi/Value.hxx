@@ -95,6 +95,7 @@ namespace rexsapi
     std::function<R(StringArrayTag, const TStringArrayType&)>,
     std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>,
     std::function<R(FloatMatrixTag, const TFloatMatrixType&)>,
+    std::function<R(StringMatrixTag, const TStringMatrixType&)>,
     std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
 
   template<typename R>
@@ -140,6 +141,9 @@ namespace rexsapi
                                  throw TException{"cannot convert vector to string"};
                                },
                                [](const TMatrix<double>&) -> std::string {
+                                 throw TException{"cannot convert matrix to string"};
+                               },
+                               [](const TMatrix<std::string>&) -> std::string {
                                  throw TException{"cannot convert matrix to string"};
                                }},
                       m_Value);
@@ -238,6 +242,13 @@ namespace rexsapi
           auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
           if (c) {
             return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+          }
+          break;
+        }
+        case TValueType::STRING_MATRIX: {
+          auto c = std::get<std::function<R(StringMatrixTag, const TStringMatrixType&)>>(funcs);
+          if (c) {
+            return c(StringMatrixTag(), value.getValue<TStringMatrixType>());
           }
           break;
         }

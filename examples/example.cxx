@@ -663,6 +663,10 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       break;
     case rexsapi::TValueType::FLOATING_POINT_MATRIX:
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TFloatMatrixType>());
+      break;
+    case rexsapi::TValueType::STRING_MATRIX:
+      setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TStringMatrixType>());
+      break;
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
       break;
   }

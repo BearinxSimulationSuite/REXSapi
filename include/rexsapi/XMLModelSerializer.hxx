@@ -222,6 +222,16 @@ namespace rexsapi
            }
          }
        },
+       [&attNode](rexsapi::StringMatrixTag, const auto& m) -> void {
+         auto matrixNode = attNode.append_child("matrix");
+         for (const auto& row : m.m_Values) {
+           auto rowNode = matrixNode.append_child("r");
+           for (const auto& column : row) {
+             auto child = rowNode.append_child("c");
+             child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", column).c_str());
+           }
+         }
+       },
        [&attNode](rexsapi::ArrayOfIntArraysTag, const auto& a) -> void {
          auto arraysNode = attNode.append_child("array_of_arrays");
          for (const auto& array : a) {
