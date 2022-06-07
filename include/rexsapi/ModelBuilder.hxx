@@ -340,7 +340,7 @@ namespace rexsapi
   {
     checkAttribute();
     // TODO (lcf): check unit
-    if (m_Components.back().m_Attributes.back().m_Attribute) {
+    if (m_Components.back().m_Attributes.back().m_Attribute != nullptr) {
       m_Components.back().m_Attributes.back().m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
     } else {
       m_Components.back().m_Attributes.back().m_Unit = TUnit{unit};
@@ -454,7 +454,7 @@ namespace rexsapi
   inline TLoadCaseBuilder& TLoadCaseBuilder::unit(const std::string& unit) &
   {
     checkAttribute();
-    if (m_Components.back().m_Attributes.back().m_Attribute) {
+    if (m_Components.back().m_Attributes.back().m_Attribute != nullptr) {
       m_Components.back().m_Attributes.back().m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
     } else {
       m_Components.back().m_Attributes.back().m_Unit = TUnit{unit};
