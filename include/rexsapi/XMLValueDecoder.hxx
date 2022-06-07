@@ -184,7 +184,7 @@ namespace rexsapi
           auto res = decoder.decode(enumValue, arrayNode.node());
           if (res.second) {
             const TValue& val = res.first;
-            array.emplace_back(std::move(val.getValue<bool>()));
+            array.emplace_back(val.getValue<bool>());
           }
           result &= res.second;
         }

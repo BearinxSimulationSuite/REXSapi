@@ -46,7 +46,7 @@ namespace rexsapi::database
   {
   public:
     TModel(TRexsVersion version, std::string language, std::string date, TStatus status)
-    : m_Version{version}
+    : m_Version{std::move(version)}
     , m_Language{std::move(language)}
     , m_Date{std::move(date)}
     , m_Status{status}

@@ -46,7 +46,7 @@ namespace rexsapi
   {
     if (auto att = node.node().attribute(attribute); !att.empty()) {
       std::string val{att.value()};
-      return val == "true" ? true : false;
+      return val == "true";
     }
     return def;
   }

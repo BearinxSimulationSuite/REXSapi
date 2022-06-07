@@ -60,8 +60,8 @@ namespace rexsapi
     }
 
   private:
-    std::string m_Unit;
-    bool m_IsCustomUnit;
+    std::string m_Unit{};
+    bool m_IsCustomUnit{true};
   };
 }
 

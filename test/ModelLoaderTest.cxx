@@ -23,6 +23,59 @@
 #include <doctest.h>
 
 
+namespace
+{
+  class ComponentFinder
+  {
+  public:
+    explicit ComponentFinder(const rexsapi::TModel& model)
+    : m_Model{model}
+    {
+    }
+
+    const rexsapi::TComponent& findComponent(const std::string& name) const
+    {
+      auto it =
+        std::find_if(m_Model.getComponents().begin(), m_Model.getComponents().end(), [&name](const auto& component) {
+          return component.getName() == name;
+        });
+      if (it == m_Model.getComponents().end()) {
+        throw rexsapi::TException{fmt::format("no component with name {} found", name)};
+      }
+      return *it;
+    }
+
+  private:
+    const rexsapi::TModel& m_Model;
+  };
+
+  class AttributeFinder
+  {
+  public:
+    explicit AttributeFinder(const rexsapi::TComponent& component)
+    : m_Component{component}
+    {
+    }
+
+    rexsapi::TAttributes findCustomAttributes() const
+    {
+      rexsapi::TAttributes attributes;
+
+      std::for_each(m_Component.getAttributes().begin(), m_Component.getAttributes().end(),
+                    [&attributes](const auto& attribute) {
+                      if (attribute.isCustomAttribute()) {
+                        attributes.emplace_back(attribute);
+                      }
+                    });
+
+      return attributes;
+    }
+
+  private:
+    const rexsapi::TComponent& m_Component;
+  };
+}
+
 TEST_CASE("Model loader test")
 {
   const auto registry = createModelRegistry();
@@ -174,5 +227,9 @@ TEST_CASE("Model loader test")
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '58'");
     CHECK(result.getErrors()[4].m_Message ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '59'");
+
+    const auto& attributes =
+      AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
+    CHECK(attributes.size() == 2);
   }
 }
