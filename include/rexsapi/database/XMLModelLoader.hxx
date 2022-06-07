@@ -62,12 +62,10 @@ namespace rexsapi::database
         return;
       }
 
-      {
-        std::vector<std::string> errors;
-        if (!rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
-          // TODO (lcf): errors should be added to the exception, or even better, to the result
-          throw TException{"cannot validate db model file"};
-        }
+      std::vector<std::string> errors;
+      if (!rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
+        // TODO (lcf): errors should be added to the exception, or even better, to the result
+        throw TException{"cannot validate db model file"};
       }
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
@@ -96,17 +94,16 @@ namespace rexsapi::database
         std::optional<TInterval> interval = readInterval(node);
 
         std::optional<TEnumValues> enumValues;
-        if (valueType == TValueType::ENUM || valueType == TValueType::ENUM_ARRAY) {
-          if (const auto& enums = node.node().first_child();
-              !enums.empty() && std::strncmp(enums.name(), "enumValues", ::strlen("enumValues")) == 0) {
-            std::vector<TEnumValue> values;
-            for (const auto& value : enums.children()) {
-              auto enumValue = getStringAttribute(value, "value");
-              auto enumName = getStringAttribute(value, "name");
-              values.emplace_back(TEnumValue{enumValue, enumName});
-            }
-            enumValues = TEnumValues{std::move(values)};
+        if (const auto& enums = node.node().first_child();
+            (valueType == TValueType::ENUM || valueType == TValueType::ENUM_ARRAY) && !enums.empty() &&
+            std::strncmp(enums.name(), "enumValues", ::strlen("enumValues")) == 0) {
+          std::vector<TEnumValue> values;
+          for (const auto& value : enums.children()) {
+            auto enumValue = getStringAttribute(value, "value");
+            auto enumName = getStringAttribute(value, "name");
+            values.emplace_back(TEnumValue{enumValue, enumName});
           }
+          enumValues = TEnumValues{std::move(values)};
         }
 
         model.addAttribute(
@@ -156,7 +153,6 @@ namespace rexsapi::database
 
     return interval;
   }
-
 }
 
 #endif

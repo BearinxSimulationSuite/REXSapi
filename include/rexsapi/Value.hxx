@@ -92,8 +92,10 @@ namespace rexsapi
     std::function<R(StringTag, const TStringType&)>, std::function<R(FileReferenceTag, const TFileReferenceType&)>,
     std::function<R(FloatArrayTag, const TFloatArrayType&)>, std::function<R(BoolArrayTag, const TBoolArrayType&)>,
     std::function<R(IntArrayTag, const TIntArrayType&)>, std::function<R(EnumArrayTag, const TEnumArrayType&)>,
+    std::function<R(StringArrayTag, const TStringArrayType&)>,
     std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>,
     std::function<R(FloatMatrixTag, const TFloatMatrixType&)>,
+    std::function<R(StringMatrixTag, const TStringMatrixType&)>,
     std::function<R(ArrayOfIntArraysTag, const TArrayOfIntArraysType&)>>;
 
   template<typename R>
@@ -139,6 +141,9 @@ namespace rexsapi
                                  throw TException{"cannot convert vector to string"};
                                },
                                [](const TMatrix<double>&) -> std::string {
+                                 throw TException{"cannot convert matrix to string"};
+                               },
+                               [](const TMatrix<std::string>&) -> std::string {
                                  throw TException{"cannot convert matrix to string"};
                                }},
                       m_Value);
@@ -219,6 +224,13 @@ namespace rexsapi
           }
           break;
         }
+        case TValueType::STRING_ARRAY: {
+          auto c = std::get<std::function<R(StringArrayTag, const TStringArrayType&)>>(funcs);
+          if (c) {
+            return c(StringArrayTag(), value.getValue<TStringArrayType>());
+          }
+          break;
+        }
         case TValueType::REFERENCE_COMPONENT: {
           auto c = std::get<std::function<R(ReferenceComponentTag, const TReferenceComponentType&)>>(funcs);
           if (c) {
@@ -230,6 +242,13 @@ namespace rexsapi
           auto c = std::get<std::function<R(FloatMatrixTag, const TFloatMatrixType&)>>(funcs);
           if (c) {
             return c(FloatMatrixTag(), value.getValue<TFloatMatrixType>());
+          }
+          break;
+        }
+        case TValueType::STRING_MATRIX: {
+          auto c = std::get<std::function<R(StringMatrixTag, const TStringMatrixType&)>>(funcs);
+          if (c) {
+            return c(StringMatrixTag(), value.getValue<TStringMatrixType>());
           }
           break;
         }

@@ -202,6 +202,13 @@ namespace rexsapi
            child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element).c_str());
          }
        },
+       [&attNode](rexsapi::StringArrayTag, const auto& a) -> void {
+         auto arrayNode = attNode.append_child("array");
+         for (const auto& element : a) {
+           auto child = arrayNode.append_child("c");
+           child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element).c_str());
+         }
+       },
        [&attNode](rexsapi::ReferenceComponentTag, const auto& n) -> void {
          attNode.append_child(pugi::node_pcdata).set_value(fmt::format("{}", n).c_str());
        },
@@ -212,6 +219,16 @@ namespace rexsapi
            for (const auto& column : row) {
              auto child = rowNode.append_child("c");
              child.append_child(pugi::node_pcdata).set_value(format(column).c_str());
+           }
+         }
+       },
+       [&attNode](rexsapi::StringMatrixTag, const auto& m) -> void {
+         auto matrixNode = attNode.append_child("matrix");
+         for (const auto& row : m.m_Values) {
+           auto rowNode = matrixNode.append_child("r");
+           for (const auto& column : row) {
+             auto child = rowNode.append_child("c");
+             child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", column).c_str());
            }
          }
        },

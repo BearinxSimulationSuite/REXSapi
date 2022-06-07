@@ -54,6 +54,8 @@ namespace rexsapi
                                                  const std::optional<const database::TEnumValues>& enumValue,
                                                  const pugi::xml_node& node) const;
 
+    [[nodiscard]] std::pair<TValue, TValueType> decodeUnknown(const pugi::xml_node& node) const;
+
   private:
     std::unordered_map<TValueType, std::unique_ptr<TXMLDecoder>> m_Decoder;
   };
@@ -62,6 +64,9 @@ namespace rexsapi
   {
     class TStringDecoder : public TXMLDecoder
     {
+    public:
+      using Type = std::string;
+
     private:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const pugi::xml_node& node) const override
@@ -179,7 +184,7 @@ namespace rexsapi
           auto res = decoder.decode(enumValue, arrayNode.node());
           if (res.second) {
             const TValue& val = res.first;
-            array.emplace_back(std::move(val.getValue<bool>()));
+            array.emplace_back(val.getValue<bool>());
           }
           result &= res.second;
         }
@@ -270,7 +275,9 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TBoolArrayDecoder>();
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
+    m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::STRING_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
     m_Decoder[TValueType::ARRAY_OF_INTEGER_ARRAYS] =
@@ -286,6 +293,39 @@ namespace rexsapi
     }
 
     return m_Decoder.at(type)->decode(enumValue, node);
+  }
+
+  inline static bool isArray(const pugi::xml_node& node)
+  {
+    return !node.select_nodes("array/c").empty();
+  }
+
+  inline static bool isMatrix(const pugi::xml_node& node)
+  {
+    return !node.select_nodes("matrix/r").empty();
+  }
+
+  inline static bool isArrayOfArrays(const pugi::xml_node& node)
+  {
+    return !node.select_nodes("array_of_arrays/array").empty();
+  }
+
+  inline std::pair<TValue, TValueType> TXMLValueDecoder::decodeUnknown(const pugi::xml_node& node) const
+  {
+    if (isArray(node)) {
+      auto [value, success] = m_Decoder.at(TValueType::STRING_ARRAY)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::STRING_ARRAY);
+    }
+    if (isMatrix(node)) {
+      auto [value, success] = m_Decoder.at(TValueType::STRING_MATRIX)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::STRING_MATRIX);
+    }
+    if (isArrayOfArrays(node)) {
+      auto [value, success] = m_Decoder.at(TValueType::ARRAY_OF_INTEGER_ARRAYS)->decode({}, node);
+      return std::make_pair(std::move(value), TValueType::ARRAY_OF_INTEGER_ARRAYS);
+    }
+
+    return std::make_pair(TValue{node.child_value()}, TValueType::STRING);
   }
 }
 

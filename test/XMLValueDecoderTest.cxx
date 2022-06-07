@@ -319,3 +319,80 @@ TEST_CASE("XML value decoder error test")
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix")).second);
   }
 }
+
+TEST_CASE("XML unknown value decoder test")
+{
+  rexsapi::TXMLValueDecoder decoder;
+  pugi::xml_document doc;
+
+  SUBCASE("Decode string")
+  {
+    auto node = doc.append_child("attribute");
+    node.append_child(pugi::node_pcdata).set_value("test");
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::STRING);
+    CHECK(res.first == rexsapi::TValue{"test"});
+  }
+
+  SUBCASE("Decode array")
+  {
+    auto node = doc.append_child("attribute");
+    auto arrayNode = node.append_child("array");
+    auto child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("1");
+    child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("2");
+    child = arrayNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("3");
+
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::STRING_ARRAY);
+    auto val = res.first.getValue<rexsapi::TStringArrayType>();
+    CHECK(val.size() == 3);
+  }
+
+  SUBCASE("Decode matrix")
+  {
+    auto node = doc.append_child("attribute");
+    auto matrixNode = node.append_child("matrix");
+    auto rowNode = matrixNode.append_child("r");
+    auto child = rowNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("a");
+    child = rowNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("b");
+    rowNode = matrixNode.append_child("r");
+    child = rowNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("c");
+    child = rowNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("d");
+
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::STRING_MATRIX);
+    auto val = res.first.getValue<rexsapi::TStringMatrixType>();
+    CHECK(val.m_Values.size() == 2);
+    CHECK(val.validate());
+  }
+
+  SUBCASE("Decode array of integer arrays")
+  {
+    auto node = doc.append_child("attribute");
+    auto arraysNode = node.append_child("array_of_arrays");
+    auto aNode = arraysNode.append_child("array");
+    auto child = aNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("1");
+    aNode = arraysNode.append_child("array");
+    child = aNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("1");
+    child.append_child(pugi::node_pcdata).set_value("2");
+    aNode = arraysNode.append_child("array");
+    child = aNode.append_child("c");
+    child.append_child(pugi::node_pcdata).set_value("1");
+    child.append_child(pugi::node_pcdata).set_value("2");
+    child.append_child(pugi::node_pcdata).set_value("3");
+
+    auto res = decoder.decodeUnknown(node);
+    CHECK(res.second == rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS);
+    auto val = res.first.getValue<rexsapi::TArrayOfIntArraysType>();
+    CHECK(val.size() == 3);
+  }
+}

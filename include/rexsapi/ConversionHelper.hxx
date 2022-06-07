@@ -94,7 +94,7 @@ namespace rexsapi
   static inline std::string getTimeStringISO8601(std::chrono::system_clock::time_point timepoint)
   {
     const std::time_t t_c = std::chrono::system_clock::to_time_t(timepoint);
-    struct tm buf;
+    tm buf{};
     std::ostringstream stream;
 #if defined(WIN32)
     localtime_s(&buf, &t_c);

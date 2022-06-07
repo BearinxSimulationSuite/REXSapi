@@ -19,45 +19,49 @@
 
 #include <rexsapi/database/Unit.hxx>
 
-#include <optional>
 
 namespace rexsapi
 {
   class TUnit
   {
   public:
+    TUnit() = default;
+
     explicit TUnit(const database::TUnit& unit)
-    : m_Unit{unit}
+    : m_Unit{unit.getName()}
+    , m_IsCustomUnit{false}
     {
     }
 
     explicit TUnit(std::string unit)
-    : m_CustomUnit{std::move(unit)}
+    : m_Unit{std::move(unit)}
+    , m_IsCustomUnit{true}
     {
     }
 
     [[nodiscard]] inline bool isCustomUnit() const
     {
-      return !m_Unit.has_value();
+      return m_IsCustomUnit;
     }
 
     [[nodiscard]] const std::string& getName() const&
     {
-      return isCustomUnit() ? m_CustomUnit : m_Unit->getName();
+      return m_Unit;
     }
 
     friend bool operator==(const TUnit& lhs, const database::TUnit& rhs)
     {
-      if (lhs.isCustomUnit()) {
-        return rhs.compare(lhs.m_CustomUnit);
-      }
+      return rhs.compare(lhs.m_Unit);
+    }
 
-      return *lhs.m_Unit == rhs;
+    friend bool operator==(const TUnit& lhs, const TUnit& rhs)
+    {
+      return lhs.m_Unit == rhs.m_Unit;
     }
 
   private:
-    std::optional<database::TUnit> m_Unit{};
-    std::string m_CustomUnit{};
+    std::string m_Unit{};
+    bool m_IsCustomUnit{true};
   };
 }
 

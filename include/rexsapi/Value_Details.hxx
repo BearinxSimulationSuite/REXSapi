@@ -32,9 +32,9 @@ namespace rexsapi
 
   namespace detail
   {
-    using Variant =
-      std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>, std::vector<Bool>,
-                   std::vector<int64_t>, std::vector<std::string>, std::vector<std::vector<int64_t>>, TMatrix<double>>;
+    using Variant = std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>,
+                                 std::vector<Bool>, std::vector<int64_t>, std::vector<std::string>,
+                                 std::vector<std::vector<int64_t>>, TMatrix<double>, TMatrix<std::string>>;
 
     template<typename T>
     inline const auto& value_getter(const Variant& value)
@@ -109,6 +109,11 @@ namespace rexsapi
     };
 
     template<>
+    struct TypeForValueType<Enum2type<TValueType::STRING_ARRAY>> {
+      using Type = std::vector<std::string>;
+    };
+
+    template<>
     struct TypeForValueType<Enum2type<TValueType::REFERENCE_COMPONENT>> {
       using Type = int64_t;
     };
@@ -116,6 +121,11 @@ namespace rexsapi
     template<>
     struct TypeForValueType<Enum2type<TValueType::FLOATING_POINT_MATRIX>> {
       using Type = TMatrix<double>;
+    };
+
+    template<>
+    struct TypeForValueType<Enum2type<TValueType::STRING_MATRIX>> {
+      using Type = TMatrix<std::string>;
     };
 
     template<>
@@ -134,8 +144,10 @@ namespace rexsapi
   using TFloatArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::FLOATING_POINT_ARRAY>>::Type;
   using TIntArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::INTEGER_ARRAY>>::Type;
   using TEnumArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::ENUM_ARRAY>>::Type;
+  using TStringArrayType = detail::TypeForValueType<detail::Enum2type<TValueType::STRING_ARRAY>>::Type;
   using TReferenceComponentType = detail::TypeForValueType<detail::Enum2type<TValueType::REFERENCE_COMPONENT>>::Type;
   using TFloatMatrixType = detail::TypeForValueType<detail::Enum2type<TValueType::FLOATING_POINT_MATRIX>>::Type;
+  using TStringMatrixType = detail::TypeForValueType<detail::Enum2type<TValueType::STRING_MATRIX>>::Type;
   using TArrayOfIntArraysType = detail::TypeForValueType<detail::Enum2type<TValueType::ARRAY_OF_INTEGER_ARRAYS>>::Type;
 
   using FloatTag = detail::Enum2type<TValueType::FLOATING_POINT>;
@@ -148,8 +160,10 @@ namespace rexsapi
   using BoolArrayTag = detail::Enum2type<TValueType::BOOLEAN_ARRAY>;
   using IntArrayTag = detail::Enum2type<TValueType::INTEGER_ARRAY>;
   using EnumArrayTag = detail::Enum2type<TValueType::ENUM_ARRAY>;
+  using StringArrayTag = detail::Enum2type<TValueType::STRING_ARRAY>;
   using ReferenceComponentTag = detail::Enum2type<TValueType::REFERENCE_COMPONENT>;
   using FloatMatrixTag = detail::Enum2type<TValueType::FLOATING_POINT_MATRIX>;
+  using StringMatrixTag = detail::Enum2type<TValueType::STRING_MATRIX>;
   using ArrayOfIntArraysTag = detail::Enum2type<TValueType::ARRAY_OF_INTEGER_ARRAYS>;
 }
 

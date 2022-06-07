@@ -734,7 +734,7 @@ namespace rexsapi::xml
 
     for (const auto& node : doc.children()) {
       const auto* element = context.findElement(node.name());
-      if (!element) {
+      if (element == nullptr) {
         context.addError(fmt::format("unknown element '{}'", node.name()));
         continue;
       }
@@ -838,7 +838,7 @@ namespace rexsapi::xml
 
     if (const auto element = node.select_node(fmt::format("{0}:complexType/{0}:simpleContent", xsdSchemaNS).c_str())) {
       if (const auto child = element.node().child(fmt::format("{0}:extension", xsdSchemaNS).c_str()); !child.empty()) {
-        const auto type = child.attribute("base").as_string();
+        const auto* type = child.attribute("base").as_string();
         auto simpleContent = std::make_unique<TSimpleContentType>(node.name(), findType(type));
         return TElement{node.attribute("name").as_string(), std::move(simpleContent)};
       }
@@ -865,7 +865,7 @@ namespace rexsapi::xml
     TAttributes attributes;
     for (const auto& attribute : node.select_nodes(fmt::format("{0}:complexType/{0}:attribute", xsdSchemaNS).c_str())) {
       auto use = attribute.node().attribute("use");
-      auto typeName = attribute.node().attribute("type").as_string();
+      const auto* typeName = attribute.node().attribute("type").as_string();
       const auto& type = findType(typeName);
 
       attributes.addAttribute(TAttribute{attribute.node().attribute("name").as_string(), type,

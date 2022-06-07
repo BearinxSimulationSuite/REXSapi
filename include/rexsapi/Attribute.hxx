@@ -27,7 +27,7 @@ namespace rexsapi
   {
   public:
     TAttribute(const database::TAttribute& attribute, TUnit unit, TValue value)
-    : m_Attribute{attribute}
+    : m_AttributeWrapper{AttributeWrapper{attribute}}
     , m_Unit{std::move(unit)}
     , m_Value{std::move(value)}
     {
@@ -36,14 +36,36 @@ namespace rexsapi
       }
     }
 
+    TAttribute(std::string attributeId, TUnit unit, TValueType type, TValue value)
+    : m_CustomAttributeId{std::move(attributeId)}
+    , m_CustomValueType{type}
+    , m_Unit{std::move(unit)}
+    , m_Value{std::move(value)}
+    {
+      if (m_CustomAttributeId.empty()) {
+        throw TException{"a custom value is not allowed to have an empty id"};
+      }
+    }
+
+    [[nodiscard]] bool isCustomAttribute() const
+    {
+      return !m_AttributeWrapper.has_value();
+    }
+
     [[nodiscard]] const std::string& getAttributeId() const&
     {
-      return m_Attribute.getAttributeId();
+      if (m_AttributeWrapper) {
+        return m_AttributeWrapper->m_Attribute.getAttributeId();
+      }
+      return m_CustomAttributeId;
     }
 
     [[nodiscard]] const std::string& getName() const&
     {
-      return m_Attribute.getName();
+      if (m_AttributeWrapper) {
+        return m_AttributeWrapper->m_Attribute.getName();
+      }
+      return m_CustomAttributeId;
     }
 
     [[nodiscard]] const TUnit& getUnit() const&
@@ -53,7 +75,10 @@ namespace rexsapi
 
     [[nodiscard]] TValueType getValueType() const
     {
-      return m_Attribute.getValueType();
+      if (m_AttributeWrapper) {
+        return m_AttributeWrapper->m_Attribute.getValueType();
+      }
+      return m_CustomValueType;
     }
 
     [[nodiscard]] bool hasValue() const
@@ -78,7 +103,14 @@ namespace rexsapi
     }
 
   private:
-    const database::TAttribute& m_Attribute;
+    struct AttributeWrapper {
+      const database::TAttribute& m_Attribute;
+    };
+    std::optional<AttributeWrapper> m_AttributeWrapper;
+
+    std::string m_CustomAttributeId{};
+    TValueType m_CustomValueType{TValueType::STRING};
+
     TUnit m_Unit;
     TValue m_Value;
   };

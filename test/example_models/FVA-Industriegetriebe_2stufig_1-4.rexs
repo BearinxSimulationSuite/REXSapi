@@ -206,7 +206,7 @@
 
   <components>
     <component id="1" name="Gear unit [1]" type="gear_unit">
-      <attribute id="EIGENGEWICHT" unit="">false</attribute>
+      <attribute id="custom_EIGENGEWICHT" unit="">false</attribute>
       <attribute id="u_axis_vector" unit="mm">
         <array>
           <c>1</c>
@@ -833,7 +833,7 @@
   <load_spectrum id="1">
     <load_case id="1">
       <component id="1" name="Gear unit [1]" type="gear_unit">
-        <attribute id="load_duration_fraction" unit="%">20</attribute>
+        <attribute id="custom_load_duration_fraction" unit="%">20</attribute>
       </component>
       <component id="12" name="Shaft [6]" type="shaft">
         <attribute id="rotational_speed" unit="1 / min">543</attribute>
@@ -861,7 +861,7 @@
     </load_case>
     <load_case id="2">
       <component id="1" name="Gear unit [1]" type="gear_unit">
-        <attribute id="load_duration_fraction" unit="%">30</attribute>
+        <attribute id="custom_load_duration_fraction" unit="%">30</attribute>
       </component>
       <component id="12" name="Shaft [6]" type="shaft">
         <attribute id="rotational_speed" unit="1 / min">3456</attribute>
@@ -889,7 +889,7 @@
     </load_case>
     <load_case id="3">
       <component id="1" name="Gear unit [1]" type="gear_unit">
-        <attribute id="load_duration_fraction" unit="%">35</attribute>
+        <attribute id="custom_load_duration_fraction" unit="%">35</attribute>
       </component>
       <component id="12" name="Shaft [6]" type="shaft">
         <attribute id="rotational_speed" unit="1 / min">1234</attribute>
@@ -917,7 +917,7 @@
     </load_case>
     <load_case id="4">
       <component id="1" name="Gear unit [1]" type="gear_unit">
-        <attribute id="load_duration_fraction" unit="%">15</attribute>
+        <attribute id="custom_load_duration_fraction" unit="%">15</attribute>
       </component>
       <component id="12" name="Shaft [6]" type="shaft">
         <attribute id="rotational_speed" unit="1 / min">789</attribute>
