@@ -98,6 +98,33 @@ namespace rexsapi::xml
   };
 
 
+  class TElement
+  {
+  public:
+    explicit TElement(std::string name, TElementType::Ptr&& type)
+    : m_Name{std::move(name)}
+    , m_Type{std::move(type)}
+    {
+    }
+
+    TElement(const TElement&) = delete;
+    TElement(TElement&&) = default;
+    TElement& operator=(const TElement&) = delete;
+    TElement& operator=(TElement&&) = delete;
+
+    [[nodiscard]] const std::string& getName() const&
+    {
+      return m_Name;
+    }
+
+    void validate(const pugi::xml_node& node, TValidationContext& context) const;
+
+  private:
+    std::string m_Name;
+    TElementType::Ptr m_Type;
+  };
+
+
   class TElementRef
   {
   public:
@@ -131,7 +158,7 @@ namespace rexsapi::xml
     [[nodiscard]] bool checkContainsElement(const std::string& child) const;
 
     std::vector<TElementRef> m_Elements;
-    std::vector<TElement> m_DirectElements;
+    std::unordered_map<std::string, TElement> m_DirectElements;
   };
 
 
@@ -236,33 +263,6 @@ namespace rexsapi::xml
   };
 
 
-  class TElement
-  {
-  public:
-    explicit TElement(std::string name, TElementType::Ptr&& type)
-    : m_Name{std::move(name)}
-    , m_Type{std::move(type)}
-    {
-    }
-
-    TElement(const TElement&) = delete;
-    TElement(TElement&&) = default;
-    TElement& operator=(const TElement&) = delete;
-    TElement& operator=(TElement&&) = delete;
-
-    [[nodiscard]] const std::string& getName() const&
-    {
-      return m_Name;
-    }
-
-    void validate(const pugi::xml_node& node, TValidationContext& context) const;
-
-  private:
-    std::string m_Name;
-    TElementType::Ptr m_Type;
-  };
-
-
   using TSimpleTypes = std::unordered_map<std::string, TSimpleType::Ptr>;
   using TElements = std::unordered_map<std::string, TElement>;
 
@@ -317,6 +317,11 @@ namespace rexsapi::xml
   public:
     explicit TBufferXsdSchemaLoader(std::string xsdSchema)
     : m_XsdSchema{std::move(xsdSchema)}
+    {
+    }
+
+    explicit TBufferXsdSchemaLoader(const char* xsdSchema)
+    : m_XsdSchema{xsdSchema}
     {
     }
 
@@ -506,8 +511,11 @@ namespace rexsapi::xml
   inline void TSequence::addDirectElement(const std::string& name, const TSimpleType& type, uint64_t min, uint64_t max)
   {
     TElement element{name, std::make_unique<TInlineContentType>(name, type)};
-    m_DirectElements.emplace_back(std::move(element));
-    addElementRef(m_DirectElements.back(), min, max);
+    auto [iter, success] = m_DirectElements.emplace(name, std::move(element));
+    if (!success) {
+      throw TException{fmt::format("element '{}' has already been added to sequence", name)};
+    }
+    addElementRef(iter->second, min, max);
   }
 
   inline void TSequence::validate(const pugi::xml_node& node, TValidationContext& context) const
@@ -519,7 +527,7 @@ namespace rexsapi::xml
       }
       if (const auto* element = context.findElement(childName); element == nullptr) {
         auto it = std::find_if(m_DirectElements.begin(), m_DirectElements.end(), [&childName](const auto& item) {
-          return item.getName() == childName;
+          return item.second.getName() == childName;
         });
         if (it == m_DirectElements.end()) {
           context.addError(fmt::format("unkown element '{}'", childName));
@@ -532,7 +540,7 @@ namespace rexsapi::xml
       element.validate(node, context);
     });
     std::for_each(m_DirectElements.begin(), m_DirectElements.end(), [&node, &context](const auto& element) {
-      element.validate(node, context);
+      element.second.validate(node, context);
     });
   }
 

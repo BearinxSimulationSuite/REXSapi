@@ -30,6 +30,7 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLValueDecoder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XSDSchemaValidator.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Attribute.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Component.hxx
@@ -41,8 +42,6 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/ModelRegistry.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/Unit.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/database/XMLModelLoader.hxx
-
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/xml/XSDSchemaValidator.hxx
 )
 
 target_include_directories(rexsapi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>)

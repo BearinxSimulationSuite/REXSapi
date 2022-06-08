@@ -54,10 +54,10 @@ namespace rexsapi::database
   inline TLoaderResult
   TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
   {
-    return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
+    return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) {
       pugi::xml_document doc = loadXMLDocument(result, buffer, rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader});
       if (!result) {
-        return {};
+        return;
       }
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
