@@ -112,3 +112,12 @@ TEST_CASE("Relation role test")
     CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::WORKPIECE) == "workpiece");
   }
 }
+
+TEST_CASE("Mode test")
+{
+  SUBCASE("To string")
+  {
+    CHECK(rexsapi::toModeString(rexsapi::TMode::STRICT) == "strict");
+    CHECK(rexsapi::toModeString(rexsapi::TMode::RELAXED) == "relaxed");
+  }
+}
