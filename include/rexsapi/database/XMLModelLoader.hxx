@@ -18,10 +18,9 @@
 #define REXSAPI_DATABASE_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
-#include <rexsapi/LoaderResult.hxx>
-#include <rexsapi/Xml.hxx>
+#include <rexsapi/XSDSchemaValidator.hxx>
+#include <rexsapi/XmlUtils.hxx>
 #include <rexsapi/database/ComponentAttributeMapper.hxx>
-#include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 #include <cstring>
 
@@ -56,40 +55,34 @@ namespace rexsapi::database
   TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
   {
     return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) -> void {
-      pugi::xml_document doc;
-      if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
-        result.addError(TResourceError{parseResult.description(), parseResult.offset});
-        return;
-      }
-
-      std::vector<std::string> errors;
-      if (!rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader}.validate(doc, errors)) {
-        // TODO (lcf): errors should be added to the exception, or even better, to the result
-        throw TException{"cannot validate db model file"};
+      pugi::xml_document doc = loadXMLDocument(result, buffer, rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader});
+      if (!result) {
+        return {};
       }
 
       auto rexsModel = *doc.select_nodes("/rexsModel").begin();
-      TModel model{TRexsVersion{getStringAttribute(rexsModel, "version")}, getStringAttribute(rexsModel, "language"),
-                   getStringAttribute(rexsModel, "date"), statusFromString(getStringAttribute(rexsModel, "status"))};
+      TModel model{TRexsVersion{xml::getStringAttribute(rexsModel, "version")},
+                   xml::getStringAttribute(rexsModel, "language"), xml::getStringAttribute(rexsModel, "date"),
+                   statusFromString(xml::getStringAttribute(rexsModel, "status"))};
 
       for (const auto& node : doc.select_nodes("/rexsModel/units/unit")) {
-        auto id = convertToUint64(getStringAttribute(node, "id"));
-        auto name = getStringAttribute(node, "name");
+        auto id = convertToUint64(xml::getStringAttribute(node, "id"));
+        auto name = xml::getStringAttribute(node, "name");
         model.addUnit(TUnit{id, name});
       }
 
       for (const auto& node : doc.select_nodes("/rexsModel/valueTypes/valueType")) {
-        auto id = convertToUint64(getStringAttribute(node, "id"));
-        auto name = getStringAttribute(node, "name");
+        auto id = convertToUint64(xml::getStringAttribute(node, "id"));
+        auto name = xml::getStringAttribute(node, "name");
         model.addType(id, typeFromString(name));
       }
 
       for (const auto& node : doc.select_nodes("/rexsModel/attributes/attribute")) {
-        auto attributeId = getStringAttribute(node, "attributeId");
-        auto name = getStringAttribute(node, "name");
-        auto valueType = model.findValueTypeById(convertToUint64(getStringAttribute(node, "valueType")));
-        auto unit = convertToUint64(getStringAttribute(node, "unit"));
-        std::string symbol = getStringAttribute(node, "symbol", "");
+        auto attributeId = xml::getStringAttribute(node, "attributeId");
+        auto name = xml::getStringAttribute(node, "name");
+        auto valueType = model.findValueTypeById(convertToUint64(xml::getStringAttribute(node, "valueType")));
+        auto unit = convertToUint64(xml::getStringAttribute(node, "unit"));
+        std::string symbol = xml::getStringAttribute(node, "symbol", "");
 
         std::optional<TInterval> interval = readInterval(node);
 
@@ -99,8 +92,8 @@ namespace rexsapi::database
             std::strncmp(enums.name(), "enumValues", ::strlen("enumValues")) == 0) {
           std::vector<TEnumValue> values;
           for (const auto& value : enums.children()) {
-            auto enumValue = getStringAttribute(value, "value");
-            auto enumName = getStringAttribute(value, "name");
+            auto enumValue = xml::getStringAttribute(value, "value");
+            auto enumName = xml::getStringAttribute(value, "name");
             values.emplace_back(TEnumValue{enumValue, enumName});
           }
           enumValues = TEnumValues{std::move(values)};
@@ -112,15 +105,15 @@ namespace rexsapi::database
 
       std::vector<std::pair<std::string, std::string>> attributeMappings;
       for (const auto& node : doc.select_nodes("/rexsModel/componentAttributeMappings/componentAttributeMapping")) {
-        auto componentId = getStringAttribute(node, "componentId");
-        auto attributeId = getStringAttribute(node, "attributeId");
+        auto componentId = xml::getStringAttribute(node, "componentId");
+        auto attributeId = xml::getStringAttribute(node, "attributeId");
         attributeMappings.emplace_back(componentId, attributeId);
       }
       TComponentAttributeMapper attributeMapper{model, std::move(attributeMappings)};
 
       for (const auto& node : doc.select_nodes("/rexsModel/components/component")) {
-        auto id = getStringAttribute(node, "componentId");
-        auto name = getStringAttribute(node, "name");
+        auto id = xml::getStringAttribute(node, "componentId");
+        auto name = xml::getStringAttribute(node, "name");
         auto attributes = attributeMapper.getAttributesForComponent(id);
         model.addComponent(TComponent{id, name, std::move(attributes)});
       }
@@ -139,11 +132,11 @@ namespace rexsapi::database
     TIntervalEndpoint max;
 
     if (auto att = node.node().attribute("rangeMin"); !att.empty()) {
-      auto open = getBoolAttribute(node, "rangeMinIntervalOpen", true);
+      auto open = xml::getBoolAttribute(node, "rangeMinIntervalOpen", true);
       min = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
     }
     if (auto att = node.node().attribute("rangeMax"); !att.empty()) {
-      auto open = getBoolAttribute(node, "rangeMaxIntervalOpen", true);
+      auto open = xml::getBoolAttribute(node, "rangeMaxIntervalOpen", true);
       max = TIntervalEndpoint{convertToDouble(att.value()), open ? TIntervalType::OPEN : TIntervalType::CLOSED};
     }
 

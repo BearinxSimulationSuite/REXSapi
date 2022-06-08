@@ -18,13 +18,12 @@
 #define REXSAPI_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
-#include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
 #include <rexsapi/ValidityChecker.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
-#include <rexsapi/Xml.hxx>
+#include <rexsapi/XSDSchemaValidator.hxx>
+#include <rexsapi/XmlUtils.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
-#include <rexsapi/xml/XSDSchemaValidator.hxx>
 
 namespace rexsapi
 {
@@ -59,26 +58,17 @@ namespace rexsapi
                                                      const rexsapi::database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
-    // TODO (lcf): extract to helper class
-    pugi::xml_document doc;
-    if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
-      result.addError(TResourceError{parseResult.description(), parseResult.offset});
+    pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
+    if (!result) {
       return {};
     }
 
-    {
-      std::vector<std::string> errors;
-      if (!m_Validator.validate(doc, errors)) {
-        // TODO (lcf): errors should be added to the exception, or even better, to the result
-        throw TException{"cannot validate db model file"};
-      }
-    }
-
     auto rexsModel = *doc.select_nodes("/model").begin();
-    auto language = getStringAttribute(rexsModel, "applicationLanguage", "");
-    TModelInfo info{getStringAttribute(rexsModel, "applicationId"), getStringAttribute(rexsModel, "applicationVersion"),
-                    getStringAttribute(rexsModel, "date"), TRexsVersion{getStringAttribute(rexsModel, "version")},
-                    language.empty() ? std::optional<std::string>{} : language};
+    auto language = xml::getStringAttribute(rexsModel, "applicationLanguage", "");
+    TModelInfo info{
+      xml::getStringAttribute(rexsModel, "applicationId"), xml::getStringAttribute(rexsModel, "applicationVersion"),
+      xml::getStringAttribute(rexsModel, "date"), TRexsVersion{xml::getStringAttribute(rexsModel, "version")},
+      language.empty() ? std::optional<std::string>{} : language};
 
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
@@ -89,9 +79,9 @@ namespace rexsapi
     TComponents components;
     components.reserve(10);
     for (const auto& component : doc.select_nodes("/model/components/component")) {
-      auto componentId = getStringAttribute(component, "id");
-      std::string componentName = getStringAttribute(component, "name", "");
-      const auto& componentType = dbModel.findComponentById(getStringAttribute(component, "type"));
+      auto componentId = xml::getStringAttribute(component, "id");
+      std::string componentName = xml::getStringAttribute(component, "name", "");
+      const auto& componentType = dbModel.findComponentById(xml::getStringAttribute(component, "type"));
 
       auto attributeNodes =
         doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
@@ -105,8 +95,8 @@ namespace rexsapi
 
     TRelations relations;
     for (const auto& relation : doc.select_nodes("/model/relations/relation")) {
-      std::string relationId = getStringAttribute(relation, "id");
-      auto relationType = relationTypeFromString(getStringAttribute(relation, "type"));
+      std::string relationId = xml::getStringAttribute(relation, "id");
+      auto relationType = relationTypeFromString(xml::getStringAttribute(relation, "type"));
       std::optional<uint32_t> order;
       if (auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
         order = orderAtt.as_uint();
@@ -118,9 +108,9 @@ namespace rexsapi
       TRelationReferences references;
       for (const auto& reference :
            doc.select_nodes(fmt::format("/model/relations/relation[@id = '{}']/ref", relationId).c_str())) {
-        std::string referenceId = getStringAttribute(reference, "id");
-        auto role = relationRoleFromString(getStringAttribute(reference, "role"));
-        std::string hint = getStringAttribute(reference, "hint");
+        std::string referenceId = xml::getStringAttribute(reference, "id");
+        auto role = relationRoleFromString(xml::getStringAttribute(reference, "role"));
+        std::string hint = xml::getStringAttribute(reference, "hint");
 
         const auto* component = getComponent(referenceId, components, componentsMapping);
         if (component == nullptr) {
@@ -138,12 +128,12 @@ namespace rexsapi
     TLoadCases loadCases;
     {
       for (const auto& loadCase : doc.select_nodes("/model/load_spectrum/load_case")) {
-        std::string loadCaseId = getStringAttribute(loadCase, "id");
+        std::string loadCaseId = xml::getStringAttribute(loadCase, "id");
         TLoadComponents loadComponents;
 
         for (const auto& component : doc.select_nodes(
                fmt::format("/model/load_spectrum/load_case[@id = '{}']/component", loadCaseId).c_str())) {
-          std::string componentId = getStringAttribute(component, "id");
+          std::string componentId = xml::getStringAttribute(component, "id");
 
           const auto* refComponent = getComponent(componentId, components, componentsMapping);
           if (refComponent == nullptr) {
@@ -188,14 +178,14 @@ namespace rexsapi
   {
     TAttributes attributes;
     for (const auto& attribute : attributeNodes) {
-      std::string id = getStringAttribute(attribute, "id");
+      std::string id = xml::getStringAttribute(attribute, "id");
 
       bool isCustom{false};
       if (id.substr(0, 7) == "custom_") {
         isCustom = true;
       }
 
-      auto unit = getStringAttribute(attribute, "unit");
+      auto unit = xml::getStringAttribute(attribute, "unit");
 
       if (!isCustom) {
         const auto& att = componentType.findAttributeById(id);

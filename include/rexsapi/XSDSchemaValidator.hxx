@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef REXSAPI_XML_XSD_SCHEMA_VALIDATOR_HXX
-#define REXSAPI_XML_XSD_SCHEMA_VALIDATOR_HXX
+#ifndef REXSAPI_XSD_SCHEMA_VALIDATOR_HXX
+#define REXSAPI_XSD_SCHEMA_VALIDATOR_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Exception.hxx>
