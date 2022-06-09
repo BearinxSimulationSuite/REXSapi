@@ -18,6 +18,7 @@
 #define REXSAPI_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Defines.hxx>
+#include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
 
 #include <algorithm>
@@ -29,11 +30,35 @@
 
 namespace rexsapi
 {
-  struct TError {
-    explicit TError(std::string message, ssize_t position = -1)
-    : m_Message{std::move(message)}
+  enum class TErrorLevel { WARNING, ERROR, CRITICAL };
+
+  static inline std::string toErrorLevelString(TErrorLevel level)
+  {
+    switch (level) {
+      case TErrorLevel::WARNING:
+        return "WARNING";
+      case TErrorLevel::ERROR:
+        return "ERROR";
+      case TErrorLevel::CRITICAL:
+        return "CRITICAL";
+    }
+    throw TException{"unknown error level"};
+  }
+
+
+  class TError
+  {
+  public:
+    explicit TError(TErrorLevel level, std::string message, ssize_t position = -1)
+    : m_Level{level}
+    , m_Message{std::move(message)}
     , m_Position{position}
     {
+    }
+
+    bool isError() const
+    {
+      return m_Level == TErrorLevel::ERROR || m_Level == TErrorLevel::CRITICAL;
     }
 
     std::string message() const
@@ -41,13 +66,15 @@ namespace rexsapi
       if (m_Position != -1) {
         return fmt::format("{}: offset {}", m_Message, m_Position);
       }
-      return m_Message;
+      return fmt::format("{}", m_Message);
     }
 
   private:
+    TErrorLevel m_Level;
     std::string m_Message;
     ssize_t m_Position;
   };
+
 
   class TLoaderResult
   {
@@ -59,7 +86,9 @@ namespace rexsapi
 
     explicit operator bool() const
     {
-      return m_Errors.empty();
+      return m_Errors.empty() || std::find_if(m_Errors.begin(), m_Errors.end(), [](const auto& error) {
+                                   return error.isError();
+                                 }) == m_Errors.end();
     }
 
     const std::vector<TError>& getErrors() const&

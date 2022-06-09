@@ -30,12 +30,31 @@ TEST_CASE("Loader result test")
   SUBCASE("With errors")
   {
     rexsapi::TLoaderResult result{};
-    result.addError(rexsapi::TError{"my first message"});
-    result.addError(rexsapi::TError{"my second message", 32});
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::ERROR, "my first message"});
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::CRITICAL, "my second message", 32});
 
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 2);
     CHECK(result.getErrors()[0].message() == "my first message");
     CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+  }
+
+  SUBCASE("With warnings")
+  {
+    rexsapi::TLoaderResult result{};
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::WARNING, "my first message"});
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::WARNING, "my second message", 32});
+
+    CHECK(result);
+    REQUIRE(result.getErrors().size() == 2);
+    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+  }
+
+  SUBCASE("Error level to string")
+  {
+    CHECK(rexsapi::toErrorLevelString(rexsapi::TErrorLevel::WARNING) == "WARNING");
+    CHECK(rexsapi::toErrorLevelString(rexsapi::TErrorLevel::ERROR) == "ERROR");
+    CHECK(rexsapi::toErrorLevelString(rexsapi::TErrorLevel::CRITICAL) == "CRITICAL");
   }
 }
