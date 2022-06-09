@@ -705,7 +705,7 @@ private:
   bool load(Data& data, const std::filesystem::path& modelFile) const
   {
     rexsapi::TFileModelLoader loader{m_Validator, modelFile};
-    rexsapi::TLoaderResult result;
+    rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::RELAXED, result, m_Registry);
 
     /* only bail out on critical errors

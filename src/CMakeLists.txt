@@ -14,11 +14,11 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
-  ${PROJECT_SOURCE_DIR}/include/rexsapi/LoaderResult.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Relation.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Result.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/RexsVersion.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Types.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Unit.hxx

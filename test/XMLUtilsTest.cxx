@@ -44,7 +44,7 @@ TEST_CASE("Xml utils test")
 {
   rexsapi::xml::TBufferXsdSchemaLoader schemaLoader{schema};
   rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
-  rexsapi::TLoaderResult result;
+  rexsapi::TResult result;
 
   SUBCASE("Load valid document")
   {

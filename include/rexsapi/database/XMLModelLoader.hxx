@@ -36,7 +36,7 @@ namespace rexsapi::database
     {
     }
 
-    TLoaderResult load(const std::function<void(TModel)>& callback) const;
+    TResult load(const std::function<void(TModel)>& callback) const;
 
   private:
     std::optional<TInterval> readInterval(const pugi::xpath_node& node) const;
@@ -51,10 +51,10 @@ namespace rexsapi::database
   /////////////////////////////////////////////////////////////////////////////
 
   template<typename TResourceLoader, typename TSchemaLoader>
-  inline TLoaderResult
+  inline TResult
   TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
   {
-    return m_Loader.load([this, &callback](TLoaderResult& result, std::vector<uint8_t>& buffer) {
+    return m_Loader.load([this, &callback](TResult& result, std::vector<uint8_t>& buffer) {
       pugi::xml_document doc = loadXMLDocument(result, buffer, rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader});
       if (!result) {
         return;

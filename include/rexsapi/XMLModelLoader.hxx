@@ -35,13 +35,13 @@ namespace rexsapi
     {
     }
 
-    std::optional<TModel> load(TMode mode, TLoaderResult& result, const rexsapi::database::TModelRegistry& registry,
+    std::optional<TModel> load(TMode mode, TResult& result, const rexsapi::database::TModelRegistry& registry,
                                std::vector<uint8_t>& buffer) const;
 
   private:
     const TComponent* getComponent(const std::string& referenceId, TComponents& components,
                                    const std::unordered_map<std::string, uint64_t>& componentsMapping) const&;
-    TAttributes getAttributes(TLoaderResult& result, const database::TModel& dbModel, const std::string& componentId,
+    TAttributes getAttributes(TResult& result, const database::TModel& dbModel, const std::string& componentId,
                               const database::TComponent& componentType,
                               const pugi::xpath_node_set& attributeNodes) const;
 
@@ -54,7 +54,7 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TXMLModelLoader::load(TMode mode, TLoaderResult& result,
+  inline std::optional<TModel> TXMLModelLoader::load(TMode mode, TResult& result,
                                                      const rexsapi::database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
@@ -174,7 +174,7 @@ namespace rexsapi
     return it_comp.operator->();
   }
 
-  inline TAttributes TXMLModelLoader::getAttributes(TLoaderResult& result, const database::TModel& dbModel,
+  inline TAttributes TXMLModelLoader::getAttributes(TResult& result, const database::TModel& dbModel,
                                                     const std::string& componentId,
                                                     const database::TComponent& componentType,
                                                     const pugi::xpath_node_set& attributeNodes) const

@@ -17,8 +17,8 @@
 #ifndef REXSAPI_MODEL_LOADER_FACTORY_HXX
 #define REXSAPI_MODEL_LOADER_FACTORY_HXX
 
-#include <rexsapi/LoaderResult.hxx>
 #include <rexsapi/Model.hxx>
+#include <rexsapi/Result.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
 
@@ -38,7 +38,7 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TMode mode, TLoaderResult& result,
+    [[nodiscard]] std::optional<TModel> load(TMode mode, TResult& result,
                                              const rexsapi::database::TModelRegistry& registry);
 
   private:
@@ -63,7 +63,7 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TMode mode, TLoaderResult& result,
+    [[nodiscard]] std::optional<TModel> load(TMode mode, TResult& result,
                                              const rexsapi::database::TModelRegistry& registry)
     {
       TLoader loader{m_Validator};
@@ -80,7 +80,7 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TFileModelLoader::load(TMode mode, TLoaderResult& result,
+  inline std::optional<TModel> TFileModelLoader::load(TMode mode, TResult& result,
                                                       const rexsapi::database::TModelRegistry& registry)
   {
     if (!std::filesystem::exists(m_Path)) {

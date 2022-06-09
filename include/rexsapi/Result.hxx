@@ -76,7 +76,7 @@ namespace rexsapi
   };
 
 
-  class TLoaderResult
+  class TResult
   {
   public:
     void addError(TError error)

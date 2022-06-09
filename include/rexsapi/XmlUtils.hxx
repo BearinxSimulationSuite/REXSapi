@@ -17,7 +17,7 @@
 #ifndef REXSAPI_XML_UTILS_HXX
 #define REXSAPI_XML_UTILS_HXX
 
-#include <rexsapi/LoaderResult.hxx>
+#include <rexsapi/Result.hxx>
 #include <rexsapi/XSDSchemaValidator.hxx>
 #include <rexsapi/Xml.hxx>
 
@@ -51,7 +51,7 @@ namespace rexsapi::xml
     return def;
   }
 
-  static inline pugi::xml_document loadXMLDocument(TLoaderResult& result, std::vector<uint8_t>& buffer,
+  static inline pugi::xml_document loadXMLDocument(TResult& result, std::vector<uint8_t>& buffer,
                                                    const xml::TXSDSchemaValidator& validator)
   {
     pugi::xml_document doc;

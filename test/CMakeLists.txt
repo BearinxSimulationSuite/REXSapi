@@ -7,11 +7,11 @@ add_executable(rexsapi_test
 
   AttributeTest.cxx
   ConversionHelperTest.cxx
-  LoaderResultTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
   ModelLoaderTest.cxx
   ModelTest.cxx
+  ResultTest.cxx
   RexsVersionTest.cxx
   TypesTest.cxx
   UnitTest.cxx

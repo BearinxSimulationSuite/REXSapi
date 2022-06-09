@@ -34,7 +34,7 @@ namespace rexsapi::database
     [[nodiscard]] const TModel& getModel(const TRexsVersion& version, const std::string& language) const;
 
     template<typename TModelLoader>
-    static std::pair<TModelRegistry, TLoaderResult> createModelRegistry(const TModelLoader& loader);
+    static std::pair<TModelRegistry, TResult> createModelRegistry(const TModelLoader& loader);
 
   private:
     explicit TModelRegistry(std::vector<TModel>&& models)
@@ -65,7 +65,7 @@ namespace rexsapi::database
   }
 
   template<typename TModelLoader>
-  std::pair<TModelRegistry, TLoaderResult> TModelRegistry::createModelRegistry(const TModelLoader& loader)
+  std::pair<TModelRegistry, TResult> TModelRegistry::createModelRegistry(const TModelLoader& loader)
   {
     std::vector<TModel> models;
     auto result = loader.load([&models](TModel model) {

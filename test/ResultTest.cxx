@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <rexsapi/LoaderResult.hxx>
+#include <rexsapi/Result.hxx>
 
 #include <doctest.h>
 
@@ -23,13 +23,13 @@ TEST_CASE("Loader result test")
 {
   SUBCASE("No errors")
   {
-    rexsapi::TLoaderResult result{};
+    rexsapi::TResult result{};
     CHECK(result);
   }
 
   SUBCASE("With errors")
   {
-    rexsapi::TLoaderResult result{};
+    rexsapi::TResult result{};
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::ERROR, "my first message"});
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::CRITICAL, "my second message", 32});
 
@@ -41,7 +41,7 @@ TEST_CASE("Loader result test")
 
   SUBCASE("With warnings")
   {
-    rexsapi::TLoaderResult result{};
+    rexsapi::TResult result{};
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::WARNING, "my first message"});
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::WARNING, "my second message", 32});
 

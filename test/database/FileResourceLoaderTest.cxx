@@ -38,7 +38,7 @@ TEST_CASE("File resource loader test")
     rexsapi::database::TFileResourceLoader loader{projectDir() / "models"};
 
     std::vector<std::vector<uint8_t>> buffers;
-    loader.load([&buffers](const rexsapi::TLoaderResult&, std::vector<uint8_t>& buffer) {
+    loader.load([&buffers](const rexsapi::TResult&, std::vector<uint8_t>& buffer) {
       buffers.emplace_back(buffer);
     });
 
@@ -51,7 +51,7 @@ TEST_CASE("File resource loader test")
   SUBCASE("Load not existing path")
   {
     rexsapi::database::TFileResourceLoader loader{projectDir() / "non-existing-models"};
-    CHECK_THROWS(loader.load([](const rexsapi::TLoaderResult&, std::vector<uint8_t>&) {
+    CHECK_THROWS(loader.load([](const rexsapi::TResult&, std::vector<uint8_t>&) {
     }));
   }
 }
