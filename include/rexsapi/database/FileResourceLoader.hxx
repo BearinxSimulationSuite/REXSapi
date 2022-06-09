@@ -82,7 +82,7 @@ namespace rexsapi::database
       if (p.path().extension() == ".xml") {
         if (!std::filesystem::is_regular_file(p.path())) {
           result.addError(
-            TError{rexsapi::TErrorLevel::ERROR, fmt::format("Resource '{}' is not a file", p.path().string())});
+            TError{rexsapi::TErrorLevel::ERR, fmt::format("Resource '{}' is not a file", p.path().string())});
           continue;
         }
 
@@ -90,7 +90,7 @@ namespace rexsapi::database
       }
     }
     if (resources.empty()) {
-      result.addError(TError{rexsapi::TErrorLevel::CRITICAL, "No model database files found"});
+      result.addError(TError{rexsapi::TErrorLevel::CRIT, "No model database files found"});
     }
 
     return resources;
@@ -101,7 +101,7 @@ namespace rexsapi::database
     std::ifstream file{resource};
     if (!file.good()) {
       result.addError(
-        TError{rexsapi::TErrorLevel::ERROR, fmt::format("Resource '{}' cannot be loaded", resource.string())});
+        TError{rexsapi::TErrorLevel::ERR, fmt::format("Resource '{}' cannot be loaded", resource.string())});
       return std::vector<uint8_t>{};
     }
     std::stringstream ss;

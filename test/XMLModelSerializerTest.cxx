@@ -34,7 +34,7 @@ namespace
     {
       rexsapi::TFileModelLoader loader{m_Validator, modelFile};
       rexsapi::TResult result;
-      auto model = loader.load(rexsapi::TMode::STRICT, result, m_Registry);
+      auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
       if (!model) {
         throw rexsapi::TException{"cannot load model"};
       }
@@ -55,7 +55,7 @@ namespace
       rexsapi::TBufferModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{m_Validator,
                                                                                                       buffer};
       rexsapi::TResult result;
-      auto model = loader.load(rexsapi::TMode::STRICT, result, m_Registry);
+      auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
       if (!model) {
         throw rexsapi::TException{"cannot load model"};
       }

@@ -117,7 +117,7 @@ TEST_CASE("Mode test")
 {
   SUBCASE("To string")
   {
-    CHECK(rexsapi::toModeString(rexsapi::TMode::STRICT) == "strict");
-    CHECK(rexsapi::toModeString(rexsapi::TMode::RELAXED) == "relaxed");
+    CHECK(rexsapi::toModeString(rexsapi::TMode::STRICT_MODE) == "strict");
+    CHECK(rexsapi::toModeString(rexsapi::TMode::RELAXED_MODE) == "relaxed");
   }
 }

@@ -30,16 +30,16 @@
 
 namespace rexsapi
 {
-  enum class TErrorLevel { WARNING, ERROR, CRITICAL };
+  enum class TErrorLevel { WARN, ERR, CRIT };
 
   static inline std::string toErrorLevelString(TErrorLevel level)
   {
     switch (level) {
-      case TErrorLevel::WARNING:
+      case TErrorLevel::WARN:
         return "WARNING";
-      case TErrorLevel::ERROR:
+      case TErrorLevel::ERR:
         return "ERROR";
-      case TErrorLevel::CRITICAL:
+      case TErrorLevel::CRIT:
         return "CRITICAL";
     }
     throw TException{"unknown error level"};
@@ -58,7 +58,7 @@ namespace rexsapi
 
     bool isError() const
     {
-      return m_Level == TErrorLevel::ERROR || m_Level == TErrorLevel::CRITICAL;
+      return m_Level == TErrorLevel::ERR || m_Level == TErrorLevel::CRIT;
     }
 
     std::string message() const
