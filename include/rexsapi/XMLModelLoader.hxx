@@ -102,7 +102,7 @@ namespace rexsapi
       if (auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
         order = orderAtt.as_uint();
         if (order.value() < 1) {
-          result.addError(TError{rexsapi::TErrorLevel::ERR, fmt::format("relation id={} order is <1", relationId)});
+          result.addError(TError{TErrorLevel::ERR, fmt::format("relation id={} order is <1", relationId)});
         }
       }
 
@@ -116,7 +116,7 @@ namespace rexsapi
         const auto* component = getComponent(referenceId, components, componentsMapping);
         if (component == nullptr) {
           result.addError(
-            TError{rexsapi::TErrorLevel::ERR,
+            TError{TErrorLevel::ERR,
                    fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
         } else {
           references.emplace_back(TRelationReference{role, hint, *component});
@@ -139,9 +139,8 @@ namespace rexsapi
 
           const auto* refComponent = getComponent(componentId, components, componentsMapping);
           if (refComponent == nullptr) {
-            result.addError(
-              TError{rexsapi::TErrorLevel::ERR,
-                     fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
+            result.addError(TError{TErrorLevel::ERR, fmt::format("load_case id={} component id={} does not exist",
+                                                                 loadCaseId, componentId)});
             continue;
           }
 
@@ -197,24 +196,23 @@ namespace rexsapi
           unit = att.getUnit().getName();
         } else {
           if (!att.getUnit().compare(unit)) {
-            result.addError(
-              TError{rexsapi::TErrorLevel::ERR,
-                     fmt::format("attribute '{}' of component '{}' does not specify the correct unit: '{}'", id,
-                                 componentId, unit)});
+            result.addError(TError{
+              TErrorLevel::ERR, fmt::format("attribute '{}' of component '{}' does not specify the correct unit: '{}'",
+                                            id, componentId, unit)});
           }
         }
 
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
           result.addError(
-            TError{rexsapi::TErrorLevel::ERR,
+            TError{TErrorLevel::ERR,
                    fmt::format("value of attribute '{}' of component '{}' does not have the correct value type", id,
                                componentId)});
           continue;
         }
         if (!TValidityChecker::check(att, value.first)) {
           result.addError(
-            TError{rexsapi::TErrorLevel::ERR,
+            TError{TErrorLevel::ERR,
                    fmt::format("value is out of range for attribute '{}' of component '{}'", id, componentId)});
         }
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
