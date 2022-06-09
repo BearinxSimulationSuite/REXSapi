@@ -18,6 +18,7 @@
 #define REXSAPI_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
+#include <rexsapi/Mode.hxx>
 #include <rexsapi/Model.hxx>
 #include <rexsapi/ValidityChecker.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
@@ -35,7 +36,7 @@ namespace rexsapi
     {
     }
 
-    std::optional<TModel> load(TMode mode, TResult& result, const rexsapi::database::TModelRegistry& registry,
+    std::optional<TModel> load(TMode mode, TResult& result, const database::TModelRegistry& registry,
                                std::vector<uint8_t>& buffer) const;
 
   private:
@@ -46,7 +47,8 @@ namespace rexsapi
                               const pugi::xpath_node_set& attributeNodes) const;
 
     const xml::TXSDSchemaValidator& m_Validator;
-    rexsapi::TXMLValueDecoder m_Decoder{};
+    TXMLValueDecoder m_Decoder{};
+    mutable TModeAdapter m_Mode{TMode::STRICT_MODE};
   };
 
 
@@ -55,14 +57,15 @@ namespace rexsapi
   /////////////////////////////////////////////////////////////////////////////
 
   inline std::optional<TModel> TXMLModelLoader::load(TMode mode, TResult& result,
-                                                     const rexsapi::database::TModelRegistry& registry,
+                                                     const database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
-    (void)mode;
     pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
     if (!result) {
       return {};
     }
+
+    m_Mode.setMode(mode);
 
     auto rexsModel = *doc.select_nodes("/model").begin();
     auto language = xml::getStringAttribute(rexsModel, "applicationLanguage", "");
@@ -94,7 +97,8 @@ namespace rexsapi
           TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});
         componentsMapping.emplace(componentId, internalComponentId);
       } catch (const std::exception& ex) {
-        result.addError(TError{TErrorLevel::ERR, fmt::format("component id={}: {}", componentId, ex.what())});
+        result.addError(
+          TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("component id={}: {}", componentId, ex.what())});
       }
     }
 
@@ -106,7 +110,8 @@ namespace rexsapi
       if (auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
         order = orderAtt.as_uint();
         if (order.value() < 1) {
-          result.addError(TError{TErrorLevel::ERR, fmt::format("relation id={} order is <1", relationId)});
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
         }
       }
 
@@ -121,14 +126,14 @@ namespace rexsapi
           const auto* component = getComponent(referenceId, components, componentsMapping);
           if (component == nullptr) {
             result.addError(
-              TError{TErrorLevel::ERR,
+              TError{m_Mode.adapt(TErrorLevel::ERR),
                      fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
           } else {
             references.emplace_back(TRelationReference{role, hint, *component});
           }
         } catch (const std::exception& ex) {
-          result.addError(
-            TError{TErrorLevel::ERR, fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
+          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                 fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
         }
       }
 
@@ -148,8 +153,9 @@ namespace rexsapi
 
           const auto* refComponent = getComponent(componentId, components, componentsMapping);
           if (refComponent == nullptr) {
-            result.addError(TError{TErrorLevel::ERR, fmt::format("load_case id={} component id={} does not exist",
-                                                                 loadCaseId, componentId)});
+            result.addError(
+              TError{m_Mode.adapt(TErrorLevel::ERR),
+                     fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
             continue;
           }
 
@@ -198,8 +204,9 @@ namespace rexsapi
       } else {
         if (!componentType.hasAttribute(id)) {
           isCustom = true;
-          result.addError(TError{TErrorLevel::ERR, fmt::format("{}: attribute id={} is not part of component id={}",
-                                                               context, id, componentId)});
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::ERR),
+                   fmt::format("{}: attribute id={} is not part of component id={}", context, id, componentId)});
         }
       }
 
@@ -213,7 +220,7 @@ namespace rexsapi
         } else {
           if (!att.getUnit().compare(unit)) {
             result.addError(
-              TError{TErrorLevel::ERR,
+              TError{m_Mode.adapt(TErrorLevel::ERR),
                      fmt::format("{}: attribute id={} of component id={} does not specify the correct unit: '{}'",
                                  context, id, componentId, unit)});
           }
@@ -222,15 +229,15 @@ namespace rexsapi
         auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
         if (!value.second) {
           result.addError(
-            TError{TErrorLevel::ERR,
+            TError{m_Mode.adapt(TErrorLevel::ERR),
                    fmt::format("{}: value of attribute id={} of component id={} does not have the correct value type",
                                context, id, componentId)});
           continue;
         }
         if (!TValidityChecker::check(att, value.first)) {
-          result.addError(
-            TError{TErrorLevel::ERR, fmt::format("{}: value is out of range for attribute id={} of component id={}",
-                                                 context, id, componentId)});
+          result.addError(TError{
+            m_Mode.adapt(TErrorLevel::ERR),
+            fmt::format("{}: value is out of range for attribute id={} of component id={}", context, id, componentId)});
         }
         attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
       } else {

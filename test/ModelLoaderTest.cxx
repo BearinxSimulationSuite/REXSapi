@@ -211,13 +211,47 @@ TEST_CASE("Model loader test")
           "Schneckenrad [9]: value is out of range for attribute id=throat_radius_worm_wheel of component id=9");
   }
 
-  SUBCASE("Load complex model from file")
+  SUBCASE("Load complex model from file in strict mode")
   {
     rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
                                                   "FVA-Industriegetriebe_2stufig_1-4.rexs"};
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK_FALSE(result);
+    REQUIRE(result.getErrors().size() == 10);
+    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
+    CHECK(result.getErrors()[2].message() ==
+          "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
+          "id=u_coordinate_on_shaft_outer_side of component id=37");
+    CHECK(result.getErrors()[3].message() ==
+          "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
+    CHECK(result.getErrors()[4].message() ==
+          "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
+    CHECK(result.getErrors()[5].message() ==
+          "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
+    CHECK(result.getErrors()[6].message() ==
+          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[7].message() ==
+          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[8].message() ==
+          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[9].message() ==
+          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
+
+    const auto& attributes =
+      AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
+    CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load complex model from file in relaxed mode")
+  {
+    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
+                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
+    rexsapi::TResult result;
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    CHECK(result);
     REQUIRE(result.getErrors().size() == 10);
     CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
     CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "

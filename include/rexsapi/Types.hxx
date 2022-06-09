@@ -141,8 +141,6 @@ namespace rexsapi
   enum class TRelationRoleType { TOP_LEVEL, SUB_LEVEL };
   static TRelationRoleType getRoleType(TRelationRole role);
 
-  enum class TMode { STRICT_MODE, RELAXED_MODE };
-  static std::string toModeString(TMode mode);
 
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
@@ -464,17 +462,6 @@ namespace rexsapi
         return TRelationRoleType::SUB_LEVEL;
     }
     throw TException{"unknown relation role"};
-  }
-
-  static inline std::string toModeString(TMode mode)
-  {
-    switch (mode) {
-      case TMode::STRICT_MODE:
-        return "strict";
-      case TMode::RELAXED_MODE:
-        return "relaxed";
-    }
-    throw TException{"unknown mode type"};
   }
 }
 

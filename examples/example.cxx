@@ -708,11 +708,10 @@ private:
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, m_Registry);
 
-    /* only bail out on critical errors
     if (!result) {
       // add some message
       return false;
-    }*/
+    }
 
     return fillIntermediateLayer(data, *model);
   }

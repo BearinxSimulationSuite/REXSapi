@@ -11,6 +11,7 @@ add_executable(rexsapi_test
   ModelBuilderTest.cxx
   ModelLoaderTest.cxx
   ModelTest.cxx
+  ModeTest.cxx
   ResultTest.cxx
   RexsVersionTest.cxx
   TypesTest.cxx
