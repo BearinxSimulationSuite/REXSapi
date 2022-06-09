@@ -38,7 +38,8 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry);
+    [[nodiscard]] std::optional<TModel> load(TMode mode, TLoaderResult& result,
+                                             const rexsapi::database::TModelRegistry& registry);
 
   private:
     const xml::TXSDSchemaValidator& m_Validator;
@@ -62,10 +63,11 @@ namespace rexsapi
     {
     }
 
-    [[nodiscard]] std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry)
+    [[nodiscard]] std::optional<TModel> load(TMode mode, TLoaderResult& result,
+                                             const rexsapi::database::TModelRegistry& registry)
     {
       TLoader loader{m_Validator};
-      return loader.load(result, registry, m_Buffer);
+      return loader.load(mode, result, registry, m_Buffer);
     }
 
   private:
@@ -78,7 +80,7 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TFileModelLoader::load(TLoaderResult& result,
+  inline std::optional<TModel> TFileModelLoader::load(TMode mode, TLoaderResult& result,
                                                       const rexsapi::database::TModelRegistry& registry)
   {
     if (!std::filesystem::exists(m_Path)) {
@@ -105,7 +107,7 @@ namespace rexsapi
     auto buffer = ss.str();
 
     std::vector<uint8_t> buf{buffer.begin(), buffer.end()};
-    return TXMLModelLoader{m_Validator}.load(result, registry, buf);
+    return TXMLModelLoader{m_Validator}.load(mode, result, registry, buf);
   }
 }
 

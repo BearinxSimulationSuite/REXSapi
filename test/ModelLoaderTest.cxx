@@ -164,7 +164,7 @@ TEST_CASE("Model loader test")
 
     rexsapi::TBufferModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{validator, buffer};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result, registry);
+    auto model = loader.load(rexsapi::TMode::STRICT, result, registry);
     CHECK(result);
     REQUIRE(model);
     CHECK(model->getInfo().getApplicationId() == "REXSApi Unit Test");
@@ -194,7 +194,7 @@ TEST_CASE("Model loader test")
   {
     rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result, registry);
+    auto model = loader.load(rexsapi::TMode::STRICT, result, registry);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 5);
     CHECK(result.getErrors()[0].m_Message ==
@@ -214,7 +214,7 @@ TEST_CASE("Model loader test")
     rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
                                                   "FVA-Industriegetriebe_2stufig_1-4.rexs"};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result, registry);
+    auto model = loader.load(rexsapi::TMode::STRICT, result, registry);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 5);
     CHECK(result.getErrors()[0].m_Message ==

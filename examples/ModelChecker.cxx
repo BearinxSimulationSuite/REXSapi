@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     }
     rexsapi::TFileModelLoader loader{validator, argv[n]};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result, modelRegistry);
+    auto model = loader.load(rexsapi::TMode::STRICT, result, modelRegistry);
 
     std::cout << "File " << argv[n];
     if (!result) {

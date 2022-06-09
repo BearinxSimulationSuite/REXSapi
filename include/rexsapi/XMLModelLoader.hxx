@@ -35,7 +35,7 @@ namespace rexsapi
     {
     }
 
-    std::optional<TModel> load(TLoaderResult& result, const rexsapi::database::TModelRegistry& registry,
+    std::optional<TModel> load(TMode mode, TLoaderResult& result, const rexsapi::database::TModelRegistry& registry,
                                std::vector<uint8_t>& buffer) const;
 
   private:
@@ -54,10 +54,11 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TXMLModelLoader::load(TLoaderResult& result,
+  inline std::optional<TModel> TXMLModelLoader::load(TMode mode, TLoaderResult& result,
                                                      const rexsapi::database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
+    (void)mode;
     pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
     if (!result) {
       return {};

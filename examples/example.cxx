@@ -706,7 +706,7 @@ private:
   {
     rexsapi::TFileModelLoader loader{m_Validator, modelFile};
     rexsapi::TLoaderResult result;
-    auto model = loader.load(result, m_Registry);
+    auto model = loader.load(rexsapi::TMode::RELAXED, result, m_Registry);
 
     /* only bail out on critical errors
     if (!result) {
