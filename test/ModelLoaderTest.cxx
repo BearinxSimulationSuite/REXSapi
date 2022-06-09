@@ -197,15 +197,15 @@ TEST_CASE("Model loader test")
     auto model = loader.load(rexsapi::TMode::STRICT, result, registry);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 5);
-    CHECK(result.getErrors()[0].m_Message ==
+    CHECK(result.getErrors()[0].message() ==
           "value of attribute 'material_type_din_743_2012' of component '238' does not have the correct value type");
-    CHECK(result.getErrors()[1].m_Message ==
+    CHECK(result.getErrors()[1].message() ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '238'");
-    CHECK(result.getErrors()[2].m_Message ==
+    CHECK(result.getErrors()[2].message() ==
           "value of attribute 'material_type_din_743_2012' of component '239' does not have the correct value type");
-    CHECK(result.getErrors()[3].m_Message ==
+    CHECK(result.getErrors()[3].message() ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '239'");
-    CHECK(result.getErrors()[4].m_Message ==
+    CHECK(result.getErrors()[4].message() ==
           "value is out of range for attribute 'throat_radius_worm_wheel' of component '9'");
   }
 
@@ -217,15 +217,15 @@ TEST_CASE("Model loader test")
     auto model = loader.load(rexsapi::TMode::STRICT, result, registry);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 5);
-    CHECK(result.getErrors()[0].m_Message ==
+    CHECK(result.getErrors()[0].message() ==
           "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '33'");
-    CHECK(result.getErrors()[1].m_Message ==
+    CHECK(result.getErrors()[1].message() ==
           "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '37'");
-    CHECK(result.getErrors()[2].m_Message ==
+    CHECK(result.getErrors()[2].message() ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '57'");
-    CHECK(result.getErrors()[3].m_Message ==
+    CHECK(result.getErrors()[3].message() ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '58'");
-    CHECK(result.getErrors()[4].m_Message ==
+    CHECK(result.getErrors()[4].message() ==
           "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '59'");
 
     const auto& attributes =

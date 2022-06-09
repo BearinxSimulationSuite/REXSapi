@@ -77,7 +77,25 @@ TEST_CASE("Xml utils test")
     const auto doc = rexsapi::xml::loadXMLDocument(result, buffer, validator);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 2);
-    CHECK(result.getErrors()[0].m_Message == "[/address/] too few 'street' elements, found 0 instead of at least 1");
-    CHECK(result.getErrors()[1].m_Message == "[/address/] too many 'city' elements, found 2 instead of at most 1");
+    CHECK(result.getErrors()[0].message() == "[/address/] too few 'street' elements, found 0 instead of at least 1");
+    CHECK(result.getErrors()[1].message() == "[/address/] too many 'city' elements, found 2 instead of at most 1");
+  }
+
+  SUBCASE("load invalid xml")
+  {
+    const std::string badXml = R"(
+      <?xml version="1.0" encoding="UTF-8"?>
+      <address>
+        <name>Puschel Bert
+        <city>Brummhausen</city>
+        <city>Bärnsdorf</city>
+        <country>Bärnsmark</country>
+      </address>
+    )";
+    std::vector<uint8_t> buffer{badXml.begin(), badXml.end()};
+    const auto doc = rexsapi::xml::loadXMLDocument(result, buffer, validator);
+    CHECK_FALSE(result);
+    REQUIRE(result.getErrors().size() == 1);
+    CHECK(result.getErrors()[0].message() == "Start-end tags mismatch: offset 200");
   }
 }

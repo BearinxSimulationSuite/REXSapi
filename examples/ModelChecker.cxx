@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     if (!result) {
       std::cout << std::endl << fmt::format("Found {} issues", result.getErrors().size()) << std::endl;
       for (const auto& error : result.getErrors()) {
-        std::cout << error.m_Message << std::endl;
+        std::cout << error.message() << std::endl;
       }
     } else {
       std::cout << " processed successfully" << std::endl;

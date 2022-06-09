@@ -18,6 +18,7 @@
 #define REXSAPI_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Defines.hxx>
+#include <rexsapi/Format.hxx>
 
 #include <algorithm>
 #include <functional>
@@ -28,14 +29,22 @@
 
 namespace rexsapi
 {
-  // TODO (lcf): rename to TError. Add message() method. Hide member.
-  struct TResourceError {
-    explicit TResourceError(std::string message, ssize_t position = -1)
+  struct TError {
+    explicit TError(std::string message, ssize_t position = -1)
     : m_Message{std::move(message)}
     , m_Position{position}
     {
     }
 
+    std::string message() const
+    {
+      if (m_Position != -1) {
+        return fmt::format("{}: offset {}", m_Message, m_Position);
+      }
+      return m_Message;
+    }
+
+  private:
     std::string m_Message;
     ssize_t m_Position;
   };
@@ -43,7 +52,7 @@ namespace rexsapi
   class TLoaderResult
   {
   public:
-    void addError(TResourceError error)
+    void addError(TError error)
     {
       m_Errors.emplace_back(std::move(error));
     }
@@ -53,13 +62,13 @@ namespace rexsapi
       return m_Errors.empty();
     }
 
-    const std::vector<TResourceError>& getErrors() const&
+    const std::vector<TError>& getErrors() const&
     {
       return m_Errors;
     }
 
   private:
-    std::vector<TResourceError> m_Errors;
+    std::vector<TError> m_Errors;
   };
 }
 

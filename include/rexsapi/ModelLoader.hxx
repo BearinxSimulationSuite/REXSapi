@@ -84,22 +84,22 @@ namespace rexsapi
                                                       const rexsapi::database::TModelRegistry& registry)
   {
     if (!std::filesystem::exists(m_Path)) {
-      result.addError(TResourceError{fmt::format("'{}' does not exist", m_Path.string())});
+      result.addError(TError{fmt::format("'{}' does not exist", m_Path.string())});
       return {};
     }
     if (!std::filesystem::is_regular_file(m_Path)) {
-      result.addError(TResourceError{fmt::format("'{}' is not a regular file", m_Path.string())});
+      result.addError(TError{fmt::format("'{}' is not a regular file", m_Path.string())});
       return {};
     }
     // TODO (lcf): use extension mapper
     if (m_Path.extension() != ".rexs") {
-      result.addError(TResourceError{fmt::format("'{}' is not a model file", m_Path.string())});
+      result.addError(TError{fmt::format("'{}' is not a model file", m_Path.string())});
       return {};
     }
 
     std::ifstream file{m_Path};
     if (!file.good()) {
-      result.addError(TResourceError{fmt::format("'{}' cannot be loaded", m_Path.string())});
+      result.addError(TError{fmt::format("'{}' cannot be loaded", m_Path.string())});
       return {};
     }
     std::stringstream ss;

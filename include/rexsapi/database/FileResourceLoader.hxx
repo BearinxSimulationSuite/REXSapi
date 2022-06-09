@@ -82,7 +82,7 @@ namespace rexsapi::database
       // TODO (lcf): check file name structure with regex
       if (p.path().extension() == ".xml") {
         if (!std::filesystem::is_regular_file(p.path())) {
-          result.addError(TResourceError{fmt::format("Resource '{}' is not a file", p.path().string())});
+          result.addError(TError{fmt::format("Resource '{}' is not a file", p.path().string())});
           continue;
         }
 
@@ -90,7 +90,7 @@ namespace rexsapi::database
       }
     }
     if (resources.empty()) {
-      result.addError(TResourceError{"No model database files found"});
+      result.addError(TError{"No model database files found"});
     }
 
     return resources;
@@ -100,7 +100,7 @@ namespace rexsapi::database
   {
     std::ifstream file{resource};
     if (!file.good()) {
-      result.addError(TResourceError{fmt::format("Resource '{}' cannot be loaded", resource.string())});
+      result.addError(TError{fmt::format("Resource '{}' cannot be loaded", resource.string())});
       return std::vector<uint8_t>{};
     }
     std::stringstream ss;

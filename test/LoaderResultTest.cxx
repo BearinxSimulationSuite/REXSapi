@@ -30,9 +30,12 @@ TEST_CASE("Loader result test")
   SUBCASE("With errors")
   {
     rexsapi::TLoaderResult result{};
-    result.addError(rexsapi::TResourceError{"my first message", 17});
-    result.addError(rexsapi::TResourceError{"my second message", 32});
+    result.addError(rexsapi::TError{"my first message"});
+    result.addError(rexsapi::TError{"my second message", 32});
 
     CHECK_FALSE(result);
+    REQUIRE(result.getErrors().size() == 2);
+    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
   }
 }

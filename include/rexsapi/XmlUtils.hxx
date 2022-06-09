@@ -56,12 +56,12 @@ namespace rexsapi::xml
   {
     pugi::xml_document doc;
     if (pugi::xml_parse_result parseResult = doc.load_buffer_inplace(buffer.data(), buffer.size()); !parseResult) {
-      result.addError(TResourceError{parseResult.description(), parseResult.offset});
+      result.addError(TError{parseResult.description(), parseResult.offset});
     } else {
       std::vector<std::string> errors;
       if (!validator.validate(doc, errors)) {
         for (const auto& error : errors) {
-          result.addError(TResourceError{error});
+          result.addError(TError{error});
         }
       }
     }
