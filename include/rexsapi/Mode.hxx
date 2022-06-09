@@ -50,6 +50,7 @@ namespace rexsapi
             case TErrorLevel::ERR:
               return TErrorLevel::WARN;
           }
+          break;
         case TMode::STRICT_MODE:
           return level;
       }
