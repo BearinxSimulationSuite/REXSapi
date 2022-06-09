@@ -40,7 +40,7 @@ namespace
           return component.getName() == name;
         });
       if (it == m_Model.getComponents().end()) {
-        throw rexsapi::TException{fmt::format("no component with name {} found", name)};
+        throw rexsapi::TException{fmt::format("no component with name={} found", name)};
       }
       return *it;
     }
@@ -197,16 +197,18 @@ TEST_CASE("Model loader test")
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 5);
-    CHECK(result.getErrors()[0].message() ==
-          "value of attribute 'material_type_din_743_2012' of component '238' does not have the correct value type");
-    CHECK(result.getErrors()[1].message() ==
-          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '238'");
-    CHECK(result.getErrors()[2].message() ==
-          "value of attribute 'material_type_din_743_2012' of component '239' does not have the correct value type");
-    CHECK(result.getErrors()[3].message() ==
-          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '239'");
+    CHECK(result.getErrors()[0].message() == "42CrMo4 [238]: value of attribute id=material_type_din_743_2012 of "
+                                             "component id=238 does not have the correct value type");
+    CHECK(
+      result.getErrors()[1].message() ==
+      "42CrMo4 [238]: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=238");
+    CHECK(result.getErrors()[2].message() == "16MnCr5 [239]: value of attribute id=material_type_din_743_2012 of "
+                                             "component id=239 does not have the correct value type");
+    CHECK(
+      result.getErrors()[3].message() ==
+      "16MnCr5 [239]: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=239");
     CHECK(result.getErrors()[4].message() ==
-          "value is out of range for attribute 'throat_radius_worm_wheel' of component '9'");
+          "Schneckenrad [9]: value is out of range for attribute id=throat_radius_worm_wheel of component id=9");
   }
 
   SUBCASE("Load complex model from file")
@@ -216,17 +218,27 @@ TEST_CASE("Model loader test")
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK_FALSE(result);
-    REQUIRE(result.getErrors().size() == 5);
-    CHECK(result.getErrors()[0].message() ==
-          "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '33'");
-    CHECK(result.getErrors()[1].message() ==
-          "value is out of range for attribute 'u_coordinate_on_shaft_outer_side' of component '37'");
+    REQUIRE(result.getErrors().size() == 10);
+    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
     CHECK(result.getErrors()[2].message() ==
-          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '57'");
+          "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
+          "id=u_coordinate_on_shaft_outer_side of component id=37");
     CHECK(result.getErrors()[3].message() ==
-          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '58'");
+          "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
     CHECK(result.getErrors()[4].message() ==
-          "value is out of range for attribute 'thermal_expansion_coefficient_minus' of component '59'");
+          "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
+    CHECK(result.getErrors()[5].message() ==
+          "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
+    CHECK(result.getErrors()[6].message() ==
+          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[7].message() ==
+          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[8].message() ==
+          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[9].message() ==
+          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
 
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();

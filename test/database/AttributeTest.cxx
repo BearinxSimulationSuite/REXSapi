@@ -49,7 +49,7 @@ TEST_CASE("Database attribute test")
   {
     CHECK_THROWS_WITH(rexsapi::database::TAttribute("axial_force_absorption", "Support of axial loads",
                                                     rexsapi::TValueType::ENUM, unit, "", {}, {}),
-                      "enum with id 'axial_force_absorption' does not have any enum values");
+                      "enum of attribute id=axial_force_absorption does not have any values");
   }
 
   SUBCASE("Create non-enum attribute")

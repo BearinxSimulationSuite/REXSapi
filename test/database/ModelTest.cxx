@@ -56,6 +56,6 @@ TEST_CASE("Database Model test")
   {
     rexsapi::database::TModel model(rexsapi::TRexsVersion{"1.4"}, "de", "2022-04-20T14:18:11.344+02:00",
                                     rexsapi::database::TStatus::RELEASED);
-    CHECK_THROWS_WITH((void)model.findComponentById("hutzli"), "component 'hutzli' not found");
+    CHECK_THROWS_WITH((void)model.findComponentById("hutzli"), "component 'hutzli' not found in database");
   }
 }

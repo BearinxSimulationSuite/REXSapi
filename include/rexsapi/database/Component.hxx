@@ -53,13 +53,24 @@ namespace rexsapi::database
       return m_Attributes;
     }
 
+    [[nodiscard]] bool hasAttribute(const std::string& id) const
+    {
+      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&id](const TAttribute& attribute) {
+        return attribute.getAttributeId() == id;
+      });
+      if (it == m_Attributes.end()) {
+        return false;
+      }
+      return true;
+    }
+
     [[nodiscard]] const TAttribute& findAttributeById(const std::string& id) const
     {
       auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&id](const TAttribute& attribute) {
         return attribute.getAttributeId() == id;
       });
       if (it == m_Attributes.end()) {
-        throw TException{fmt::format("component '{}' does not contain attribute '{}'", m_ComponentId, id)};
+        throw TException{fmt::format("component id={} does not contain attribute id={}", m_ComponentId, id)};
       }
 
       return *it;

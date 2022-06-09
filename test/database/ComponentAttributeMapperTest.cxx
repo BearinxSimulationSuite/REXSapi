@@ -47,6 +47,6 @@ TEST_CASE("Component attribute mapper")
     rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 
     CHECK_THROWS_WITH((void)mapper.getAttributesForComponent("profile_twist"),
-                      "attribute 'not existing attribute' not found for component 'profile_twist'");
+                      "attribute id=not existing attribute not found for component id=profile_twist");
   }
 }
