@@ -407,7 +407,7 @@ namespace rexsapi
       return component.getInternalId() == cid;
     });
     if (it == components.end()) {
-      throw TException{fmt::format("no component found for id '{}'", id.asString())};
+      throw TException{fmt::format("no component found for id={}", id.asString())};
     }
 
     return *it;

@@ -19,7 +19,7 @@
 
 #include <rexsapi/Exception.hxx>
 #include <rexsapi/Format.hxx>
-#include <rexsapi/LoaderResult.hxx>
+#include <rexsapi/Result.hxx>
 
 #include <filesystem>
 #include <fstream>
@@ -36,12 +36,12 @@ namespace rexsapi::database
     {
     }
 
-    TLoaderResult load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const;
+    TResult load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const;
 
   private:
-    [[nodiscard]] std::vector<std::filesystem::path> findResources(TLoaderResult& result) const;
+    [[nodiscard]] std::vector<std::filesystem::path> findResources(TResult& result) const;
 
-    [[nodiscard]] static std::vector<uint8_t> load(TLoaderResult& result, const std::filesystem::path& resource);
+    [[nodiscard]] static std::vector<uint8_t> load(TResult& result, const std::filesystem::path& resource);
 
     const std::filesystem::path m_Path;
   };
@@ -51,14 +51,13 @@ namespace rexsapi::database
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline TLoaderResult
-  TFileResourceLoader::load(const std::function<void(TLoaderResult&, std::vector<uint8_t>&)>& callback) const
+  inline TResult TFileResourceLoader::load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const
   {
     if (!callback) {
       throw TException{"callback not set for resource loader"};
     }
 
-    TLoaderResult result;
+    TResult result;
 
     auto resources = findResources(result);
     std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
@@ -71,7 +70,7 @@ namespace rexsapi::database
     return result;
   }
 
-  inline std::vector<std::filesystem::path> TFileResourceLoader::findResources(TLoaderResult& result) const
+  inline std::vector<std::filesystem::path> TFileResourceLoader::findResources(TResult& result) const
   {
     if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
       throw TException{fmt::format("Directory '{}' does not exist or is not a directory", m_Path.string())};
@@ -82,7 +81,7 @@ namespace rexsapi::database
       // TODO (lcf): check file name structure with regex
       if (p.path().extension() == ".xml") {
         if (!std::filesystem::is_regular_file(p.path())) {
-          result.addError(TResourceError{fmt::format("Resource '{}' is not a file", p.path().string())});
+          result.addError(TError{TErrorLevel::ERR, fmt::format("Resource '{}' is not a file", p.path().string())});
           continue;
         }
 
@@ -90,17 +89,17 @@ namespace rexsapi::database
       }
     }
     if (resources.empty()) {
-      result.addError(TResourceError{"No model database files found"});
+      result.addError(TError{TErrorLevel::CRIT, "No model database files found"});
     }
 
     return resources;
   }
 
-  inline std::vector<uint8_t> TFileResourceLoader::load(TLoaderResult& result, const std::filesystem::path& resource)
+  inline std::vector<uint8_t> TFileResourceLoader::load(TResult& result, const std::filesystem::path& resource)
   {
     std::ifstream file{resource};
     if (!file.good()) {
-      result.addError(TResourceError{fmt::format("Resource '{}' cannot be loaded", resource.string())});
+      result.addError(TError{TErrorLevel::ERR, fmt::format("Resource '{}' cannot be loaded", resource.string())});
       return std::vector<uint8_t>{};
     }
     std::stringstream ss;

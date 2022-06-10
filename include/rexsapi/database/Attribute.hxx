@@ -41,7 +41,7 @@ namespace rexsapi::database
     , m_EnumValues{std::move(enumValues)}
     {
       if (m_Type == TValueType::ENUM && !m_EnumValues) {
-        throw TException{fmt::format("enum with id '{}' does not have any enum values", m_AttributeId)};
+        throw TException{fmt::format("enum of attribute id={} does not have any values", m_AttributeId)};
       }
     }
 

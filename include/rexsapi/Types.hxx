@@ -193,7 +193,6 @@ namespace rexsapi
     if (type == "array_of_integer_arrays") {
       return TValueType::ARRAY_OF_INTEGER_ARRAYS;
     }
-
     throw TException{fmt::format("unknown value type '{}'", type)};
   }
 
@@ -231,7 +230,6 @@ namespace rexsapi
       case TValueType::ARRAY_OF_INTEGER_ARRAYS:
         return "array_of_integer_arrays";
     }
-
     throw TException{fmt::format("unknown value type '{}'", static_cast<int64_t>(type))};
   }
 
@@ -320,7 +318,6 @@ namespace rexsapi
     if (type == "stage_gear_data") {
       return TRelationType::STAGE_GEAR_DATA;
     }
-
     throw TException{fmt::format("unknown relation type '{}'", type)};
   }
 
@@ -434,7 +431,6 @@ namespace rexsapi
     if (role == "workpiece") {
       return TRelationRole::WORKPIECE;
     }
-
     throw TException{fmt::format("unknown relation role '{}'", role)};
   }
 

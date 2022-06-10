@@ -33,14 +33,13 @@ namespace
     {
     }
 
-    rexsapi::TLoaderResult
-    load(const std::function<void(rexsapi::TLoaderResult&, std::vector<uint8_t>&)>& callback) const
+    rexsapi::TResult load(const std::function<void(rexsapi::TResult&, std::vector<uint8_t>&)>& callback) const
     {
       if (!callback) {
         throw rexsapi::TException{"callback not set for resource loader"};
       }
 
-      rexsapi::TLoaderResult result;
+      rexsapi::TResult result;
       std::vector<uint8_t> buf{m_Buffer.begin(), m_Buffer.end()};
       callback(result, buf);
 

@@ -124,7 +124,7 @@ namespace rexsapi::database
   {
     auto it = m_Units.find(id);
     if (it == m_Units.end()) {
-      throw TException{fmt::format("unit with id '{}' not found", std::to_string(id))};
+      throw TException{fmt::format("unit with id '{}' not found in database", std::to_string(id))};
     }
 
     return it->second;
@@ -137,7 +137,7 @@ namespace rexsapi::database
       return unit.getName() == name;
     });
     if (it == m_Units.end()) {
-      throw TException{fmt::format("unit '{}' not found", name)};
+      throw TException{fmt::format("unit '{}' not found in database", name)};
     }
 
     return it->second;
@@ -153,7 +153,7 @@ namespace rexsapi::database
   {
     auto it = m_Types.find(id);
     if (it == m_Types.end()) {
-      throw TException{fmt::format("value type '{}' not found", std::to_string(id))};
+      throw TException{fmt::format("value type '{}' not found in database", std::to_string(id))};
     }
 
     return it->second;
@@ -169,7 +169,7 @@ namespace rexsapi::database
   {
     auto it = m_Attributes.find(id);
     if (it == m_Attributes.end()) {
-      throw TException{fmt::format("attribute '{}' not found", id)};
+      throw TException{fmt::format("attribute '{}' not found in database", id)};
     }
 
     return it->second;
@@ -185,7 +185,7 @@ namespace rexsapi::database
   {
     auto it = m_Components.find(id);
     if (it == m_Components.end()) {
-      throw TException{fmt::format("component '{}' not found", id)};
+      throw TException{fmt::format("component '{}' not found in database", id)};
     }
 
     return it->second;

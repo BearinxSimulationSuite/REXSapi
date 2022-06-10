@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <rexsapi/xml/XSDSchemaValidator.hxx>
+#include <rexsapi/XSDSchemaValidator.hxx>
 
 #include <test/TestHelper.hxx>
 

@@ -7,11 +7,12 @@ add_executable(rexsapi_test
 
   AttributeTest.cxx
   ConversionHelperTest.cxx
-  LoaderResultTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
   ModelLoaderTest.cxx
   ModelTest.cxx
+  ModeTest.cxx
+  ResultTest.cxx
   RexsVersionTest.cxx
   TypesTest.cxx
   UnitTest.cxx
@@ -19,6 +20,7 @@ add_executable(rexsapi_test
   ValueTest.cxx
   ValueTypeTest.cxx
   XMLModelSerializerTest.cxx
+  XMLUtilsTest.cxx
   XMLValueDecoderTest.cxx
   XSDSchemaValidatorTest.cxx
 

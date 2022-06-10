@@ -668,6 +668,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TStringMatrixType>());
       break;
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
+      // TODO (lcf)
       break;
   }
 }
@@ -705,14 +706,13 @@ private:
   bool load(Data& data, const std::filesystem::path& modelFile) const
   {
     rexsapi::TFileModelLoader loader{m_Validator, modelFile};
-    rexsapi::TLoaderResult result;
-    auto model = loader.load(result, m_Registry);
+    rexsapi::TResult result;
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, m_Registry);
 
-    /* only bail out on critical errors
     if (!result) {
       // add some message
       return false;
-    }*/
+    }
 
     return fillIntermediateLayer(data, *model);
   }

@@ -56,14 +56,14 @@ int main(int argc, char** argv)
       std::cout << std::endl;
     }
     rexsapi::TFileModelLoader loader{validator, argv[n]};
-    rexsapi::TLoaderResult result;
-    auto model = loader.load(result, modelRegistry);
+    rexsapi::TResult result;
+    auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, modelRegistry);
 
     std::cout << "File " << argv[n];
     if (!result) {
       std::cout << std::endl << fmt::format("Found {} issues", result.getErrors().size()) << std::endl;
       for (const auto& error : result.getErrors()) {
-        std::cout << error.m_Message << std::endl;
+        std::cout << error.message() << std::endl;
       }
     } else {
       std::cout << " processed successfully" << std::endl;

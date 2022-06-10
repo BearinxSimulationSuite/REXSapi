@@ -173,6 +173,6 @@ TEST_CASE("Model builder test")
     CHECK_THROWS_WITH(builder.hint("hint"), "no references added yet");
     builder.addRef(rexsapi::TRelationRole::GEAR, gearId);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id");
-    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no component found for id 'my-id'");
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no component found for id=my-id");
   }
 }
