@@ -34,28 +34,7 @@ namespace rexsapi
     {
     }
 
-    void setMode(TMode mode)
-    {
-      m_Mode = mode;
-    }
-
-    TErrorLevel adapt(TErrorLevel level) const
-    {
-      switch (m_Mode) {
-        case TMode::RELAXED_MODE:
-          switch (level) {
-            case TErrorLevel::CRIT:
-              return TErrorLevel::CRIT;
-            case TErrorLevel::WARN:
-            case TErrorLevel::ERR:
-              return TErrorLevel::WARN;
-          }
-          break;
-        case TMode::STRICT_MODE:
-          return level;
-      }
-      return level;
-    }
+    TErrorLevel adapt(TErrorLevel level) const;
 
   private:
     TMode m_Mode;
@@ -76,6 +55,25 @@ namespace rexsapi
     }
     throw TException{"unknown mode type"};
   }
+
+  inline TErrorLevel TModeAdapter::adapt(TErrorLevel level) const
+  {
+    switch (m_Mode) {
+      case TMode::RELAXED_MODE:
+        switch (level) {
+          case TErrorLevel::CRIT:
+            return TErrorLevel::CRIT;
+          case TErrorLevel::WARN:
+          case TErrorLevel::ERR:
+            return TErrorLevel::WARN;
+        }
+        break;
+      case TMode::STRICT_MODE:
+        return level;
+    }
+    return level;
+  }
+
 }
 
 #endif

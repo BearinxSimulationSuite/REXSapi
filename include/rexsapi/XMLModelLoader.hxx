@@ -26,29 +26,32 @@
 #include <rexsapi/XmlUtils.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
 
+#include <set>
 namespace rexsapi
 {
   class TXMLModelLoader
   {
   public:
-    explicit TXMLModelLoader(const xml::TXSDSchemaValidator& validator)
+    explicit TXMLModelLoader(TMode mode, const xml::TXSDSchemaValidator& validator)
     : m_Validator{validator}
+    , m_Mode{mode}
     {
     }
 
-    std::optional<TModel> load(TMode mode, TResult& result, const database::TModelRegistry& registry,
+    std::optional<TModel> load(TResult& result, const database::TModelRegistry& registry,
                                std::vector<uint8_t>& buffer) const;
 
   private:
     const TComponent* getComponent(const std::string& referenceId, TComponents& components,
                                    const std::unordered_map<std::string, uint64_t>& componentsMapping) const&;
-    TAttributes getAttributes(const std::string& context, TResult& result, const database::TModel& dbModel,
-                              const std::string& componentId, const database::TComponent& componentType,
+
+    TAttributes getAttributes(const std::string& context, TResult& result, const std::string& componentId,
+                              const database::TComponent& componentType,
                               const pugi::xpath_node_set& attributeNodes) const;
 
     const xml::TXSDSchemaValidator& m_Validator;
     TXMLValueDecoder m_Decoder{};
-    mutable TModeAdapter m_Mode{TMode::STRICT_MODE};
+    TModeAdapter m_Mode;
   };
 
 
@@ -56,16 +59,13 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TXMLModelLoader::load(TMode mode, TResult& result,
-                                                     const database::TModelRegistry& registry,
+  inline std::optional<TModel> TXMLModelLoader::load(TResult& result, const database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
     pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
     if (!result) {
       return {};
     }
-
-    m_Mode.setMode(mode);
 
     auto rexsModel = *doc.select_nodes("/model").begin();
     auto language = xml::getStringAttribute(rexsModel, "applicationLanguage", "");
@@ -82,6 +82,8 @@ namespace rexsapi
 
     TComponents components;
     components.reserve(10);
+    std::set<uint64_t> usedComponents;
+
     for (const auto& component : doc.select_nodes("/model/components/component")) {
       auto componentId = xml::getStringAttribute(component, "id");
       std::string componentName = xml::getStringAttribute(component, "name", "");
@@ -90,8 +92,7 @@ namespace rexsapi
 
         auto attributeNodes =
           doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
-        TAttributes attributes =
-          getAttributes(componentName, result, dbModel, componentId, componentType, attributeNodes);
+        TAttributes attributes = getAttributes(componentName, result, componentId, componentType, attributeNodes);
 
         components.emplace_back(
           TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});
@@ -129,6 +130,7 @@ namespace rexsapi
               TError{m_Mode.adapt(TErrorLevel::ERR),
                      fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
           } else {
+            usedComponents.emplace(component->getInternalId());
             references.emplace_back(TRelationReference{role, hint, *component});
           }
         } catch (const std::exception& ex) {
@@ -139,7 +141,10 @@ namespace rexsapi
 
       relations.emplace_back(TRelation{relationType, order, std::move(references)});
     }
-    // TODO (lcf): check that all components are used in at least one relation
+    if (usedComponents.size() != components.size()) {
+      result.addError(TError{TErrorLevel::WARN, fmt::format("{} components are not used in a relation",
+                                                            components.size() - usedComponents.size())});
+    }
 
     TLoadCases loadCases;
     {
@@ -164,7 +169,7 @@ namespace rexsapi
                                          loadCaseId, componentId)
                                .c_str());
           auto context = fmt::format("load_case id={}", loadCaseId);
-          TAttributes attributes = getAttributes(context, result, dbModel, componentId,
+          TAttributes attributes = getAttributes(context, result, componentId,
                                                  dbModel.findComponentById(refComponent->getType()), attributeNodes);
           loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
         }
@@ -190,7 +195,7 @@ namespace rexsapi
   }
 
   inline TAttributes TXMLModelLoader::getAttributes(const std::string& context, TResult& result,
-                                                    const database::TModel& dbModel, const std::string& componentId,
+                                                    const std::string& componentId,
                                                     const database::TComponent& componentType,
                                                     const pugi::xpath_node_set& attributeNodes) const
   {
@@ -239,7 +244,7 @@ namespace rexsapi
             m_Mode.adapt(TErrorLevel::ERR),
             fmt::format("{}: value is out of range for attribute id={} of component id={}", context, id, componentId)});
         }
-        attributes.emplace_back(TAttribute{att, TUnit{dbModel.findUnitByName(unit)}, value.first});
+        attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value.first});
       } else {
         auto [value, type] = m_Decoder.decodeUnknown(attribute.node());
         attributes.emplace_back(TAttribute{id, TUnit{unit}, type, std::move(value)});

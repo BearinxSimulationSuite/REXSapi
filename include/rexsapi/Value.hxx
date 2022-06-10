@@ -113,7 +113,6 @@ namespace rexsapi
                                  return "";
                                },
                                [](const std::string& s) -> std::string {
-                                 // TODO (lcf): add "" for string
                                  return s;
                                },
                                [](const bool& b) -> std::string {

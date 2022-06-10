@@ -66,8 +66,8 @@ namespace rexsapi
     [[nodiscard]] std::optional<TModel> load(TMode mode, TResult& result,
                                              const rexsapi::database::TModelRegistry& registry)
     {
-      TLoader loader{m_Validator};
-      return loader.load(mode, result, registry, m_Buffer);
+      TLoader loader{mode, m_Validator};
+      return loader.load(result, registry, m_Buffer);
     }
 
   private:
@@ -107,7 +107,7 @@ namespace rexsapi
     auto buffer = ss.str();
 
     std::vector<uint8_t> buf{buffer.begin(), buffer.end()};
-    return TXMLModelLoader{m_Validator}.load(mode, result, registry, buf);
+    return TXMLModelLoader{mode, m_Validator}.load(result, registry, buf);
   }
 }
 

@@ -668,6 +668,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TStringMatrixType>());
       break;
     case rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS:
+      // TODO (lcf)
       break;
   }
 }
