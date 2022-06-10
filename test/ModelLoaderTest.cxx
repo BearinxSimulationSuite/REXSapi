@@ -76,7 +76,7 @@ namespace
   };
 }
 
-TEST_CASE("Model loader test")
+TEST_CASE("XML Model loader test")
 {
   const auto registry = createModelRegistry();
   rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};

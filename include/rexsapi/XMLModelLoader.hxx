@@ -27,6 +27,7 @@
 #include <rexsapi/database/ModelRegistry.hxx>
 
 #include <set>
+
 namespace rexsapi
 {
   class TXMLModelLoader
