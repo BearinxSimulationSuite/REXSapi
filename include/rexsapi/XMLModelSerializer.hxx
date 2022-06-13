@@ -114,7 +114,9 @@ namespace rexsapi
       }
       for (const auto& reference : relation.getReferences()) {
         pugi::xml_node refNode = relNode.append_child("ref");
-        refNode.append_attribute("hint").set_value(reference.getHint().c_str());
+        if (!reference.getHint().empty()) {
+          refNode.append_attribute("hint").set_value(reference.getHint().c_str());
+        }
         auto id = getComponentId(reference.getComponent().getInternalId());
         refNode.append_attribute("id").set_value(id.c_str());
         refNode.append_attribute("role").set_value(toRealtionRoleString(reference.getRole()).c_str());

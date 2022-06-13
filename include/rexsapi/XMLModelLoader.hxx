@@ -123,7 +123,7 @@ namespace rexsapi
         std::string referenceId = xml::getStringAttribute(reference, "id");
         try {
           auto role = relationRoleFromString(xml::getStringAttribute(reference, "role"));
-          std::string hint = xml::getStringAttribute(reference, "hint");
+          std::string hint = xml::getStringAttribute(reference, "hint", "");
 
           const auto* component = getComponent(referenceId, components, componentsMapping);
           if (component == nullptr) {

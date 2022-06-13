@@ -149,5 +149,26 @@ TEST_CASE("Json model loader test")
     CHECK(result);
     CHECK_FALSE(result.isCritical());
     REQUIRE(model);
+    REQUIRE(model->getComponents().size() == 2);
+    REQUIRE(model->getRelations().size() == 2);
+  }
+
+  SUBCASE("load invalid json document")
+  {
+    std::string buffer = R"({
+  "model":{
+    "applicationId":"Bearinx",
+    "applicationVersion":"12.0.8823",
+    "date":"2021-07-01T12:18:38+01:00",
+    "version":"1.4",
+    "relations":[
+    ]})";
+
+    rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    rexsapi::TResult result;
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    CHECK_FALSE(model);
   }
 }

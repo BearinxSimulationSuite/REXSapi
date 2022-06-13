@@ -106,7 +106,7 @@ namespace rexsapi
       return res;
     }
 
-    inline const TComponent* getComponent(uint64_t referenceId, TComponents& components) const&
+    inline const TComponent* getComponent(uint64_t referenceId, const TComponents& components) const&
     {
       auto it = m_ComponentsMapping.find(referenceId);
       if (it == m_ComponentsMapping.end()) {
@@ -150,6 +150,10 @@ namespace rexsapi
 
     TAttributes getAttributes(const std::string& context, TResult& result, uint64_t componentId,
                               const database::TComponent& componentType, const json& component) const;
+
+    TRelations getRelations(TResult& result, ComponentMapping componentMapping, const TComponents& components,
+                            const json& j) const;
+
     TValueType getValueType(const json& attribute) const;
 
     TModeAdapter m_Mode;
@@ -184,7 +188,8 @@ namespace rexsapi
       ComponentMapping componentMapping;
       TComponents components = getComponents(result, componentMapping, j, dbModel);
 
-      TRelations relations;
+      TRelations relations = getRelations(result, componentMapping, components, j);
+
       TLoadCases loadCases;
 
       return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
@@ -244,7 +249,51 @@ namespace rexsapi
     return attributes;
   }
 
-  TValueType TJsonModelLoader::getValueType(const json& attribute) const
+  inline TRelations TJsonModelLoader::getRelations(TResult& result, ComponentMapping componentMapping,
+                                                   const TComponents& components, const json& j) const
+  {
+    TRelations relations;
+    std::set<uint64_t> usedComponents;
+    for (const auto& relation : j["/model/relations"_json_pointer]) {
+      auto relationId = relation["id"].get<uint64_t>();
+      auto relationType = relationTypeFromString(relation["type"].get<std::string>());
+      std::optional<uint32_t> order;
+      if (relation.contains("order")) {
+        order = relation["order"].get<uint32_t>();
+        if (order < 1) {
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
+        }
+      }
+
+      TRelationReferences references;
+      for (const auto& reference : relation["/refs"_json_pointer]) {
+        auto referenceId = reference["id"].get<uint64_t>();
+        auto hint = reference.value("hint", "");
+        auto role = relationRoleFromString(reference["role"]);
+
+        const auto* component = componentMapping.getComponent(referenceId, components);
+        if (component == nullptr) {
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::ERR),
+                   fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
+        } else {
+          usedComponents.emplace(component->getInternalId());
+          references.emplace_back(TRelationReference{role, hint, *component});
+        }
+      }
+
+      relations.emplace_back(TRelation{relationType, order, std::move(references)});
+    }
+    if (usedComponents.size() != components.size()) {
+      result.addError(TError{TErrorLevel::WARN, fmt::format("{} components are not used in a relation",
+                                                            components.size() - usedComponents.size())});
+    }
+
+    return relations;
+  }
+
+  inline TValueType TJsonModelLoader::getValueType(const json& attribute) const
   {
     for (const auto& [key, _] : attribute.items()) {
       if (key == "id" || key == "unit") {
