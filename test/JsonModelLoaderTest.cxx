@@ -81,30 +81,22 @@ TEST_CASE("Json model loader test")
         "type":"gear_unit",
         "attributes":[
           {
-            "id":"name",
-            "string":"30203-A"
+            "id":"reference_temperature",
+            "unit":"C",
+            "floating_point":17.0
           },
           {
-            "id":"normal_module",
-            "unit":"mm",
-            "floating_point":2.0
-          },
-          {
-            "id":"addendum_modification_coefficient",
+            "id":"gear_shift_index",
             "unit":"none",
-            "floating_point":0.1
+            "integer":7
           },
           {
             "id":"number_of_gears",
             "integer":3
           },
           {
-            "id":"is_driving_gear",
-            "boolean":false
-          },
-          {
-            "id":"axial_force_absorption",
-            "enum":"both_directions"
+            "id":"account_for_gravity",
+            "boolean":true
           },
           {
             "id":"u_axis_vector",
@@ -119,14 +111,6 @@ TEST_CASE("Json model loader test")
               [0.0, 1.0, 0.0],
               [0.0, 0.0, 1.0]
             ]
-          },
-          {
-            "id":"example_attribute_id",
-            "unit":"mm",
-            "floating_point_array_coded":{
-              "code":"float32",
-              "value":"MveeQZ6hM0I"
-            }
           },
           {
             "id":"element_structure",
@@ -161,8 +145,9 @@ TEST_CASE("Json model loader test")
 
     rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     rexsapi::TResult result;
-    auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
-    // REQUIRE(model);
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(model);
   }
 }

@@ -16,6 +16,8 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Json.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelLoader.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonValueDecoder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelLoader.hxx
