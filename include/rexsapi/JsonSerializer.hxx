@@ -14,21 +14,29 @@
  * limitations under the License.
  */
 
-#ifndef REXSAPI_HXX
-#define REXSAPI_HXX
+#ifndef REXSAPI_JSON_SERIALIZER_HXX
+#define REXSAPI_JSON_SERIALIZER_HXX
 
-#include <rexsapi/Defines.hxx>
-#include <rexsapi/JsonModelLoader.hxx>
-#include <rexsapi/JsonModelSerializer.hxx>
-#include <rexsapi/JsonSerializer.hxx>
-#include <rexsapi/ModelBuilder.hxx>
-#include <rexsapi/ModelLoader.hxx>
-#include <rexsapi/Version.hxx>
-#include <rexsapi/XMLModelLoader.hxx>
-#include <rexsapi/XMLModelSerializer.hxx>
-#include <rexsapi/XMLSerializer.hxx>
-#include <rexsapi/database/FileResourceLoader.hxx>
-#include <rexsapi/database/ModelRegistry.hxx>
-#include <rexsapi/database/XMLModelLoader.hxx>
+#include <rexsapi/Json.hxx>
+
+namespace rexsapi
+{
+  class JsonStringSerializer
+  {
+  public:
+    void serialize(const ordered_json& doc)
+    {
+      m_Model = doc.dump(2);
+    }
+
+    const std::string& getModel() const&
+    {
+      return m_Model;
+    }
+
+  private:
+    std::string m_Model;
+  };
+}
 
 #endif

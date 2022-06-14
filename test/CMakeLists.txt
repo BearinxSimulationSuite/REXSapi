@@ -8,6 +8,7 @@ add_executable(rexsapi_test
   AttributeTest.cxx
   ConversionHelperTest.cxx
   JsonModelLoaderTest.cxx
+  JsonModelSerializerTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
   ModelLoaderTest.cxx

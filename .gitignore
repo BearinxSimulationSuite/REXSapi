@@ -4,3 +4,5 @@ build
 linux-build
 out
 build_xcode
+check_loc.sh
+ignore_files.txt

@@ -1,4 +1,4 @@
-configure_file (
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/Version.hxx.in"
   "${PROJECT_BINARY_DIR}/rexsapi/Version.hxx"
 )
@@ -16,6 +16,8 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Json.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelLoader.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonValueDecoder.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
