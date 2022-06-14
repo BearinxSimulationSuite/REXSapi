@@ -53,6 +53,11 @@ namespace rexsapi
     {
     }
 
+    bool operator*() const
+    {
+      return m_Value;
+    }
+
     explicit operator bool() const
     {
       return m_Value;
@@ -61,6 +66,11 @@ namespace rexsapi
     friend bool operator==(const Bool& lhs, const Bool& rhs)
     {
       return lhs.m_Value == rhs.m_Value;
+    }
+
+    friend bool operator!=(const Bool& lhs, const Bool& rhs)
+    {
+      return lhs.m_Value != rhs.m_Value;
     }
 
     bool m_Value{false};
