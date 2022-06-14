@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     if (n > 2) {
       std::cout << std::endl;
     }
-    rexsapi::TFileModelLoader loader{validator, argv[n]};
+    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{validator, argv[n]};
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, modelRegistry);
 

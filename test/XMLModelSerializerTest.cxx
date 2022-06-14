@@ -32,7 +32,8 @@ namespace
   public:
     rexsapi::TModel load(const std::filesystem::path& modelFile)
     {
-      rexsapi::TFileModelLoader loader{m_Validator, modelFile};
+      rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{m_Validator,
+                                                                                                    modelFile};
       rexsapi::TResult result;
       auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
       if (!model) {
@@ -69,12 +70,12 @@ namespace
   };
 }
 
-TEST_CASE("Model file serializer test")
+TEST_CASE("XML model file serializer test")
 {
   FileLoader loader;
   auto model = loader.load(projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs");
 
-  SUBCASE("serialize loaded model")
+  SUBCASE("Serialize loaded model")
   {
     TemporaryDirectory tmpDir;
     rexsapi::XMLFileSerializer xmlSerializer{tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"};
@@ -87,7 +88,7 @@ TEST_CASE("Model file serializer test")
   }
 }
 
-TEST_CASE("Serialize new model")
+TEST_CASE("XML serialize new model")
 {
   const auto dbModel = loadModel("1.4");
 

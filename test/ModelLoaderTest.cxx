@@ -192,7 +192,8 @@ TEST_CASE("XML Model loader test")
 
   SUBCASE("Load simple model from file")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
+    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{
+      validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK_FALSE(result);
@@ -214,8 +215,8 @@ TEST_CASE("XML Model loader test")
 
   SUBCASE("Load complex model from file in strict mode")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
-                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
+    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{
+      validator, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs"};
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK_FALSE(result);
@@ -249,8 +250,8 @@ TEST_CASE("XML Model loader test")
 
   SUBCASE("Load complex model from file in relaxed mode")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
-                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
+    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{
+      validator, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs"};
     rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
