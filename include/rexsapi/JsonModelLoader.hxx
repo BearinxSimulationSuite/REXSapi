@@ -145,16 +145,16 @@ namespace rexsapi
                                std::vector<uint8_t>& buffer) const;
 
   private:
-    TComponents getComponents(TResult& result, ComponentMapping componentMapping, const database::TModel& dbModel,
+    TComponents getComponents(TResult& result, ComponentMapping& componentMapping, const database::TModel& dbModel,
                               const json& j) const;
 
     TAttributes getAttributes(const std::string& context, TResult& result, uint64_t componentId,
                               const database::TComponent& componentType, const json& component) const;
 
-    TRelations getRelations(TResult& result, ComponentMapping componentMapping, const TComponents& components,
+    TRelations getRelations(TResult& result, const ComponentMapping& componentMapping, const TComponents& components,
                             const json& j) const;
 
-    TLoadCases getLoadCases(TResult& result, ComponentMapping componentMapping, const TComponents& components,
+    TLoadCases getLoadCases(TResult& result, const ComponentMapping& componentMapping, const TComponents& components,
                             const database::TModel& dbModel, const json& j) const;
 
     TValueType getValueType(const json& attribute) const;
@@ -200,7 +200,7 @@ namespace rexsapi
     return {};
   }
 
-  inline TComponents TJsonModelLoader::getComponents(TResult& result, ComponentMapping componentMapping,
+  inline TComponents TJsonModelLoader::getComponents(TResult& result, ComponentMapping& componentMapping,
                                                      const database::TModel& dbModel, const json& j) const
   {
     TComponents components;
@@ -250,7 +250,7 @@ namespace rexsapi
     return attributes;
   }
 
-  inline TRelations TJsonModelLoader::getRelations(TResult& result, ComponentMapping componentMapping,
+  inline TRelations TJsonModelLoader::getRelations(TResult& result, const ComponentMapping& componentMapping,
                                                    const TComponents& components, const json& j) const
   {
     TRelations relations;
@@ -294,7 +294,7 @@ namespace rexsapi
     return relations;
   }
 
-  inline TLoadCases TJsonModelLoader::getLoadCases(TResult& result, ComponentMapping componentMapping,
+  inline TLoadCases TJsonModelLoader::getLoadCases(TResult& result, const ComponentMapping& componentMapping,
                                                    const TComponents& components, const database::TModel& dbModel,
                                                    const json& j) const
   {

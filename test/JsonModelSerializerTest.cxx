@@ -30,10 +30,9 @@ namespace
   class StringLoader
   {
   public:
-    rexsapi::TModel load(const std::string& buffer)
+    rexsapi::TModel load(rexsapi::TResult result, const std::string& buffer)
     {
       rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{m_Validator, buffer};
-      rexsapi::TResult result;
       auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
       if (!model) {
         throw rexsapi::TException{"cannot load model"};
@@ -45,13 +44,6 @@ namespace
     rexsapi::database::TModelRegistry m_Registry{createModelRegistry()};
     rexsapi::TJsonModelValidator m_Validator;
   };
-}
-
-TEST_CASE("Json model file serializer test")
-{
-  SUBCASE("Serialize loaded model")
-  {
-  }
 }
 
 TEST_CASE("Json serialize new model")
@@ -183,15 +175,17 @@ TEST_CASE("Json serialize new model")
 
   rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(loadSpectrum)};
 
-  rexsapi::JsonStringSerializer stringSerializer;
   rexsapi::JsonModelSerializer modelSerializer;
 
-  SUBCASE("Serialize model")
+  SUBCASE("Serialize model to memory")
   {
+    rexsapi::JsonStringSerializer stringSerializer;
     modelSerializer.serialize(model, stringSerializer);
     REQUIRE_FALSE(stringSerializer.getModel().empty());
     StringLoader loader;
-    auto roundtripModel = loader.load(stringSerializer.getModel());
+    rexsapi::TResult result;
+    auto roundtripModel = loader.load(result, stringSerializer.getModel());
+    CHECK(result);
     CHECK(roundtripModel.getInfo().getApplicationId() == "REXSApi Unit Test");
     CHECK(roundtripModel.getInfo().getApplicationVersion() == "1.0");
     CHECK(roundtripModel.getInfo().getDate() == "2022-05-20T08:59:10+01:00");
@@ -202,5 +196,22 @@ TEST_CASE("Json serialize new model")
     CHECK(roundtripModel.getRelations().size() == 3);
     CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
     CHECK(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);
+  }
+
+  SUBCASE("Serialize model to file")
+  {
+    const auto registry = createModelRegistry();
+    TemporaryDirectory guard;
+    rexsapi::JsonFileSerializer fileSerializer{guard.getTempDirectoryPath() / "test_model.rexsj"};
+    modelSerializer.serialize(model, fileSerializer);
+    REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexsj"));
+
+    rexsapi::TJsonModelValidator validator;
+    rexsapi::TFileModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{
+      validator, guard.getTempDirectoryPath() / "test_model.rexsj"};
+    rexsapi::TResult result;
+    auto loadedModel = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
+    CHECK(result);
+    CHECK(loadModel);
   }
 }

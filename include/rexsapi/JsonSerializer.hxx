@@ -19,6 +19,9 @@
 
 #include <rexsapi/Json.hxx>
 
+#include <filesystem>
+#include <fstream>
+
 namespace rexsapi
 {
   class JsonStringSerializer
@@ -36,6 +39,26 @@ namespace rexsapi
 
   private:
     std::string m_Model;
+  };
+
+
+  class JsonFileSerializer
+  {
+  public:
+    explicit JsonFileSerializer(std::filesystem::path file)
+    : m_File{std::move(file)}
+    {
+      // TODO (lcf): check if the path exists and can be written
+    }
+
+    void serialize(const ordered_json& doc)
+    {
+      std::ofstream stream{m_File};
+      stream << doc.dump(2);
+    }
+
+  private:
+    std::filesystem::path m_File;
   };
 }
 
