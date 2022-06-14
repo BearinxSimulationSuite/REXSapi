@@ -82,11 +82,11 @@ namespace rexsapi
 
   inline void JsonModelSerializer::serialize(ordered_json& model, const TModelInfo& info) const
   {
-    model["version"] = info.getVersion().asString();
     model["applicationId"] = info.getApplicationId();
     model["applicationVersion"] = info.getApplicationVersion();
     model["date"] = info.getDate();
-    if (!info.getApplicationLanguage().has_value()) {
+    model["version"] = info.getVersion().asString();
+    if (info.getApplicationLanguage().has_value()) {
       model["applicationLanguage"] = *info.getApplicationLanguage();
     }
   }

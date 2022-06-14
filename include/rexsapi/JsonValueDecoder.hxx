@@ -34,11 +34,19 @@ namespace rexsapi
   public:
     virtual ~TJsonDecoder() = default;
 
+    TJsonDecoder(const TJsonDecoder&) = default;
+    TJsonDecoder& operator=(const TJsonDecoder&) = default;
+    TJsonDecoder(TJsonDecoder&&) = default;
+    TJsonDecoder& operator=(TJsonDecoder&&) = default;
+
     [[nodiscard]] std::pair<TValue, bool> decode(const std::optional<const database::TEnumValues>& enumValue,
                                                  const json& node) const
     {
       return onDecode(enumValue, node);
     }
+
+  protected:
+    TJsonDecoder() = default;
 
   private:
     virtual std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
@@ -52,8 +60,6 @@ namespace rexsapi
 
     [[nodiscard]] std::pair<TValue, bool>
     decode(TValueType type, const std::optional<const database::TEnumValues>& enumValue, const json& node) const;
-
-    [[nodiscard]] std::pair<TValue, TValueType> decodeUnknown(const json& node) const;
 
   private:
     std::unordered_map<TValueType, std::unique_ptr<TJsonDecoder>> m_Decoder;
@@ -71,6 +77,19 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         return std::make_pair(TValue{node["string"].get<std::string>()}, true);
+      }
+    };
+
+    class TFileReferenceDecoder : public TJsonDecoder
+    {
+    public:
+      using Type = std::string;
+
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const rexsapi::json& node) const override
+      {
+        return std::make_pair(TValue{node["file_reference"].get<std::string>()}, true);
       }
     };
 
@@ -100,6 +119,19 @@ namespace rexsapi
       }
     };
 
+    class TReferenceDecoder : public TJsonDecoder
+    {
+    public:
+      using Type = int64_t;
+
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
+                                       const rexsapi::json& node) const override
+      {
+        return std::make_pair(TValue{node["reference_component"].get<int64_t>()}, true);
+      }
+    };
+
     class TFloatDecoder : public TJsonDecoder
     {
     public:
@@ -123,7 +155,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         if (enumValue) {
-          auto value = node["string"].get<std::string>();
+          auto value = node["enum"].get<std::string>();
           return std::make_pair(TValue{value}, enumValue->check(value));
         }
         return std::make_pair(TValue{}, false);
@@ -136,7 +168,7 @@ namespace rexsapi
     public:
       using type = Type;
 
-      TArrayDecoder(std::string name)
+      explicit TArrayDecoder(std::string name)
       : m_Name{std::move(name)}
       {
       }
@@ -177,7 +209,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
                                        const rexsapi::json& node) const override
       {
-        if (enumValue) {
+        if (enumValue.has_value()) {
           std::vector<std::string> array;
           bool result{true};
           auto arr = node["enum_array"];
@@ -201,7 +233,7 @@ namespace rexsapi
     public:
       using type = Type;
 
-      TMatrixDecoder(std::string name)
+      explicit TMatrixDecoder(std::string name)
       : m_Name{std::move(name)}
       {
       }
@@ -230,7 +262,7 @@ namespace rexsapi
     public:
       using type = Type;
 
-      TArrayOfArraysDecoder(std::string name)
+      explicit TArrayOfArraysDecoder(std::string name)
       : m_Name{std::move(name)}
       {
       }
@@ -275,8 +307,8 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] =
       std::make_unique<detail::json::TMatrixDecoder<double>>("floating_point_matrix");
     m_Decoder[TValueType::STRING_MATRIX] = std::make_unique<detail::json::TMatrixDecoder<std::string>>("string_matrix");
-    m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<detail::json::TIntegerDecoder>();
-    m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<detail::json::TStringDecoder>();
+    m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<detail::json::TReferenceDecoder>();
+    m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<detail::json::TFileReferenceDecoder>();
     m_Decoder[TValueType::ARRAY_OF_INTEGER_ARRAYS] =
       std::make_unique<detail::json::TArrayOfArraysDecoder<int64_t>>("array_of_integer_arrays");
   }

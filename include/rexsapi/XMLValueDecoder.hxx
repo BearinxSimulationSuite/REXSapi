@@ -34,11 +34,19 @@ namespace rexsapi
   public:
     virtual ~TXMLDecoder() = default;
 
+    TXMLDecoder(const TXMLDecoder&) = default;
+    TXMLDecoder& operator=(const TXMLDecoder&) = default;
+    TXMLDecoder(TXMLDecoder&&) = default;
+    TXMLDecoder& operator=(TXMLDecoder&&) = default;
+
     [[nodiscard]] std::pair<TValue, bool> decode(const std::optional<const database::TEnumValues>& enumValue,
                                                  const pugi::xml_node& node) const
     {
       return onDecode(enumValue, node);
     }
+
+  protected:
+    TXMLDecoder() = default;
 
   private:
     virtual std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,

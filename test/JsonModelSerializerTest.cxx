@@ -25,7 +25,6 @@
 
 #include <doctest.h>
 
-
 namespace
 {
   class StringLoader
@@ -190,9 +189,7 @@ TEST_CASE("Json serialize new model")
   SUBCASE("Serialize model")
   {
     modelSerializer.serialize(model, stringSerializer);
-    CHECK_FALSE(stringSerializer.getModel().empty());
-    std::cout << stringSerializer.getModel() << std::endl;
-    /*
+    REQUIRE_FALSE(stringSerializer.getModel().empty());
     StringLoader loader;
     auto roundtripModel = loader.load(stringSerializer.getModel());
     CHECK(roundtripModel.getInfo().getApplicationId() == "REXSApi Unit Test");
@@ -205,6 +202,5 @@ TEST_CASE("Json serialize new model")
     CHECK(roundtripModel.getRelations().size() == 3);
     CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
     CHECK(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);
-    */
   }
 }
