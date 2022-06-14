@@ -145,14 +145,17 @@ namespace rexsapi
                                std::vector<uint8_t>& buffer) const;
 
   private:
-    TComponents getComponents(TResult& result, ComponentMapping componentMapping, const json& j,
-                              const database::TModel& dbModel) const;
+    TComponents getComponents(TResult& result, ComponentMapping componentMapping, const database::TModel& dbModel,
+                              const json& j) const;
 
     TAttributes getAttributes(const std::string& context, TResult& result, uint64_t componentId,
                               const database::TComponent& componentType, const json& component) const;
 
     TRelations getRelations(TResult& result, ComponentMapping componentMapping, const TComponents& components,
                             const json& j) const;
+
+    TLoadCases getLoadCases(TResult& result, ComponentMapping componentMapping, const TComponents& components,
+                            const database::TModel& dbModel, const json& j) const;
 
     TValueType getValueType(const json& attribute) const;
 
@@ -186,11 +189,9 @@ namespace rexsapi
       const auto& dbModel = registry.getModel(info.getVersion(), "en");
 
       ComponentMapping componentMapping;
-      TComponents components = getComponents(result, componentMapping, j, dbModel);
-
+      TComponents components = getComponents(result, componentMapping, dbModel, j);
       TRelations relations = getRelations(result, componentMapping, components, j);
-
-      TLoadCases loadCases;
+      TLoadCases loadCases = getLoadCases(result, componentMapping, components, dbModel, j);
 
       return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
     } catch (const json::exception& ex) {
@@ -199,8 +200,8 @@ namespace rexsapi
     return {};
   }
 
-  inline TComponents TJsonModelLoader::getComponents(TResult& result, ComponentMapping componentMapping, const json& j,
-                                                     const database::TModel& dbModel) const
+  inline TComponents TJsonModelLoader::getComponents(TResult& result, ComponentMapping componentMapping,
+                                                     const database::TModel& dbModel, const json& j) const
   {
     TComponents components;
 
@@ -291,6 +292,36 @@ namespace rexsapi
     }
 
     return relations;
+  }
+
+  inline TLoadCases TJsonModelLoader::getLoadCases(TResult& result, ComponentMapping componentMapping,
+                                                   const TComponents& components, const database::TModel& dbModel,
+                                                   const json& j) const
+  {
+    TLoadCases loadCases;
+
+    for (const auto& loadCase : j["/model/load_spectrum/load_cases"_json_pointer]) {
+      auto loadCaseId = loadCase["id"].get<uint64_t>();
+      TLoadComponents loadComponents;
+
+      for (const auto& componentRef : loadCase["/components"_json_pointer]) {
+        auto componentId = componentRef["id"].get<uint64_t>();
+        const auto* component = componentMapping.getComponent(componentId, components);
+        if (component == nullptr) {
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::ERR),
+                   fmt::format("load_case id={} referenced component id={} does not exist", loadCaseId, componentId)});
+          continue;
+        }
+        auto context = fmt::format("load_case id={}", loadCaseId);
+        TAttributes attributes =
+          getAttributes(context, result, componentId, dbModel.findComponentById(component->getType()), componentRef);
+        loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
+      }
+      loadCases.emplace_back(std::move(loadComponents));
+    }
+
+    return loadCases;
   }
 
   inline TValueType TJsonModelLoader::getValueType(const json& attribute) const

@@ -139,7 +139,29 @@ TEST_CASE("Json model loader test")
           }
         ]
       }
-    ]
+    ],
+    "load_spectrum": {
+      "id": 1,
+      "load_cases": [
+        {
+          "id": 1,
+          "components": [
+            {
+              "id": 1,
+              "attributes": [
+                { "id": "load_duration_fraction", "unit": "%", "floating_point": 15 }
+              ]
+            },
+            {
+              "id": 2,
+              "attributes": [
+                { "id": "load_duration_fraction", "unit": "%", "floating_point": 21 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
 })";
 
@@ -151,6 +173,7 @@ TEST_CASE("Json model loader test")
     REQUIRE(model);
     REQUIRE(model->getComponents().size() == 2);
     REQUIRE(model->getRelations().size() == 2);
+    REQUIRE(model->getLoadSpectrum().hasLoadCases());
   }
 
   SUBCASE("load invalid json document")
