@@ -66,6 +66,11 @@ namespace rexsapi
       return m_Level == TErrorLevel::CRIT;
     }
 
+    bool isWarning() const
+    {
+      return m_Level == TErrorLevel::WARN;
+    }
+
     std::string message() const
     {
       if (m_Position != -1) {
@@ -99,13 +104,23 @@ namespace rexsapi
     bool isCritical() const
     {
       return !m_Errors.empty() && std::find_if(m_Errors.begin(), m_Errors.end(), [](const auto& error) {
-                                   return error.isCritical();
-                                 }) != m_Errors.end();
+                                    return error.isCritical();
+                                  }) != m_Errors.end();
+    }
+
+    bool hasIssues() const
+    {
+      return m_Errors.size() > 0;
     }
 
     const std::vector<TError>& getErrors() const&
     {
       return m_Errors;
+    }
+
+    void reset()
+    {
+      m_Errors.clear();
     }
 
   private:
