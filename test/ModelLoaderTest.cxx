@@ -74,13 +74,25 @@ namespace
   private:
     const rexsapi::TComponent& m_Component;
   };
+
+  std::optional<rexsapi::TModel> loadModel(rexsapi::TResult& result, const std::filesystem::path& path,
+                                           const rexsapi::database::TModelRegistry& registry,
+                                           rexsapi::TMode mode = rexsapi::TMode::STRICT_MODE)
+  {
+    rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
+    rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
+
+    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{validator, path};
+    return loader.load(mode, result, registry);
+  }
 }
 
-TEST_CASE("Model loader test")
+TEST_CASE("XML Model loader test")
 {
   const auto registry = createModelRegistry();
   rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
   rexsapi::xml::TXSDSchemaValidator validator{schemaLoader};
+  rexsapi::TResult result;
 
   SUBCASE("Load model from buffer")
   {
@@ -163,7 +175,6 @@ TEST_CASE("Model loader test")
     )";
 
     rexsapi::TBufferModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{validator, buffer};
-    rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK(result);
     REQUIRE(model);
@@ -192,10 +203,10 @@ TEST_CASE("Model loader test")
 
   SUBCASE("Load simple model from file")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs"};
-    rexsapi::TResult result;
-    auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs", registry);
+    CHECK(model);
     CHECK_FALSE(result);
+    CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 5);
     CHECK(result.getErrors()[0].message() == "42CrMo4 [238]: value of attribute id=material_type_din_743_2012 of "
                                              "component id=238 does not have the correct value type");
@@ -213,11 +224,10 @@ TEST_CASE("Model loader test")
 
   SUBCASE("Load complex model from file in strict mode")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
-                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
-    rexsapi::TResult result;
-    auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs", registry);
+    REQUIRE(model);
     CHECK_FALSE(result);
+    CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
     CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
     CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
@@ -247,11 +257,10 @@ TEST_CASE("Model loader test")
 
   SUBCASE("Load complex model from file in relaxed mode")
   {
-    rexsapi::TFileModelLoader loader{validator, projectDir() / "test" / "example_models" /
-                                                  "FVA-Industriegetriebe_2stufig_1-4.rexs"};
-    rexsapi::TResult result;
-    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs", registry, rexsapi::TMode::RELAXED_MODE);
+    REQUIRE(model);
     CHECK(result);
+    CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
     CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
     CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
@@ -277,5 +286,24 @@ TEST_CASE("Model loader test")
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
     CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load model from non-existent file failure")
+  {
+    auto model = loadModel(result, "non-exising-file.rexs", registry);
+    CHECK_FALSE(model);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    REQUIRE(result.getErrors().size() == 1);
+    CHECK(result.getErrors()[0].message() == "'non-exising-file.rexs' does not exist");
+  }
+
+  SUBCASE("Load model from directory failure")
+  {
+    auto model = loadModel(result, projectDir(), registry);
+    CHECK_FALSE(model);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    REQUIRE(result.getErrors().size() == 1);
   }
 }

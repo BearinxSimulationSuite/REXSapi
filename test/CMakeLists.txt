@@ -3,12 +3,17 @@ configure_file(TestHelper.hxx.in ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx)
 add_executable(rexsapi_test
   main.cpp
   ${CMAKE_CURRENT_BINARY_DIR}/TestHelper.hxx
+  TestModel.hxx
   TestModelLoader.hxx
 
   AttributeTest.cxx
   ConversionHelperTest.cxx
+  JsonModelLoaderTest.cxx
+  JsonModelSerializerTest.cxx
+  JsonValueDecoderTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
+  ModelHelperTest.cxx
   ModelLoaderTest.cxx
   ModelTest.cxx
   ModeTest.cxx

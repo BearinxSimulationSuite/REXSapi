@@ -28,11 +28,11 @@
 
 namespace rexsapi
 {
-
+  template<typename TSchemaValidator, typename TLoader>
   class TFileModelLoader
   {
   public:
-    explicit TFileModelLoader(const xml::TXSDSchemaValidator& validator, std::filesystem::path path)
+    explicit TFileModelLoader(const TSchemaValidator& validator, std::filesystem::path path)
     : m_Validator{validator}
     , m_Path{std::move(path)}
     {
@@ -42,7 +42,7 @@ namespace rexsapi
                                              const rexsapi::database::TModelRegistry& registry);
 
   private:
-    const xml::TXSDSchemaValidator& m_Validator;
+    const TSchemaValidator& m_Validator;
     std::filesystem::path m_Path;
   };
 
@@ -80,8 +80,10 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline std::optional<TModel> TFileModelLoader::load(TMode mode, TResult& result,
-                                                      const rexsapi::database::TModelRegistry& registry)
+  template<typename TSchemaValidator, typename TLoader>
+  inline std::optional<TModel>
+  TFileModelLoader<TSchemaValidator, TLoader>::load(TMode mode, TResult& result,
+                                                    const rexsapi::database::TModelRegistry& registry)
   {
     if (!std::filesystem::exists(m_Path)) {
       result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' does not exist", m_Path.string())});
@@ -89,11 +91,6 @@ namespace rexsapi
     }
     if (!std::filesystem::is_regular_file(m_Path)) {
       result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' is not a regular file", m_Path.string())});
-      return {};
-    }
-    // TODO (lcf): use extension mapper
-    if (m_Path.extension() != ".rexs") {
-      result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' is not a model file", m_Path.string())});
       return {};
     }
 
@@ -107,7 +104,7 @@ namespace rexsapi
     auto buffer = ss.str();
 
     std::vector<uint8_t> buf{buffer.begin(), buffer.end()};
-    return TXMLModelLoader{mode, m_Validator}.load(result, registry, buf);
+    return TLoader{mode, m_Validator}.load(result, registry, buf);
   }
 }
 

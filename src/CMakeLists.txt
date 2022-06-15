@@ -1,4 +1,4 @@
-configure_file (
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/Version.hxx.in"
   "${PROJECT_BINARY_DIR}/rexsapi/Version.hxx"
 )
@@ -14,8 +14,15 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Json.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelLoader.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonValueDecoder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Relation.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Result.hxx
@@ -45,7 +52,8 @@ target_sources(rexsapi INTERFACE
 )
 
 target_include_directories(rexsapi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>)
-target_include_directories(rexsapi SYSTEM INTERFACE "${pugixml_SOURCE_DIR}/src")
 target_include_directories(rexsapi SYSTEM INTERFACE "${fmt_SOURCE_DIR}/include")
+target_include_directories(rexsapi SYSTEM INTERFACE "${json_SOURCE_DIR}/single_include")
+target_include_directories(rexsapi SYSTEM INTERFACE "${pugixml_SOURCE_DIR}/src")
 target_include_directories(rexsapi INTERFACE ${PROJECT_BINARY_DIR})
 target_compile_options(rexsapi INTERFACE ${REXSAPI_COMPILE_OPTIONS})

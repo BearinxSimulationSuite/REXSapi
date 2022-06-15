@@ -25,18 +25,49 @@ TEST_CASE("Loader result test")
   {
     rexsapi::TResult result{};
     CHECK(result);
+    CHECK_FALSE(result.hasIssues());
   }
 
   SUBCASE("With errors")
   {
     rexsapi::TResult result{};
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::ERR, "my first message"});
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::ERR, "my second message", 32});
+
+    CHECK_FALSE(result);
+    CHECK(result.hasIssues());
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(result.getErrors().size() == 2);
+    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].isError());
+    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].isError());
+
+    result.reset();
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
+  }
+
+  SUBCASE("With errors and critical")
+  {
+    rexsapi::TResult result{};
+    result.addError(rexsapi::TError{rexsapi::TErrorLevel::ERR, "my first message"});
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::CRIT, "my second message", 32});
 
     CHECK_FALSE(result);
+    CHECK(result.hasIssues());
+    CHECK(result.isCritical());
     REQUIRE(result.getErrors().size() == 2);
     CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].isError());
+    CHECK_FALSE(result.getErrors()[0].isCritical());
     CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].isError());
+    CHECK(result.getErrors()[1].isCritical());
+
+    result.reset();
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
   }
 
   SUBCASE("With warnings")
@@ -46,9 +77,17 @@ TEST_CASE("Loader result test")
     result.addError(rexsapi::TError{rexsapi::TErrorLevel::WARN, "my second message", 32});
 
     CHECK(result);
+    CHECK(result.hasIssues());
+    CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 2);
     CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].isWarning());
     CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].isWarning());
+
+    result.reset();
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
   }
 
   SUBCASE("Error level to string")

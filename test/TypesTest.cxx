@@ -112,3 +112,37 @@ TEST_CASE("Relation role test")
     CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::WORKPIECE) == "workpiece");
   }
 }
+
+TEST_CASE("Bool test")
+{
+  rexsapi::Bool bTrue{true};
+  rexsapi::Bool bFalse{false};
+
+  SUBCASE("Create")
+  {
+    CHECK(bTrue);
+    CHECK_FALSE(bFalse);
+  }
+
+  SUBCASE("Compare")
+  {
+    CHECK_FALSE(bTrue == bFalse);
+    CHECK_FALSE(bFalse == bTrue);
+    CHECK(bTrue == true);
+    CHECK(bFalse == false);
+    CHECK(true == bTrue);
+    CHECK(false == bFalse);
+
+    CHECK(bTrue != bFalse);
+    CHECK_FALSE(bTrue != true);
+    CHECK_FALSE(bFalse != false);
+    CHECK_FALSE(true != bTrue);
+    CHECK_FALSE(false != bFalse);
+  }
+
+  SUBCASE("Operators")
+  {
+    CHECK(*bTrue);
+    CHECK_FALSE(*bFalse);
+  }
+}

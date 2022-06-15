@@ -18,23 +18,23 @@
 #define REXSAPI_XML_MODEL_LOADER_HXX
 
 #include <rexsapi/ConversionHelper.hxx>
-#include <rexsapi/Mode.hxx>
-#include <rexsapi/Model.hxx>
-#include <rexsapi/ValidityChecker.hxx>
+#include <rexsapi/ModelHelper.hxx>
 #include <rexsapi/XMLValueDecoder.hxx>
 #include <rexsapi/XSDSchemaValidator.hxx>
 #include <rexsapi/XmlUtils.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
 
 #include <set>
+
 namespace rexsapi
 {
   class TXMLModelLoader
   {
   public:
     explicit TXMLModelLoader(TMode mode, const xml::TXSDSchemaValidator& validator)
-    : m_Validator{validator}
-    , m_Mode{mode}
+    : m_Mode{mode}
+    , m_Validator{validator}
+    , m_LoaderHelper{mode}
     {
     }
 
@@ -42,16 +42,13 @@ namespace rexsapi
                                std::vector<uint8_t>& buffer) const;
 
   private:
-    const TComponent* getComponent(const std::string& referenceId, TComponents& components,
-                                   const std::unordered_map<std::string, uint64_t>& componentsMapping) const&;
-
     TAttributes getAttributes(const std::string& context, TResult& result, const std::string& componentId,
                               const database::TComponent& componentType,
                               const pugi::xpath_node_set& attributeNodes) const;
 
-    const xml::TXSDSchemaValidator& m_Validator;
-    TXMLValueDecoder m_Decoder{};
     TModeAdapter m_Mode;
+    const xml::TXSDSchemaValidator& m_Validator;
+    TModelHelper<TXMLValueDecoder> m_LoaderHelper;
   };
 
 
@@ -77,8 +74,7 @@ namespace rexsapi
     // TODO (lcf): version should be configurable, maybe have something
     // like a sub-model-registry based on the language
     const auto& dbModel = registry.getModel(info.getVersion(), "en");
-    uint64_t internalComponentId{0};
-    std::unordered_map<std::string, uint64_t> componentsMapping;
+    ComponentMapping componentsMapping;
 
     TComponents components;
     components.reserve(10);
@@ -94,9 +90,8 @@ namespace rexsapi
           doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
         TAttributes attributes = getAttributes(componentName, result, componentId, componentType, attributeNodes);
 
-        components.emplace_back(
-          TComponent{++internalComponentId, componentType.getComponentId(), componentName, std::move(attributes)});
-        componentsMapping.emplace(componentId, internalComponentId);
+        components.emplace_back(TComponent{componentsMapping.addComponent(convertToUint64(componentId)),
+                                           componentType.getComponentId(), componentName, std::move(attributes)});
       } catch (const std::exception& ex) {
         result.addError(
           TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("component id={}: {}", componentId, ex.what())});
@@ -122,9 +117,9 @@ namespace rexsapi
         std::string referenceId = xml::getStringAttribute(reference, "id");
         try {
           auto role = relationRoleFromString(xml::getStringAttribute(reference, "role"));
-          std::string hint = xml::getStringAttribute(reference, "hint");
+          std::string hint = xml::getStringAttribute(reference, "hint", "");
 
-          const auto* component = getComponent(referenceId, components, componentsMapping);
+          const auto* component = componentsMapping.getComponent(convertToUint64(referenceId), components);
           if (component == nullptr) {
             result.addError(
               TError{m_Mode.adapt(TErrorLevel::ERR),
@@ -156,7 +151,7 @@ namespace rexsapi
                fmt::format("/model/load_spectrum/load_case[@id = '{}']/component", loadCaseId).c_str())) {
           std::string componentId = xml::getStringAttribute(component, "id");
 
-          const auto* refComponent = getComponent(componentId, components, componentsMapping);
+          const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
           if (refComponent == nullptr) {
             result.addError(
               TError{m_Mode.adapt(TErrorLevel::ERR),
@@ -180,20 +175,6 @@ namespace rexsapi
     return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
   }
 
-  inline const TComponent*
-  TXMLModelLoader::getComponent(const std::string& referenceId, TComponents& components,
-                                const std::unordered_map<std::string, uint64_t>& componentsMapping) const&
-  {
-    auto it = componentsMapping.find(referenceId);
-    if (it == componentsMapping.end()) {
-      return nullptr;
-    }
-    auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
-      return comp.getInternalId() == it->second;
-    });
-    return it_comp.operator->();
-  }
-
   inline TAttributes TXMLModelLoader::getAttributes(const std::string& context, TResult& result,
                                                     const std::string& componentId,
                                                     const database::TComponent& componentType,
@@ -202,20 +183,9 @@ namespace rexsapi
     TAttributes attributes;
     for (const auto& attribute : attributeNodes) {
       std::string id = xml::getStringAttribute(attribute, "id");
-
-      bool isCustom{false};
-      if (id.substr(0, 7) == "custom_") {
-        isCustom = true;
-      } else {
-        if (!componentType.hasAttribute(id)) {
-          isCustom = true;
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR),
-                   fmt::format("{}: attribute id={} is not part of component id={}", context, id, componentId)});
-        }
-      }
-
       auto unit = xml::getStringAttribute(attribute, "unit");
+
+      bool isCustom = m_LoaderHelper.checkCustom(result, context, id, convertToUint64(componentId), componentType);
 
       if (!isCustom) {
         const auto& att = componentType.findAttributeById(id);
@@ -231,22 +201,10 @@ namespace rexsapi
           }
         }
 
-        auto value = m_Decoder.decode(att.getValueType(), att.getEnums(), attribute.node());
-        if (!value.second) {
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR),
-                   fmt::format("{}: value of attribute id={} of component id={} does not have the correct value type",
-                               context, id, componentId)});
-          continue;
-        }
-        if (!TValidityChecker::check(att, value.first)) {
-          result.addError(TError{
-            m_Mode.adapt(TErrorLevel::ERR),
-            fmt::format("{}: value is out of range for attribute id={} of component id={}", context, id, componentId)});
-        }
-        attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value.first});
+        auto value = m_LoaderHelper.getValue(result, att, context, id, convertToUint64(componentId), attribute.node());
+        attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value});
       } else {
-        auto [value, type] = m_Decoder.decodeUnknown(attribute.node());
+        auto [value, type] = m_LoaderHelper.getDecoder().decodeUnknown(attribute.node());
         attributes.emplace_back(TAttribute{id, TUnit{unit}, type, std::move(value)});
       }
     }
