@@ -89,6 +89,11 @@ namespace rexsapi
       return value.first;
     }
 
+    const ValueDecoderType& getDecoder() const
+    {
+      return m_Decoder;
+    }
+
   private:
     TModeAdapter m_Mode;
     ValueDecoderType m_Decoder;

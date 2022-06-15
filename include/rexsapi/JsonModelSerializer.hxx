@@ -128,6 +128,9 @@ namespace rexsapi
   {
     attributeNode[toTypeString(attribute.getValueType())] = nullptr;
     auto& j = attributeNode[toTypeString(attribute.getValueType())];
+    if (attribute.getValue().isEmpty()) {
+      return;
+    }
 
     rexsapi::dispatch<void>(attribute.getValueType(), attribute.getValue(),
                             {[&j](rexsapi::FloatTag, const auto& d) -> void {

@@ -156,6 +156,10 @@ namespace rexsapi
 
   inline void XMLModelSerializer::serialize(pugi::xml_node& attNode, const TAttribute& attribute)
   {
+    if (attribute.getValue().isEmpty()) {
+      return;
+    }
+
     rexsapi::dispatch<void>(
       attribute.getValueType(), attribute.getValue(),
       {[&attNode](rexsapi::FloatTag, const auto& d) -> void {
