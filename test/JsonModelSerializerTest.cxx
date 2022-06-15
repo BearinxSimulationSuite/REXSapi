@@ -22,6 +22,7 @@
 #include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
 #include <test/TestModel.hxx>
+#include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
 
@@ -48,12 +49,13 @@ namespace
 
 TEST_CASE("Json serialize new model")
 {
+  const auto dbModel = loadModel("1.4");
   rexsapi::JsonModelSerializer modelSerializer;
 
   SUBCASE("Serialize model to memory")
   {
     rexsapi::JsonStringSerializer stringSerializer;
-    modelSerializer.serialize(createModel(), stringSerializer);
+    modelSerializer.serialize(createModel(dbModel), stringSerializer);
     REQUIRE_FALSE(stringSerializer.getModel().empty());
     StringLoader loader;
     rexsapi::TResult result;
@@ -76,7 +78,7 @@ TEST_CASE("Json serialize new model")
     const auto registry = createModelRegistry();
     TemporaryDirectory guard;
     rexsapi::JsonFileSerializer fileSerializer{guard.getTempDirectoryPath() / "test_model.rexsj"};
-    modelSerializer.serialize(createModel(), fileSerializer);
+    modelSerializer.serialize(createModel(dbModel), fileSerializer);
     REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexsj"));
 
     rexsapi::TJsonModelValidator validator;

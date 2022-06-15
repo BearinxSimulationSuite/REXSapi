@@ -19,13 +19,9 @@
 
 #include <rexsapi/Model.hxx>
 
-#include <test/TestModelLoader.hxx>
 
-
-static inline rexsapi::TModel createModel()
+static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbModel)
 {
-  const auto dbModel = loadModel("1.4");
-
   uint64_t componentId = 1;
   rexsapi::TComponents components;
   const auto& gearUnitComponent = dbModel.findComponentById("gear_unit");

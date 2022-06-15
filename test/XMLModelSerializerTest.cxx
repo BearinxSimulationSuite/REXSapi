@@ -22,6 +22,7 @@
 #include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
 #include <test/TestModel.hxx>
+#include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
 
@@ -90,12 +91,13 @@ TEST_CASE("XML model file serializer test")
 
 TEST_CASE("XML serialize new model")
 {
+  const auto dbModel = loadModel("1.4");
   rexsapi::XMLStringSerializer stringSerializer;
   rexsapi::XMLModelSerializer modelSerializer;
 
   SUBCASE("Serialize model")
   {
-    modelSerializer.serialize(createModel(), stringSerializer);
+    modelSerializer.serialize(createModel(dbModel), stringSerializer);
     CHECK_FALSE(stringSerializer.getModel().empty());
     StringLoader loader;
     auto roundtripModel = loader.load(stringSerializer.getModel());
