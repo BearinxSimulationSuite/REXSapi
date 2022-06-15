@@ -22,6 +22,7 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Relation.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Result.hxx
