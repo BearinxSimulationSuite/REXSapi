@@ -76,7 +76,8 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["string"].get<std::string>()}, true);
+        const auto value = node.at("string").get<std::string>();
+        return std::make_pair(TValue{value}, !value.empty());
       }
     };
 
@@ -89,7 +90,8 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["file_reference"].get<std::string>()}, true);
+        const auto value = node.at("file_reference").get<std::string>();
+        return std::make_pair(TValue{value}, !value.empty());
       }
     };
 
@@ -102,7 +104,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["boolean"].get<bool>()}, true);
+        return std::make_pair(TValue{node.at("boolean").get<bool>()}, true);
       }
     };
 
@@ -115,7 +117,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["integer"].get<int64_t>()}, true);
+        return std::make_pair(TValue{node.at("integer").get<int64_t>()}, true);
       }
     };
 
@@ -128,7 +130,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["reference_component"].get<int64_t>()}, true);
+        return std::make_pair(TValue{node.at("reference_component").get<int64_t>()}, true);
       }
     };
 
@@ -141,7 +143,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        return std::make_pair(TValue{node["floating_point"].get<double>()}, true);
+        return std::make_pair(TValue{node.at("floating_point").get<double>()}, true);
       }
     };
 
@@ -155,7 +157,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         if (enumValue) {
-          auto value = node["enum"].get<std::string>();
+          auto value = node.at("enum").get<std::string>();
           return std::make_pair(TValue{value}, enumValue->check(value));
         }
         return std::make_pair(TValue{}, false);
@@ -178,7 +180,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         std::vector<type> array;
-        auto arr = node[m_Name];
+        auto arr = node.at(m_Name);
         for (const auto& element : arr) {
           array.emplace_back(element.template get<type>());
         }
@@ -195,7 +197,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         std::vector<Bool> array;
-        auto arr = node["boolean_array"];
+        auto arr = node.at("boolean_array");
         for (const auto& element : arr) {
           array.emplace_back(element.template get<bool>());
         }
@@ -212,7 +214,7 @@ namespace rexsapi
         if (enumValue.has_value()) {
           std::vector<std::string> array;
           bool result{true};
-          auto arr = node["enum_array"];
+          auto arr = node.at("enum_array");
           for (const auto& element : arr) {
             auto value = element.get<std::string>();
             if (enumValue->check(value)) {
@@ -243,15 +245,15 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         TMatrix<type> matrix;
-        for (const auto& row : node[m_Name]) {
+        for (const auto& row : node.at(m_Name)) {
           std::vector<type> r;
           for (const auto& column : row) {
             r.emplace_back(column.template get<type>());
           }
           matrix.m_Values.emplace_back(std::move(r));
         }
-
-        return std::make_pair(TValue{std::move(matrix)}, true);
+        bool result = matrix.validate();
+        return std::make_pair(TValue{std::move(matrix)}, result);
       }
       std::string m_Name;
     };
@@ -272,7 +274,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         std::vector<std::vector<type>> arrays;
-        for (const auto& row : node[m_Name]) {
+        for (const auto& row : node.at(m_Name)) {
           std::vector<type> r;
           for (const auto& column : row) {
             r.emplace_back(column.template get<type>());
