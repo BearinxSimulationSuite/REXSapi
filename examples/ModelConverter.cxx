@@ -95,9 +95,22 @@ int main(int argc, char** argv)
         std::cerr << "Error: could not load model " << modelFile << std::endl;
       } else {
         auto file{modelFile.filename()};
-        rexsapi::JsonFileSerializer fileSerializer{outputPath / file.replace_extension(".rexsj")};
-        rexsapi::JsonModelSerializer modelSerializer;
-        modelSerializer.serialize(*model, fileSerializer);
+        switch (type) {
+          case rexsapi::TFileType::JSON: {
+            rexsapi::JsonFileSerializer fileSerializer{outputPath / file.replace_extension(".rexsj")};
+            rexsapi::JsonModelSerializer modelSerializer;
+            modelSerializer.serialize(*model, fileSerializer);
+            break;
+          }
+          case rexsapi::TFileType::XML: {
+            rexsapi::XMLFileSerializer fileSerializer{outputPath / file.replace_extension(".rexs")};
+            rexsapi::XMLModelSerializer modelSerializer;
+            modelSerializer.serialize(*model, fileSerializer);
+            break;
+          }
+          default:
+            throw rexsapi::TException{"Format is not implemented"};
+        }
         std::cout << fmt::format("Converted {} to {}", modelFile.string(), file.string()) << std::endl;
       }
     }
