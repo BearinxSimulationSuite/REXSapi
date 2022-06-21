@@ -105,6 +105,14 @@ namespace rexsapi
     std::string s{stream.str()};
     return s.insert(22, ":");
   }
+
+  static inline std::string toupper(std::string s)
+  {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+      return std::toupper(c);
+    });
+    return s;
+  }
 }
 
 #endif

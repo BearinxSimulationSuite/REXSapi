@@ -20,7 +20,9 @@
 
 static void usage()
 {
-  std::cout << "model_checker [--mode-strict|--mode-relaxed] [-w] -d <model database path> <model file> [<model file>]"
+  std::cout << "model_converter [--mode-strict|--mode-relaxed] -f|--format <xml|json> -o|--output <output path for "
+               "converted models> -d "
+               "<model database path> <model file> [<model file>]"
             << std::endl;
 }
 
@@ -42,7 +44,8 @@ int main(int argc, char** argv)
     rexsapi::TMode mode{rexsapi::TMode::STRICT_MODE};
     std::filesystem::path modelDatabasePath;
     std::vector<std::filesystem::path> models;
-    bool showWarnings{false};
+    std::filesystem::path outputPath;
+    rexsapi::TFileType type{rexsapi::TFileType::UNKOWN};
 
     const auto& args = getArgs(argc, argv);
     for (size_t n = 0; n < args.size(); ++n) {
@@ -56,13 +59,23 @@ int main(int argc, char** argv)
           return -1;
         }
         modelDatabasePath = args[++n];
-      } else if (args[n] == "-w") {
-        showWarnings = true;
+      } else if (args[n] == "--output" || args[n] == "-o") {
+        if (args.size() < n + 1) {
+          usage();
+          return -1;
+        }
+        outputPath = args[++n];
+      } else if (args[n] == "--format" || args[n] == "-f") {
+        if (args.size() < n + 1) {
+          usage();
+          return -1;
+        }
+        type = rexsapi::fileTypeFromString(args[++n]);
       } else {
         models.emplace_back(args[n]);
       }
     }
-    if (modelDatabasePath.empty() || models.empty()) {
+    if (modelDatabasePath.empty() || outputPath.empty() || models.empty() || type == rexsapi::TFileType::UNKOWN) {
       usage();
       return -1;
     }
@@ -78,21 +91,14 @@ int main(int argc, char** argv)
       }
       rexsapi::TResult result;
       const auto model = loader.load(modelFile, result, mode);
-
-      std::cout << "File " << modelFile;
-      if (!result) {
-        std::cout << std::endl << fmt::format("  Found {} issues", result.getErrors().size()) << std::endl;
+      if (!model) {
+        std::cerr << "Error: could not load model " << modelFile << std::endl;
       } else {
-        std::cout << " processed successfully" << std::endl;
-        if (result.hasIssues() && showWarnings) {
-          std::cout << fmt::format("  But has the following {} warnings", result.getErrors().size()) << std::endl;
-        }
-      }
-      for (const auto& error : result.getErrors()) {
-        if (error.isWarning() && !showWarnings) {
-          continue;
-        }
-        std::cout << "  " << error.message() << std::endl;
+        auto file{modelFile.filename()};
+        rexsapi::JsonFileSerializer fileSerializer{outputPath / file.replace_extension(".rexsj")};
+        rexsapi::JsonModelSerializer modelSerializer;
+        modelSerializer.serialize(*model, fileSerializer);
+        std::cout << fmt::format("Converted {} to {}", modelFile.string(), file.string()) << std::endl;
       }
     }
   } catch (const std::exception& ex) {
