@@ -37,20 +37,7 @@ namespace rexsapi
   class TExtensionChecker
   {
   public:
-    static TFileType getFileType(const std::filesystem::path& path)
-    {
-      if (path.extension() == ".rexs" || path.extension() == ".rexs.xml") {
-        return TFileType::XML;
-      }
-      if (path.extension() == ".rexsz" || path.extension() == ".rexs.zip") {
-        return TFileType::COMPRESSED_XML;
-      }
-      if (path.extension() == ".rexsj" || path.extension() == ".rexs.json") {
-        return TFileType::JSON;
-      }
-
-      throw TException{fmt::format("extension {} is not a known rexs extension", path.extension().string())};
-    }
+    static TFileType getFileType(const std::filesystem::path& path);
   };
 
 
@@ -143,6 +130,30 @@ namespace rexsapi
 
     throw TException{fmt::format("unknown file type {}", type)};
   }
+
+
+  inline TFileType TExtensionChecker::getFileType(const std::filesystem::path& path)
+  {
+    auto extension = path.extension();
+    if (path.stem().has_extension()) {
+      auto stem_extention = path.stem().extension();
+      extension = stem_extention.replace_extension(extension);
+    }
+
+    // Attention: deliberately using path.extension() here and *not* extension
+    if (path.extension() == ".rexs" || extension == ".rexs.xml") {
+      return TFileType::XML;
+    }
+    if (path.extension() == ".rexsz" || extension == ".rexs.zip") {
+      return TFileType::COMPRESSED_XML;
+    }
+    if (path.extension() == ".rexsj" || extension == ".rexs.json") {
+      return TFileType::JSON;
+    }
+
+    throw TException{fmt::format("extension {} is not a known rexs extension", extension.string())};
+  }
+
 
   inline std::optional<TModel> TModelLoader::load(const std::filesystem::path& path, TResult& result, TMode mode) const
   {
