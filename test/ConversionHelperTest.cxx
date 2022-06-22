@@ -101,3 +101,12 @@ TEST_CASE("Time helper")
     REQUIRE(std::regex_match(s, match, reg_expr));
   }
 }
+
+TEST_CASE("String helper")
+{
+  SUBCASE("To upper")
+  {
+    std::string s{"Some lower and some Upper ChaRacter"};
+    CHECK(rexsapi::toupper(s) == "SOME LOWER AND SOME UPPER CHARACTER");
+  }
+}

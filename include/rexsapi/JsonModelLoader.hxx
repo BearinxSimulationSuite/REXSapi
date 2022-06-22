@@ -201,6 +201,9 @@ namespace rexsapi
                                                    const json& j) const
   {
     TLoadCases loadCases;
+    if (!j.contains("/model/load_spectrum/load_cases"_json_pointer)) {
+      return loadCases;
+    }
 
     for (const auto& loadCase : j["/model/load_spectrum/load_cases"_json_pointer]) {
       auto loadCaseId = loadCase["id"].get<uint64_t>();

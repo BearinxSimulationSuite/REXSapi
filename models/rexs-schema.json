@@ -1,0 +1,587 @@
+{
+	"definitions": {},
+	"$schema": "http://json-schema.org/draft-07/schema#", 
+	"$id": "https://rexs.info/rexs-schema.json", 
+	"title": "root", 
+	"type": "object",
+	"required": [
+		"model"
+	],
+	"properties": {
+		"model": {
+			"$id": "#root/model", 
+			"title": "model", 
+			"type": "object",
+			"required": [
+				"version",
+				"applicationId",
+				"applicationVersion",
+				"date",
+				"relations",
+				"components",
+				"load_spectrum"
+			],
+			"properties": {
+				"version": {
+					"$id": "#root/model/version", 
+					"title": "version", 
+					"type": "string",
+					"pattern": "^\\d+.\\d+$"
+				},
+				"applicationId": {
+					"$id": "#root/model/applicationId", 
+					"title": "applicationId", 
+					"type": "string",
+					"pattern": "^.*$"
+				},
+				"applicationVersion": {
+					"$id": "#root/model/applicationVersion", 
+					"title": "applicationVersion", 
+					"type": "string",
+					"pattern": "^.*$"
+				},
+				"date": {
+					"$id": "#root/model/date", 
+					"title": "date", 
+					"type": "string",
+					"pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+\\d{2}:\\d{2}$"
+				},
+        "applicationLanguage": {
+					"$id": "#root/model/applicationLanguage", 
+					"title": "applicationLanguage", 
+					"type": "string",
+					"pattern": "^.*$"
+        },
+				"relations": {
+					"$id": "#root/model/relations", 
+					"title": "relations", 
+					"type": "array",
+					"items":{
+						"$id": "#root/model/relations/items", 
+						"title": "items", 
+						"type": "object",
+						"required": [
+							"id",
+							"type",
+							"refs"
+						],
+						"properties": {
+							"id": {
+								"$id": "#root/model/relations/items/id", 
+								"title": "id", 
+								"type": "integer"
+							},
+							"type": {
+								"$id": "#root/model/relations/items/type", 
+								"title": "type", 
+								"type": "string",
+								"pattern": "^.*$"
+							},
+							"order": {
+								"$id": "#root/model/relations/items/order", 
+								"title": "order", 
+								"type": "integer"
+							},
+							"refs": {
+								"$id": "#root/model/relations/items/refs", 
+								"title": "refs", 
+								"type": "array",
+								"items":{
+									"$id": "#root/model/relations/items/refs/items", 
+									"title": "items", 
+									"type": "object",
+									"required": [
+										"id",
+										"role"
+									],
+									"properties": {
+										"id": {
+											"$id": "#root/model/relations/items/refs/items/id", 
+											"title": "id", 
+											"type": "integer"
+										},
+										"role": {
+											"$id": "#root/model/relations/items/refs/items/role", 
+											"title": "role", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"hint": {
+											"$id": "#root/model/relations/items/refs/items/hint", 
+											"title": "hint", 
+											"type": "string",
+											"pattern": "^.*$"
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"components": {
+					"$id": "#root/model/components", 
+					"title": "components", 
+					"type": "array",
+					"items":{
+						"$id": "#root/model/components/items", 
+						"title": "items", 
+						"type": "object",
+						"required": [
+							"id",
+							"type"
+						],
+						"properties": {
+							"id": {
+								"$id": "#root/model/components/items/id", 
+								"title": "id", 
+								"type": "integer"
+							},
+							"type": {
+								"$id": "#root/model/components/items/type", 
+								"title": "type", 
+								"type": "string",
+								"pattern": "^.*$"
+							},
+							"name": {
+								"$id": "#root/model/components/items/name", 
+								"title": "name", 
+								"type": "string",
+								"pattern": "^.*$"
+							},
+							"attributes": {
+								"$id": "#root/model/components/items/attributes", 
+								"title": "attributes", 
+								"type": "array",
+								"default": [],
+								"items":{
+									"$id": "#root/model/components/items/attributes/items", 
+									"title": "items", 
+									"type": "object",
+									"required": [
+										"id"
+									],
+									"properties": {
+										"id": {
+											"$id": "#root/model/components/items/attributes/items/id", 
+											"title": "id", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"unit": {
+											"$id": "#root/model/components/items/attributes/items/unit", 
+											"title": "unit", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"boolean": {
+											"$id": "#root/model/components/items/attributes/items/boolean", 
+											"title": "boolean", 
+											"type": "boolean"
+										},
+										"string": {
+											"$id": "#root/model/components/items/attributes/items/string", 
+											"title": "string", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"integer": {
+											"$id": "#root/model/components/items/attributes/items/integer", 
+											"title": "integer", 
+											"type": "integer"
+										},
+										"floating_point": {
+											"$id": "#root/model/components/items/attributes/items/floating_point", 
+											"title": "floating_point", 
+											"type": "number"
+										},
+										"enum": {
+											"$id": "#root/model/components/items/attributes/items/enum", 
+											"title": "enum", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"reference_component": {
+											"$id": "#root/model/components/items/attributes/items/reference_component", 
+											"title": "reference_component", 
+											"type": "integer"
+										},
+										"file_reference": {
+											"$id": "#root/model/components/items/attributes/items/file_reference", 
+											"title": "file_reference", 
+											"type": "string",
+											"pattern": "^.*$"
+										},
+										"floating_point_array": {
+											"$id": "#root/model/components/items/attributes/items/floating_point_array", 
+											"title": "floating_point_array", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/floating_point_array/items", 
+                        "title": "items", 
+                        "type": "number"
+                      }
+										},
+										"integer_array": {
+											"$id": "#root/model/components/items/attributes/items/integer_array", 
+											"title": "integer_array", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/integer_array/items", 
+                        "title": "items", 
+                        "type": "integer"
+                      }
+										},
+										"boolean_array": {
+											"$id": "#root/model/components/items/attributes/items/boolean_array", 
+											"title": "boolean_array", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/boolean_array/items", 
+                        "title": "items", 
+                        "type": "boolean"
+                      }
+										},
+										"string_array": {
+											"$id": "#root/model/components/items/attributes/items/string_array", 
+											"title": "string_array", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/string_array/items", 
+                        "title": "items", 
+                        "type": "string",
+                        "pattern": "^.*$"
+                      }
+										},
+										"enum_array": {
+											"$id": "#root/model/components/items/attributes/items/enum_array", 
+											"title": "enum_array", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/enum_array/items", 
+                        "title": "items", 
+                        "type": "string",
+                        "pattern": "^.*$"
+                      }
+										},
+										"floating_point_matrix": {
+											"$id": "#root/model/components/items/attributes/items/floating_point_matrix", 
+											"title": "floating_point_matrix", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/floating_point_matrix/items", 
+                        "title": "items", 
+                        "type": "array",
+                        "items":{
+                          "$id": "#root/model/components/items/floating_point_matrix/items/items", 
+                          "title": "items", 
+                          "type": "number"  
+                        }
+                      }
+										},
+										"integer_matrix": {
+											"$id": "#root/model/components/items/attributes/items/integer_matrix", 
+											"title": "integer_matrix", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/integer_matrix/items", 
+                        "title": "items", 
+                        "type": "array",
+                        "items":{
+                          "$id": "#root/model/components/items/integer_matrix/items/items", 
+                          "title": "items", 
+                          "type": "integer"  
+                        }
+                      }
+										},
+										"boolean_matrix": {
+											"$id": "#root/model/components/items/attributes/items/boolean_matrix", 
+											"title": "boolean_matrix", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/boolean_matrix/items", 
+                        "title": "items", 
+                        "type": "array",
+                        "items":{
+                          "$id": "#root/model/components/items/boolean_matrix/items/items", 
+                          "title": "items", 
+                          "type": "boolean"  
+                        }
+                      }
+										},
+										"string_matrix": {
+											"$id": "#root/model/components/items/attributes/items/string_matrix", 
+											"title": "string_matrix", 
+											"type": "array",
+                      "items":{
+                        "$id": "#root/model/components/items/string_matrix/items", 
+                        "title": "items", 
+                        "type": "array",
+                        "items":{
+                          "$id": "#root/model/components/items/string_matrix/items/items", 
+                          "title": "items", 
+                          "type": "string",
+                          "pattern": "^.*$"
+                        }
+                      }
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				"load_spectrum": {
+					"$id": "#root/model/load_spectrum", 
+					"title": "load_spectrum", 
+					"type": "object",
+					"required": [
+						"id",
+						"load_cases"
+					],
+					"properties": {
+						"id": {
+							"$id": "#root/model/load_spectrum/id", 
+							"title": "id", 
+							"type": "integer"
+						},
+						"load_cases": {
+							"$id": "#root/model/load_spectrum/load_cases", 
+							"title": "load_cases", 
+							"type": "array",
+							"default": [],
+							"items":{
+								"$id": "#root/model/load_spectrum/load_cases/items", 
+								"title": "items", 
+								"type": "object",
+								"required": [
+									"id",
+									"components"
+								],
+								"properties": {
+									"id": {
+										"$id": "#root/model/load_spectrum/load_cases/items/id", 
+										"title": "id", 
+										"type": "integer"
+									},
+									"components": {
+										"$id": "#root/model/load_spectrum/load_cases/items/components", 
+										"title": "components", 
+										"type": "array",
+										"items":{
+											"$id": "#root/model/load_spectrum/load_cases/items/components/items", 
+											"title": "items", 
+											"type": "object",
+											"required": [
+												"id",
+												"type",
+												"attributes"
+											],
+											"properties": {
+												"id": {
+													"$id": "#root/model/load_spectrum/load_cases/items/components/items/id", 
+													"title": "id", 
+													"type": "integer"
+												},
+												"type": {
+													"$id": "#root/model/load_spectrum/load_cases/items/components/items/type", 
+													"title": "type", 
+													"type": "string",
+													"pattern": "^.*$"
+												},
+												"name": {
+													"$id": "#root/model/load_spectrum/load_cases/items/components/items/name", 
+													"title": "name", 
+													"type": "string",
+													"pattern": "^.*$"
+												},
+												"attributes": {
+													"$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes", 
+													"title": "attributes", 
+													"type": "array",
+													"default": [],
+													"items":{
+														"$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items", 
+														"title": "items", 
+														"type": "object",
+														"required": [
+															"id"
+														],
+														"properties": {
+															"id": {
+																"$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/id", 
+																"title": "id", 
+																"type": "string",
+																"pattern": "^.*$"
+															},
+															"unit": {
+																"$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/unit", 
+																"title": "unit", 
+																"type": "string",
+																"pattern": "^.*$"
+															},
+                              "boolean": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean", 
+                                "title": "boolean", 
+                                "type": "boolean"
+                              },
+                              "string": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string", 
+                                "title": "string", 
+                                "type": "string",
+                                "pattern": "^.*$"
+                              },
+                              "integer": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer", 
+                                "title": "integer", 
+                                "type": "integer"
+                              },
+                              "floating_point": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point", 
+                                "title": "floating_point", 
+                                "type": "number"
+                              },
+                              "enum": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/enum", 
+                                "title": "enum", 
+                                "type": "string",
+                                "pattern": "^.*$"
+                              },
+                              "reference_component": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/reference_component", 
+                                "title": "reference_component", 
+                                "type": "integer"
+                              },
+                              "file_reference": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/file_reference", 
+                                "title": "file_reference", 
+                                "type": "string",
+                                "pattern": "^.*$"
+                              },
+                              "floating_point_array": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point_array", 
+                                "title": "floating_point_array", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/floating_point_array/items", 
+                                  "title": "items", 
+                                  "type": "number"
+                                }
+                              },
+                              "integer_array": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer_array", 
+                                "title": "integer_array", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/integer_array/items", 
+                                  "title": "items", 
+                                  "type": "integer"
+                                }
+                              },
+                              "boolean_array": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean_array", 
+                                "title": "boolean_array", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/boolean_array/items", 
+                                  "title": "items", 
+                                  "type": "boolean"
+                                }
+                              },
+                              "string_array": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string_array", 
+                                "title": "string_array", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_array/items", 
+                                  "title": "items", 
+                                  "type": "string",
+                                  "pattern": "^.*$"
+                                }
+                              },
+                              "enum_array": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/enum_array", 
+                                "title": "enum_array", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/enum_array/items", 
+                                  "title": "items", 
+                                  "type": "string",
+                                  "pattern": "^.*$"
+                                }
+                              },
+                              "floating_point_matrix": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point_matrix", 
+                                "title": "floating_point_matrix", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/floating_point_matrix/items", 
+                                  "title": "items", 
+                                  "type": "array",
+                                  "items":{
+                                    "$id": "#root/model/load_spectrum/load_cases/items/components/items/floating_point_matrix/items/items", 
+                                    "title": "items", 
+                                    "type": "number"  
+                                  }
+                                }
+                              },
+                              "integer_matrix": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer_matrix", 
+                                "title": "integer_matrix", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/integer_matrix/items", 
+                                  "title": "items", 
+                                  "type": "array",
+                                  "items":{
+                                    "$id": "#root/model/load_spectrum/load_cases/items/components/items/integer_matrix/items/items", 
+                                    "title": "items", 
+                                    "type": "integer"  
+                                  }
+                                }
+                              },
+                              "boolean_matrix": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean_matrix", 
+                                "title": "boolean_matrix", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/boolean_matrix/items", 
+                                  "title": "items", 
+                                  "type": "array",
+                                  "items":{
+                                    "$id": "#root/model/load_spectrum/load_cases/items/components/items/boolean_matrix/items/items", 
+                                    "title": "items", 
+                                    "type": "boolean"  
+                                  }
+                                }
+                              },
+                              "string_matrix": {
+                                "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string_matrix", 
+                                "title": "string_matrix", 
+                                "type": "array",
+                                "items":{
+                                  "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_matrix/items", 
+                                  "title": "items", 
+                                  "type": "array",
+                                  "items":{
+                                    "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_matrix/items/items", 
+                                    "title": "items", 
+                                    "type": "string",
+                                    "pattern": "^.*$"
+                                  }
+                                }
+                              }
+                            }
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

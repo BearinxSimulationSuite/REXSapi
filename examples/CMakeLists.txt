@@ -19,3 +19,10 @@ add_executable(model_checker
 target_link_libraries(model_checker PRIVATE
   rexsapi
 )
+
+add_executable(model_converter
+  ModelConverter.cxx
+)
+target_link_libraries(model_converter PRIVATE
+  rexsapi
+)

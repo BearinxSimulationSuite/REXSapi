@@ -98,6 +98,22 @@ namespace
   }
 }
 
+TEST_CASE("XSD file schema loader test")
+{
+  SUBCASE("Load existing schema")
+  {
+    rexsapi::xml::TFileXsdSchemaLoader loader{projectDir() / "models" / "rexs-dbmodel.xsd"};
+    auto doc = loader.load();
+    CHECK_FALSE(doc.empty());
+  }
+
+  SUBCASE("Load non-existing schema")
+  {
+    CHECK_THROWS(rexsapi::xml::TFileXsdSchemaLoader{projectDir() / "models" / "non-existing-schema.xsd"});
+    CHECK_THROWS(rexsapi::xml::TFileXsdSchemaLoader{projectDir() / "models"});
+  }
+}
+
 TEST_CASE("XSD schema validator test")
 {
   SUBCASE("Validate db model schema from file")

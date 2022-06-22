@@ -13,8 +13,8 @@ add_executable(rexsapi_test
   JsonValueDecoderTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
-  ModelHelperTest.cxx
   ModelLoaderTest.cxx
+  ModelHelperTest.cxx
   ModelTest.cxx
   ModeTest.cxx
   ResultTest.cxx
@@ -24,6 +24,7 @@ add_executable(rexsapi_test
   ValidityCheckerTest.cxx
   ValueTest.cxx
   ValueTypeTest.cxx
+  XMLModelLoaderTest.cxx
   XMLModelSerializerTest.cxx
   XMLUtilsTest.cxx
   XMLValueDecoderTest.cxx

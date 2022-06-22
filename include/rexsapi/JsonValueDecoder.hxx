@@ -29,29 +29,10 @@
 
 namespace rexsapi
 {
-  class TJsonDecoder
+  namespace detail::json
   {
-  public:
-    virtual ~TJsonDecoder() = default;
-
-    TJsonDecoder(const TJsonDecoder&) = default;
-    TJsonDecoder& operator=(const TJsonDecoder&) = default;
-    TJsonDecoder(TJsonDecoder&&) = default;
-    TJsonDecoder& operator=(TJsonDecoder&&) = default;
-
-    [[nodiscard]] std::pair<TValue, bool> decode(const std::optional<const database::TEnumValues>& enumValue,
-                                                 const json& node) const
-    {
-      return onDecode(enumValue, node);
-    }
-
-  protected:
-    TJsonDecoder() = default;
-
-  private:
-    virtual std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
-                                             const json& node) const = 0;
-  };
+    class TJsonDecoder;
+  }
 
   class TJsonValueDecoder
   {
@@ -62,11 +43,35 @@ namespace rexsapi
     decode(TValueType type, const std::optional<const database::TEnumValues>& enumValue, const json& node) const;
 
   private:
-    std::unordered_map<TValueType, std::unique_ptr<TJsonDecoder>> m_Decoder;
+    std::unordered_map<TValueType, std::unique_ptr<detail::json::TJsonDecoder>> m_Decoder;
   };
 
   namespace detail::json
   {
+    class TJsonDecoder
+    {
+    public:
+      virtual ~TJsonDecoder() = default;
+
+      TJsonDecoder(const TJsonDecoder&) = default;
+      TJsonDecoder& operator=(const TJsonDecoder&) = default;
+      TJsonDecoder(TJsonDecoder&&) = default;
+      TJsonDecoder& operator=(TJsonDecoder&&) = default;
+
+      [[nodiscard]] std::pair<TValue, bool> decode(const std::optional<const database::TEnumValues>& enumValue,
+                                                   const rexsapi::json& node) const
+      {
+        return onDecode(enumValue, node);
+      }
+
+    protected:
+      TJsonDecoder() = default;
+
+    private:
+      virtual std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                               const rexsapi::json& node) const = 0;
+    };
+
     class TStringDecoder : public TJsonDecoder
     {
     public:
@@ -156,11 +161,12 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
                                        const rexsapi::json& node) const override
       {
+        auto value = node.at("enum").get<std::string>();
+
         if (enumValue) {
-          auto value = node.at("enum").get<std::string>();
           return std::make_pair(TValue{value}, enumValue->check(value));
         }
-        return std::make_pair(TValue{}, false);
+        return std::make_pair(TValue{value}, true);
       }
     };
 

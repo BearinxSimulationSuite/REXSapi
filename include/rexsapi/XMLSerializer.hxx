@@ -33,7 +33,7 @@ namespace rexsapi
 
     void serialize(const pugi::xml_document& doc) const
     {
-      doc.save_file(m_File.c_str());
+      doc.save_file(m_File.c_str(), "  ");
     }
 
   private:

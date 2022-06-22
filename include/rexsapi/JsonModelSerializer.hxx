@@ -228,7 +228,8 @@ namespace rexsapi
         relationNode["order"] = *relation.getOrder();
       }
 
-      auto referencesNode = json::array();
+      relationNode["refs"] = json::array();
+      auto& referencesNode = relationNode["refs"];
       for (const auto& reference : relation.getReferences()) {
         ordered_json referenceNode;
         auto id = getComponentId(reference.getComponent().getInternalId());
@@ -240,7 +241,6 @@ namespace rexsapi
 
         referencesNode.emplace_back(std::move(referenceNode));
       }
-      relationNode["refs"] = std::move(referencesNode);
 
       relationsNode.emplace_back(std::move(relationNode));
     }

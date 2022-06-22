@@ -14,16 +14,31 @@
  * limitations under the License.
  */
 
-#include <rexsapi/JsonModelLoader.hxx>
 #include <rexsapi/ModelLoader.hxx>
 
 #include <test/TestHelper.hxx>
+#include <test/TestModelHelper.hxx>
 #include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
 
+namespace
+{
+  std::optional<rexsapi::TModel> loadModel(rexsapi::TResult& result, const std::filesystem::path& path,
+                                           const rexsapi::database::TModelRegistry& registry,
+                                           rexsapi::TMode mode = rexsapi::TMode::STRICT_MODE)
+  {
+    rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
+    rexsapi::TJsonModelValidator jsonValidator;
+
+    rexsapi::TFileModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{jsonValidator, path};
+    return loader.load(mode, result, registry);
+  }
+}
+
 TEST_CASE("Json model loader test")
 {
+  rexsapi::TResult result;
   const auto registry = createModelRegistry();
   rexsapi::TJsonModelValidator validator;
 
@@ -166,7 +181,6 @@ TEST_CASE("Json model loader test")
 })";
 
     rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
-    rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
     CHECK_FALSE(result.isCritical());
@@ -176,7 +190,7 @@ TEST_CASE("Json model loader test")
     REQUIRE(model->getLoadSpectrum().hasLoadCases());
   }
 
-  SUBCASE("load invalid json document")
+  SUBCASE("Foad invalid json document")
   {
     std::string buffer = R"({
   "model":{
@@ -188,10 +202,96 @@ TEST_CASE("Json model loader test")
     ]})";
 
     rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
-    rexsapi::TResult result;
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK_FALSE(result);
     CHECK(result.isCritical());
     CHECK_FALSE(model);
+  }
+
+  SUBCASE("Load complex model from file in strict mode")
+  {
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexsj",
+                           registry, rexsapi::TMode::STRICT_MODE);
+    REQUIRE(model);
+    CHECK_FALSE(result);
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(result.getErrors().size() == 10);
+    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
+    CHECK(result.getErrors()[2].message() ==
+          "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
+          "id=u_coordinate_on_shaft_outer_side of component id=37");
+    CHECK(result.getErrors()[3].message() ==
+          "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
+    CHECK(result.getErrors()[4].message() ==
+          "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
+    CHECK(result.getErrors()[5].message() ==
+          "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
+    CHECK(result.getErrors()[6].message() ==
+          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[7].message() ==
+          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[8].message() ==
+          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[9].message() ==
+          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
+
+    const auto& attributes =
+      AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
+    CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load complex model from file in relaxed mode")
+  {
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexsj",
+                           registry, rexsapi::TMode::RELAXED_MODE);
+    REQUIRE(model);
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(result.getErrors().size() == 10);
+    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
+    CHECK(result.getErrors()[2].message() ==
+          "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
+          "id=u_coordinate_on_shaft_outer_side of component id=37");
+    CHECK(result.getErrors()[3].message() ==
+          "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
+    CHECK(result.getErrors()[4].message() ==
+          "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
+    CHECK(result.getErrors()[5].message() ==
+          "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
+    CHECK(result.getErrors()[6].message() ==
+          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[7].message() ==
+          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[8].message() ==
+          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+    CHECK(result.getErrors()[9].message() ==
+          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
+
+    const auto& attributes =
+      AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
+    CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load model from non-existent file failure")
+  {
+    auto model = loadModel(result, "non-exising-file.rexsj", registry);
+    CHECK_FALSE(model);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    REQUIRE(result.getErrors().size() == 1);
+    CHECK(result.getErrors()[0].message() == "'non-exising-file.rexsj' does not exist");
+  }
+
+  SUBCASE("Load model from directory failure")
+  {
+    auto model = loadModel(result, projectDir(), registry);
+    CHECK_FALSE(model);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    REQUIRE(result.getErrors().size() == 1);
   }
 }

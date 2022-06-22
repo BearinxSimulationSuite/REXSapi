@@ -303,6 +303,9 @@ namespace rexsapi::xml
     explicit TFileXsdSchemaLoader(std::filesystem::path xsdFile)
     : m_XsdFile{std::move(xsdFile)}
     {
+      if (!std::filesystem::exists(m_XsdFile) || !std::filesystem::is_regular_file(m_XsdFile)) {
+        throw TException{fmt::format("{} does not exist or is not a regular file", m_XsdFile.string())};
+      }
     }
 
     [[nodiscard]] pugi::xml_document load() const;
