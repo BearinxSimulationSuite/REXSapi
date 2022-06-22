@@ -249,7 +249,7 @@ TEST_CASE("Json value decoder error test")
                                                 rexsapi::database::TEnumValue{"injection_lubrication", ""}}};
 
     CHECK_FALSE(decoder.decode(rexsapi::TValueType::ENUM, enumValue, getNode(doc, "enum")).second);
-    CHECK_FALSE(decoder.decode(rexsapi::TValueType::ENUM, {}, getNode(doc, "enum")).second);
+    CHECK(decoder.decode(rexsapi::TValueType::ENUM, {}, getNode(doc, "enum")).second);
   }
 
   SUBCASE("Decode integer array")
@@ -280,13 +280,13 @@ TEST_CASE("Json value decoder error test")
 
   SUBCASE("Decode string matrix")
   {
-    CHECK_FALSE(
-      decoder.decode(rexsapi::TValueType::STRING_MATRIX, enumValue, getNode(doc, "string matrix")).second);
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::STRING_MATRIX, enumValue, getNode(doc, "string matrix")).second);
   }
 
   SUBCASE("Decode array of integer arrays")
   {
     CHECK_FALSE(
-      decoder.decode(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS, enumValue, getNode(doc, "array of integer arrays")).second);
+      decoder.decode(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS, enumValue, getNode(doc, "array of integer arrays"))
+        .second);
   }
 }

@@ -15,9 +15,9 @@
  */
 
 #include <rexsapi/ModelLoader.hxx>
-#include <rexsapi/XMLModelLoader.hxx>
 
 #include <test/TestHelper.hxx>
+#include <test/TestModelHelper.hxx>
 #include <test/TestModelLoader.hxx>
 
 #include <doctest.h>
@@ -25,56 +25,6 @@
 
 namespace
 {
-  class ComponentFinder
-  {
-  public:
-    explicit ComponentFinder(const rexsapi::TModel& model)
-    : m_Model{model}
-    {
-    }
-
-    const rexsapi::TComponent& findComponent(const std::string& name) const
-    {
-      auto it =
-        std::find_if(m_Model.getComponents().begin(), m_Model.getComponents().end(), [&name](const auto& component) {
-          return component.getName() == name;
-        });
-      if (it == m_Model.getComponents().end()) {
-        throw rexsapi::TException{fmt::format("no component with name={} found", name)};
-      }
-      return *it;
-    }
-
-  private:
-    const rexsapi::TModel& m_Model;
-  };
-
-  class AttributeFinder
-  {
-  public:
-    explicit AttributeFinder(const rexsapi::TComponent& component)
-    : m_Component{component}
-    {
-    }
-
-    rexsapi::TAttributes findCustomAttributes() const
-    {
-      rexsapi::TAttributes attributes;
-
-      std::for_each(m_Component.getAttributes().begin(), m_Component.getAttributes().end(),
-                    [&attributes](const auto& attribute) {
-                      if (attribute.isCustomAttribute()) {
-                        attributes.emplace_back(attribute);
-                      }
-                    });
-
-      return attributes;
-    }
-
-  private:
-    const rexsapi::TComponent& m_Component;
-  };
-
   std::optional<rexsapi::TModel> loadModel(rexsapi::TResult& result, const std::filesystem::path& path,
                                            const rexsapi::database::TModelRegistry& registry,
                                            rexsapi::TMode mode = rexsapi::TMode::STRICT_MODE)
@@ -224,7 +174,8 @@ TEST_CASE("XML Model loader test")
 
   SUBCASE("Load complex model from file in strict mode")
   {
-    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs", registry);
+    auto model =
+      loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs", registry);
     REQUIRE(model);
     CHECK_FALSE(result);
     CHECK_FALSE(result.isCritical());
@@ -257,7 +208,8 @@ TEST_CASE("XML Model loader test")
 
   SUBCASE("Load complex model from file in relaxed mode")
   {
-    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs", registry, rexsapi::TMode::RELAXED_MODE);
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA-Industriegetriebe_2stufig_1-4.rexs",
+                           registry, rexsapi::TMode::RELAXED_MODE);
     REQUIRE(model);
     CHECK(result);
     CHECK_FALSE(result.isCritical());
