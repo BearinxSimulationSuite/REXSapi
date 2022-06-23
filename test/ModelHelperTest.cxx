@@ -37,7 +37,7 @@ TEST_CASE("Model helper test")
                              dbModel.findComponentById("gear_unit")));
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
           "test: attribute id=diameter_of_helix_modification is not part of component id=42");
 
     result.reset();
@@ -65,7 +65,7 @@ TEST_CASE("Model helper test")
     CHECK(ret.isEmpty());
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
           "test: value of attribute id=account_for_gravity of component id=42 does not have the correct value type");
   }
 
@@ -78,7 +78,7 @@ TEST_CASE("Model helper test")
     CHECK(ret.getValue<double>() == doctest::Approx{-42.0});
     CHECK(result);
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
           "test: value is out of range for attribute id=shear_modulus of component id=42");
     CHECK(result.getErrors()[0].isWarning());
   }
@@ -102,7 +102,7 @@ TEST_CASE("Model helper test")
     CHECK(ret.isEmpty());
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
           "test: value of attribute id=account_for_gravity of component id=42 does not have the correct value type");
   }
 }

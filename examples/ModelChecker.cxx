@@ -92,7 +92,7 @@ int main(int argc, char** argv)
         if (error.isWarning() && !showWarnings) {
           continue;
         }
-        std::cout << "  " << error.message() << std::endl;
+        std::cout << "  " << error.getMessage() << std::endl;
       }
     }
   } catch (const std::exception& ex) {
