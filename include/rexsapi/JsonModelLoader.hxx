@@ -18,6 +18,7 @@
 #define REXSAPI_JSON_MODEL_LOADER_HXX
 
 #include <rexsapi/Json.hxx>
+#include <rexsapi/JsonSchemaValidator.hxx>
 #include <rexsapi/JsonValueDecoder.hxx>
 #include <rexsapi/ModelHelper.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
@@ -26,17 +27,10 @@
 
 namespace rexsapi
 {
-  class TJsonModelValidator
-  {
-  public:
-    TJsonModelValidator() = default;
-  };
-
-
   class TJsonModelLoader
   {
   public:
-    explicit TJsonModelLoader(TMode mode, const TJsonModelValidator& validator)
+    explicit TJsonModelLoader(TMode mode, const TJsonSchemaValidator& validator)
     : m_Mode{mode}
     , m_LoaderHelper{mode}
     , m_Validator{validator}
@@ -63,7 +57,7 @@ namespace rexsapi
 
     TModeAdapter m_Mode;
     TModelHelper<TJsonValueDecoder> m_LoaderHelper;
-    const TJsonModelValidator& m_Validator;
+    const TJsonSchemaValidator& m_Validator;
   };
 
 
@@ -75,8 +69,14 @@ namespace rexsapi
                                                       std::vector<uint8_t>& buffer) const
   {
     try {
-      json j;
-      j = json::parse(buffer);
+      json j = json::parse(buffer);
+      std::vector<std::string> errors;
+      if (!m_Validator.validate(j, errors)) {
+        for (const auto& error : errors) {
+          result.addError(TError{TErrorLevel::CRIT, error});
+        }
+        return {};
+      }
 
       std::optional<std::string> language;
       if (j.contains("/model/applicationLanguage"_json_pointer)) {

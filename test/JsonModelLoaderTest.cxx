@@ -28,19 +28,20 @@ namespace
                                            const rexsapi::database::TModelRegistry& registry,
                                            rexsapi::TMode mode = rexsapi::TMode::STRICT_MODE)
   {
-    rexsapi::xml::TFileXsdSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.xsd"};
-    rexsapi::TJsonModelValidator jsonValidator;
+    rexsapi::TFileJsonSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.json"};
+    rexsapi::TJsonSchemaValidator jsonValidator{schemaLoader};
 
-    rexsapi::TFileModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{jsonValidator, path};
+    rexsapi::TFileModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{jsonValidator, path};
     return loader.load(mode, result, registry);
   }
 }
 
 TEST_CASE("Json model loader test")
 {
+  rexsapi::TFileJsonSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.json"};
+  rexsapi::TJsonSchemaValidator validator{schemaLoader};
   rexsapi::TResult result;
   const auto registry = createModelRegistry();
-  rexsapi::TJsonModelValidator validator;
 
   SUBCASE("Load valid document from buffer")
   {
@@ -163,12 +164,14 @@ TEST_CASE("Json model loader test")
           "components": [
             {
               "id": 1,
+              "type": "gear_unit",
               "attributes": [
                 { "id": "load_duration_fraction", "unit": "%", "floating_point": 15 }
               ]
             },
             {
               "id": 2,
+              "type": "shaft",
               "attributes": [
                 { "id": "load_duration_fraction", "unit": "%", "floating_point": 21 }
               ]
@@ -180,7 +183,7 @@ TEST_CASE("Json model loader test")
   }
 })";
 
-    rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
     CHECK_FALSE(result.isCritical());
@@ -201,7 +204,7 @@ TEST_CASE("Json model loader test")
     "relations":[
     ]})";
 
-    rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK_FALSE(result);
     CHECK(result.isCritical());

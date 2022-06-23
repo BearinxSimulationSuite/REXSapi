@@ -18,8 +18,10 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Json.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSchemaValidator.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonValueDecoder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/LoadSpectrum.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
@@ -37,6 +39,7 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XmlUtils.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLValueDecoder.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XSDSchemaValidator.hxx
 

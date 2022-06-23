@@ -351,24 +351,12 @@
                       "$id": "#root/model/load_spectrum/load_cases/items/components/items",
                       "title": "items",
                       "type": "object",
-                      "required": ["id", "type", "attributes"],
+                      "required": ["id", "attributes"],
                       "properties": {
                         "id": {
                           "$id": "#root/model/load_spectrum/load_cases/items/components/items/id",
                           "title": "id",
                           "type": "integer"
-                        },
-                        "type": {
-                          "$id": "#root/model/load_spectrum/load_cases/items/components/items/type",
-                          "title": "type",
-                          "type": "string",
-                          "pattern": "^.*$"
-                        },
-                        "name": {
-                          "$id": "#root/model/load_spectrum/load_cases/items/components/items/name",
-                          "title": "name",
-                          "type": "string",
-                          "pattern": "^.*$"
                         },
                         "attributes": {
                           "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes",

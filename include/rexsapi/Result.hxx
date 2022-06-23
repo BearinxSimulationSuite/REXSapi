@@ -71,7 +71,7 @@ namespace rexsapi
       return m_Level == TErrorLevel::WARN;
     }
 
-    std::string message() const
+    std::string getMessage() const
     {
       if (m_Position != -1) {
         return fmt::format("{}: offset {}", m_Message, m_Position);
