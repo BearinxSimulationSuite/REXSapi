@@ -18,13 +18,9 @@
 #define REXSAPI_DATABASE_FILE_RESOURCE_LOADER_HXX
 
 #include <rexsapi/Exception.hxx>
+#include <rexsapi/FileUtils.hxx>
 #include <rexsapi/Format.hxx>
 #include <rexsapi/Result.hxx>
-
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
 
 namespace rexsapi::database
 {
@@ -40,8 +36,6 @@ namespace rexsapi::database
 
   private:
     [[nodiscard]] std::vector<std::filesystem::path> findResources(TResult& result) const;
-
-    [[nodiscard]] static std::vector<uint8_t> load(TResult& result, const std::filesystem::path& resource);
 
     const std::filesystem::path m_Path;
   };
@@ -61,7 +55,7 @@ namespace rexsapi::database
 
     auto resources = findResources(result);
     std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
-      auto buffer = TFileResourceLoader::load(result, resource);
+      auto buffer = loadFile(result, resource);
       if (buffer.size()) {
         callback(result, buffer);
       }
@@ -69,7 +63,6 @@ namespace rexsapi::database
 
     return result;
   }
-
   inline std::vector<std::filesystem::path> TFileResourceLoader::findResources(TResult& result) const
   {
     if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
@@ -93,20 +86,6 @@ namespace rexsapi::database
     }
 
     return resources;
-  }
-
-  inline std::vector<uint8_t> TFileResourceLoader::load(TResult& result, const std::filesystem::path& resource)
-  {
-    std::ifstream file{resource};
-    if (!file.good()) {
-      result.addError(TError{TErrorLevel::ERR, fmt::format("Resource '{}' cannot be loaded", resource.string())});
-      return std::vector<uint8_t>{};
-    }
-    std::stringstream ss;
-    ss << file.rdbuf();
-    auto buffer = ss.str();
-
-    return std::vector<uint8_t>{buffer.begin(), buffer.end()};
   }
 }
 
