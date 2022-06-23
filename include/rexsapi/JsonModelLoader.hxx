@@ -163,7 +163,7 @@ namespace rexsapi
       std::optional<uint32_t> order;
       if (relation.contains("order")) {
         order = relation["order"].get<uint32_t>();
-        if (order < 1) {
+        if (order.value() < 1) {
           result.addError(
             TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
         }

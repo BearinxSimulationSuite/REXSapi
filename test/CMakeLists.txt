@@ -63,4 +63,8 @@ else()
   target_compile_options(rexsapi_test PRIVATE ${REXSAPI_COMPILE_OPTIONS})
 endif()
 
+if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
+  target_compile_options(rexsapi_test PRIVATE /bigobj)
+endif()
+
 doctest_discover_tests(rexsapi_test)
