@@ -17,6 +17,7 @@
 #ifndef REXSAPI_MODEL_LOADER_HXX
 #define REXSAPI_MODEL_LOADER_HXX
 
+#include <rexsapi/FileUtils.hxx>
 #include <rexsapi/JsonModelLoader.hxx>
 #include <rexsapi/Model.hxx>
 #include <rexsapi/Result.hxx>
@@ -46,7 +47,8 @@ namespace rexsapi
   public:
     explicit TModelLoader(const std::filesystem::path& databasePath)
     : m_Registry{createModelRegistry(databasePath)}
-    , m_XMLSchemaValidator{createSchemaValidator(databasePath)}
+    , m_XMLSchemaValidator{createXMLSchemaValidator(databasePath)}
+    , m_JsonValidator{createJsonSchemaValidator(databasePath)}
     {
     }
 
@@ -56,11 +58,13 @@ namespace rexsapi
   private:
     static database::TModelRegistry createModelRegistry(const std::filesystem::path& path);
 
-    static xml::TXSDSchemaValidator createSchemaValidator(const std::filesystem::path& path);
+    static xml::TXSDSchemaValidator createXMLSchemaValidator(const std::filesystem::path& path);
+
+    static TJsonSchemaValidator createJsonSchemaValidator(const std::filesystem::path& path);
 
     database::TModelRegistry m_Registry;
-    xml::TXSDSchemaValidator m_XMLSchemaValidator;
-    TJsonModelValidator m_JsonValidator;
+    const xml::TXSDSchemaValidator m_XMLSchemaValidator;
+    const TJsonSchemaValidator m_JsonValidator;
   };
 
 
@@ -100,11 +104,7 @@ namespace rexsapi
     }
 
     [[nodiscard]] std::optional<TModel> load(TMode mode, TResult& result,
-                                             const rexsapi::database::TModelRegistry& registry)
-    {
-      TLoader loader{mode, m_Validator};
-      return loader.load(result, registry, m_Buffer);
-    }
+                                             const rexsapi::database::TModelRegistry& registry);
 
   private:
     const TSchemaValidator& m_Validator;
@@ -167,7 +167,7 @@ namespace rexsapi
         break;
       }
       case TFileType::JSON: {
-        TFileModelLoader<TJsonModelValidator, TJsonModelLoader> loader{m_JsonValidator, path};
+        TFileModelLoader<TJsonSchemaValidator, TJsonModelLoader> loader{m_JsonValidator, path};
         model = loader.load(mode, result, m_Registry);
         break;
       }
@@ -186,10 +186,25 @@ namespace rexsapi
     return database::TModelRegistry::createModelRegistry(modelLoader).first;
   }
 
-  inline xml::TXSDSchemaValidator TModelLoader::createSchemaValidator(const std::filesystem::path& path)
+  inline xml::TXSDSchemaValidator TModelLoader::createXMLSchemaValidator(const std::filesystem::path& path)
   {
     xml::TFileXsdSchemaLoader schemaLoader{path / "rexs-schema.xsd"};
     return xml::TXSDSchemaValidator{schemaLoader};
+  }
+
+  inline TJsonSchemaValidator TModelLoader::createJsonSchemaValidator(const std::filesystem::path& path)
+  {
+    TFileJsonSchemaLoader schemaLoader{path / "rexs-schema.json"};
+    return TJsonSchemaValidator{schemaLoader};
+  }
+
+  template<typename TSchemaValidator, typename TLoader>
+  inline std::optional<TModel>
+  TBufferModelLoader<TSchemaValidator, TLoader>::load(TMode mode, TResult& result,
+                                                      const rexsapi::database::TModelRegistry& registry)
+  {
+    TLoader loader{mode, m_Validator};
+    return loader.load(result, registry, m_Buffer);
   }
 
   template<typename TSchemaValidator, typename TLoader>
@@ -197,26 +212,11 @@ namespace rexsapi
   TFileModelLoader<TSchemaValidator, TLoader>::load(TMode mode, TResult& result,
                                                     const rexsapi::database::TModelRegistry& registry)
   {
-    if (!std::filesystem::exists(m_Path)) {
-      result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' does not exist", m_Path.string())});
+    auto buffer = loadFile(result, m_Path);
+    if (!result) {
       return {};
     }
-    if (!std::filesystem::is_regular_file(m_Path)) {
-      result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' is not a regular file", m_Path.string())});
-      return {};
-    }
-
-    std::ifstream file{m_Path};
-    if (!file.good()) {
-      result.addError(TError{TErrorLevel::CRIT, fmt::format("'{}' cannot be loaded", m_Path.string())});
-      return {};
-    }
-    std::stringstream ss;
-    ss << file.rdbuf();
-    auto buffer = ss.str();
-
-    std::vector<uint8_t> buf{buffer.begin(), buffer.end()};
-    return TLoader{mode, m_Validator}.load(result, registry, buf);
+    return TLoader{mode, m_Validator}.load(result, registry, buffer);
   }
 }
 

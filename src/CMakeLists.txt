@@ -13,12 +13,15 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Exception.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/FileUtils.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Format.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Json.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonModelSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSchemaValidator.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/JsonValueDecoder.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/LoadSpectrum.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Mode.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Model.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ModelBuilder.hxx
@@ -36,6 +39,7 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelLoader.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLModelSerializer.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLSerializer.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/XmlUtils.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XMLValueDecoder.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/XSDSchemaValidator.hxx
 
@@ -55,5 +59,6 @@ target_include_directories(rexsapi INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_
 target_include_directories(rexsapi SYSTEM INTERFACE "${fmt_SOURCE_DIR}/include")
 target_include_directories(rexsapi SYSTEM INTERFACE "${json_SOURCE_DIR}/single_include")
 target_include_directories(rexsapi SYSTEM INTERFACE "${pugixml_SOURCE_DIR}/src")
+target_include_directories(rexsapi SYSTEM INTERFACE "${valijson_SOURCE_DIR}/include")
 target_include_directories(rexsapi INTERFACE ${PROJECT_BINARY_DIR})
 target_compile_options(rexsapi INTERFACE ${REXSAPI_COMPILE_OPTIONS})

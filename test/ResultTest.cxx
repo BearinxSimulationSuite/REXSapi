@@ -38,9 +38,9 @@ TEST_CASE("Loader result test")
     CHECK(result.hasIssues());
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 2);
-    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].getMessage() == "my first message");
     CHECK(result.getErrors()[0].isError());
-    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].getMessage() == "my second message: offset 32");
     CHECK(result.getErrors()[1].isError());
 
     result.reset();
@@ -58,10 +58,10 @@ TEST_CASE("Loader result test")
     CHECK(result.hasIssues());
     CHECK(result.isCritical());
     REQUIRE(result.getErrors().size() == 2);
-    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].getMessage() == "my first message");
     CHECK(result.getErrors()[0].isError());
     CHECK_FALSE(result.getErrors()[0].isCritical());
-    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].getMessage() == "my second message: offset 32");
     CHECK(result.getErrors()[1].isError());
     CHECK(result.getErrors()[1].isCritical());
 
@@ -80,9 +80,9 @@ TEST_CASE("Loader result test")
     CHECK(result.hasIssues());
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 2);
-    CHECK(result.getErrors()[0].message() == "my first message");
+    CHECK(result.getErrors()[0].getMessage() == "my first message");
     CHECK(result.getErrors()[0].isWarning());
-    CHECK(result.getErrors()[1].message() == "my second message: offset 32");
+    CHECK(result.getErrors()[1].getMessage() == "my second message: offset 32");
     CHECK(result.getErrors()[1].isWarning());
 
     result.reset();

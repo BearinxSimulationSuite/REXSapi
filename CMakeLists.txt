@@ -38,6 +38,7 @@ find_package(Threads REQUIRED)
 include(cmake/fetch_fmt.cmake)
 include(cmake/fetch_json.cmake)
 include(cmake/fetch_pugixml.cmake)
+include(cmake/fetch_valijson.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

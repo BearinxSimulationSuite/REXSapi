@@ -300,18 +300,18 @@ namespace rexsapi::xml
   class TFileXsdSchemaLoader
   {
   public:
-    explicit TFileXsdSchemaLoader(std::filesystem::path xsdFile)
-    : m_XsdFile{std::move(xsdFile)}
+    explicit TFileXsdSchemaLoader(std::filesystem::path xsdSchema)
+    : m_XsdSchema{std::move(xsdSchema)}
     {
-      if (!std::filesystem::exists(m_XsdFile) || !std::filesystem::is_regular_file(m_XsdFile)) {
-        throw TException{fmt::format("{} does not exist or is not a regular file", m_XsdFile.string())};
+      if (!std::filesystem::exists(m_XsdSchema) || !std::filesystem::is_regular_file(m_XsdSchema)) {
+        throw TException{fmt::format("{} does not exist or is not a regular file", m_XsdSchema.string())};
       }
     }
 
     [[nodiscard]] pugi::xml_document load() const;
 
   private:
-    std::filesystem::path m_XsdFile;
+    std::filesystem::path m_XsdSchema;
   };
 
 
@@ -902,9 +902,9 @@ namespace rexsapi::xml
   inline pugi::xml_document TFileXsdSchemaLoader::load() const
   {
     pugi::xml_document doc;
-    if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdFile.string().c_str()); !parseResult) {
+    if (pugi::xml_parse_result parseResult = doc.load_file(m_XsdSchema.string().c_str()); !parseResult) {
       throw TException{
-        fmt::format("cannot parse xsd schema file '{}': {}", m_XsdFile.string(), parseResult.description())};
+        fmt::format("cannot parse xsd schema file '{}': {}", m_XsdSchema.string(), parseResult.description())};
     }
 
     return doc;

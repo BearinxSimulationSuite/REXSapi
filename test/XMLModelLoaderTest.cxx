@@ -158,17 +158,17 @@ TEST_CASE("XML Model loader test")
     CHECK_FALSE(result);
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 5);
-    CHECK(result.getErrors()[0].message() == "42CrMo4 [238]: value of attribute id=material_type_din_743_2012 of "
-                                             "component id=238 does not have the correct value type");
+    CHECK(result.getErrors()[0].getMessage() == "42CrMo4 [238]: value of attribute id=material_type_din_743_2012 of "
+                                                "component id=238 does not have the correct value type");
     CHECK(
-      result.getErrors()[1].message() ==
+      result.getErrors()[1].getMessage() ==
       "42CrMo4 [238]: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=238");
-    CHECK(result.getErrors()[2].message() == "16MnCr5 [239]: value of attribute id=material_type_din_743_2012 of "
-                                             "component id=239 does not have the correct value type");
+    CHECK(result.getErrors()[2].getMessage() == "16MnCr5 [239]: value of attribute id=material_type_din_743_2012 of "
+                                                "component id=239 does not have the correct value type");
     CHECK(
-      result.getErrors()[3].message() ==
+      result.getErrors()[3].getMessage() ==
       "16MnCr5 [239]: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=239");
-    CHECK(result.getErrors()[4].message() ==
+    CHECK(result.getErrors()[4].getMessage() ==
           "Schneckenrad [9]: value is out of range for attribute id=throat_radius_worm_wheel of component id=9");
   }
 
@@ -180,25 +180,26 @@ TEST_CASE("XML Model loader test")
     CHECK_FALSE(result);
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
-    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
-    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
-                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
-    CHECK(result.getErrors()[2].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
+          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].getMessage() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                                "id=u_coordinate_on_shaft_outer_side of component id=33");
+    CHECK(result.getErrors()[2].getMessage() ==
           "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
           "id=u_coordinate_on_shaft_outer_side of component id=37");
-    CHECK(result.getErrors()[3].message() ==
+    CHECK(result.getErrors()[3].getMessage() ==
           "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
-    CHECK(result.getErrors()[4].message() ==
+    CHECK(result.getErrors()[4].getMessage() ==
           "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
-    CHECK(result.getErrors()[5].message() ==
+    CHECK(result.getErrors()[5].getMessage() ==
           "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
-    CHECK(result.getErrors()[6].message() ==
+    CHECK(result.getErrors()[6].getMessage() ==
           "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[7].message() ==
+    CHECK(result.getErrors()[7].getMessage() ==
           "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[8].message() ==
+    CHECK(result.getErrors()[8].getMessage() ==
           "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[9].message() ==
+    CHECK(result.getErrors()[9].getMessage() ==
           "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
 
     const auto& attributes =
@@ -214,25 +215,26 @@ TEST_CASE("XML Model loader test")
     CHECK(result);
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
-    CHECK(result.getErrors()[0].message() == "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
-    CHECK(result.getErrors()[1].message() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
-                                             "id=u_coordinate_on_shaft_outer_side of component id=33");
-    CHECK(result.getErrors()[2].message() ==
+    CHECK(result.getErrors()[0].getMessage() ==
+          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+    CHECK(result.getErrors()[1].getMessage() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
+                                                "id=u_coordinate_on_shaft_outer_side of component id=33");
+    CHECK(result.getErrors()[2].getMessage() ==
           "not a catalogue bearing: 33016 (Rolling bearing [35]): value is out of range for attribute "
           "id=u_coordinate_on_shaft_outer_side of component id=37");
-    CHECK(result.getErrors()[3].message() ==
+    CHECK(result.getErrors()[3].getMessage() ==
           "Material 1: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=57");
-    CHECK(result.getErrors()[4].message() ==
+    CHECK(result.getErrors()[4].getMessage() ==
           "Material 2: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=58");
-    CHECK(result.getErrors()[5].message() ==
+    CHECK(result.getErrors()[5].getMessage() ==
           "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
-    CHECK(result.getErrors()[6].message() ==
+    CHECK(result.getErrors()[6].getMessage() ==
           "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[7].message() ==
+    CHECK(result.getErrors()[7].getMessage() ==
           "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[8].message() ==
+    CHECK(result.getErrors()[8].getMessage() ==
           "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
-    CHECK(result.getErrors()[9].message() ==
+    CHECK(result.getErrors()[9].getMessage() ==
           "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
 
     const auto& attributes =
@@ -247,7 +249,7 @@ TEST_CASE("XML Model loader test")
     CHECK_FALSE(result);
     CHECK(result.isCritical());
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() == "'non-exising-file.rexs' does not exist");
+    CHECK(result.getErrors()[0].getMessage() == "'non-exising-file.rexs' does not exist");
   }
 
   SUBCASE("Load model from directory failure")

@@ -8,13 +8,15 @@ add_executable(rexsapi_test
 
   AttributeTest.cxx
   ConversionHelperTest.cxx
+  FileUtilsTest.cxx
   JsonModelLoaderTest.cxx
   JsonModelSerializerTest.cxx
+  JsonSchemaValidatorTest.cxx
   JsonValueDecoderTest.cxx
   LoadSpectrumTest.cxx
   ModelBuilderTest.cxx
-  ModelLoaderTest.cxx
   ModelHelperTest.cxx
+  ModelLoaderTest.cxx
   ModelTest.cxx
   ModeTest.cxx
   ResultTest.cxx
@@ -59,6 +61,10 @@ if(COVERAGE)
   target_compile_options(rexsapi_test PUBLIC --coverage -g)
 else()
   target_compile_options(rexsapi_test PRIVATE ${REXSAPI_COMPILE_OPTIONS})
+endif()
+
+if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
+  target_compile_options(rexsapi_test PRIVATE /bigobj)
 endif()
 
 doctest_discover_tests(rexsapi_test)

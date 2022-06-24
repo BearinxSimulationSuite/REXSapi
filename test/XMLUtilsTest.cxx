@@ -77,8 +77,8 @@ TEST_CASE("Xml utils test")
     const auto doc = rexsapi::xml::loadXMLDocument(result, buffer, validator);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 2);
-    CHECK(result.getErrors()[0].message() == "[/address/] too few 'street' elements, found 0 instead of at least 1");
-    CHECK(result.getErrors()[1].message() == "[/address/] too many 'city' elements, found 2 instead of at most 1");
+    CHECK(result.getErrors()[0].getMessage() == "[/address/] too few 'street' elements, found 0 instead of at least 1");
+    CHECK(result.getErrors()[1].getMessage() == "[/address/] too many 'city' elements, found 2 instead of at most 1");
   }
 
   SUBCASE("load invalid xml")
@@ -96,6 +96,6 @@ TEST_CASE("Xml utils test")
     const auto doc = rexsapi::xml::loadXMLDocument(result, buffer, validator);
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
-    CHECK(result.getErrors()[0].message() == "Start-end tags mismatch: offset 200");
+    CHECK(result.getErrors()[0].getMessage() == "Start-end tags mismatch: offset 200");
   }
 }

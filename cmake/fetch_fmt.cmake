@@ -4,6 +4,7 @@ FetchContent_Declare(
 )
 
 FetchContent_GetProperties(fmt)
+
 if(NOT fmt_POPULATED)
   FetchContent_Populate(fmt)
 endif()

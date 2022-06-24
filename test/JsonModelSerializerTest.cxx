@@ -33,7 +33,7 @@ namespace
   public:
     rexsapi::TModel load(rexsapi::TResult result, const std::string& buffer)
     {
-      rexsapi::TBufferModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{m_Validator, buffer};
+      rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{m_Validator, buffer};
       auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
       if (!model) {
         throw rexsapi::TException{"cannot load model"};
@@ -43,7 +43,8 @@ namespace
 
   private:
     rexsapi::database::TModelRegistry m_Registry{createModelRegistry()};
-    rexsapi::TJsonModelValidator m_Validator;
+    rexsapi::TFileJsonSchemaLoader m_SchemaLoader{projectDir() / "models" / "rexs-schema.json"};
+    rexsapi::TJsonSchemaValidator m_Validator{m_SchemaLoader};
   };
 }
 
@@ -81,12 +82,14 @@ TEST_CASE("Json serialize new model")
     modelSerializer.serialize(createModel(dbModel), fileSerializer);
     REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexsj"));
 
-    rexsapi::TJsonModelValidator validator;
-    rexsapi::TFileModelLoader<rexsapi::TJsonModelValidator, rexsapi::TJsonModelLoader> loader{
+    rexsapi::TFileJsonSchemaLoader schemaLoader{projectDir() / "models" / "rexs-schema.json"};
+    rexsapi::TJsonSchemaValidator validator{schemaLoader};
+
+    rexsapi::TFileModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{
       validator, guard.getTempDirectoryPath() / "test_model.rexsj"};
     rexsapi::TResult result;
     auto loadedModel = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK(result);
-    CHECK(loadModel);
+    CHECK(loadedModel);
   }
 }
