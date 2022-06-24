@@ -90,6 +90,6 @@ TEST_CASE("Json serialize new model")
     rexsapi::TResult result;
     auto loadedModel = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK(result);
-    CHECK(loadModel);
+    CHECK(loadedModel);
   }
 }
