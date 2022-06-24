@@ -40,9 +40,6 @@ namespace rexsapi
     explicit TFileJsonSchemaLoader(std::filesystem::path jsonFile)
     : m_JsonFile{std::move(jsonFile)}
     {
-      if (!std::filesystem::exists(m_JsonFile) || !std::filesystem::is_regular_file(m_JsonFile)) {
-        throw TException{fmt::format("Schema '{}' does not exist or is not a regular file", m_JsonFile.string())};
-      }
     }
 
     [[nodiscard]] json load() const;
@@ -101,17 +98,18 @@ namespace rexsapi
 
   inline json TFileJsonSchemaLoader::load() const
   {
-    json doc;
     TResult result;
-
-    try {
-      doc = json::parse(loadFile(result, m_JsonFile));
-    } catch (const std::exception& ex) {
-      throw TException{fmt::format("Cannot load json schema '{}': {}", m_JsonFile.string(), ex.what())};
-    }
+    auto buffer = loadFile(result, m_JsonFile);
     if (!result) {
       throw TException{
         fmt::format("Cannot load json schema '{}': {}", m_JsonFile.string(), result.getErrors()[0].getMessage())};
+    }
+
+    json doc;
+    try {
+      doc = json::parse(buffer);
+    } catch (const std::exception& ex) {
+      throw TException{fmt::format("Cannot load json schema '{}': {}", m_JsonFile.string(), ex.what())};
     }
 
     return doc;

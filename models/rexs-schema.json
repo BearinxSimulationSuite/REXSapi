@@ -16,8 +16,7 @@
         "applicationVersion",
         "date",
         "relations",
-        "components",
-        "load_spectrum"
+        "components"
       ],
       "properties": {
         "version": {

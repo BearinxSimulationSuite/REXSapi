@@ -193,7 +193,7 @@ TEST_CASE("Json model loader test")
     REQUIRE(model->getLoadSpectrum().hasLoadCases());
   }
 
-  SUBCASE("Foad invalid json document")
+  SUBCASE("Load invalid json document")
   {
     std::string buffer = R"({
   "model":{
@@ -202,7 +202,8 @@ TEST_CASE("Json model loader test")
     "date":"2021-07-01T12:18:38+01:00",
     "version":"1.4",
     "relations":[
-    ]})";
+    ]}
+  })";
 
     rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);

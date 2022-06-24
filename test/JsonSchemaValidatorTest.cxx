@@ -16,6 +16,9 @@
 
 #include <rexsapi/JsonSchemaValidator.hxx>
 
+#include <test/TemporaryDirectory.hxx>
+#include <test/TestHelper.hxx>
+
 #include <doctest.h>
 
 TEST_CASE("Json schema validator test")
@@ -181,5 +184,36 @@ TEST_CASE("Json schema validator test")
   {
     rexsapi::TBufferJsonSchemaLoader loader{invalidSchema};
     CHECK_THROWS(rexsapi::TJsonSchemaValidator{loader});
+  }
+
+  SUBCASE("Non parsable schema")
+  {
+    rexsapi::TBufferJsonSchemaLoader loader{R"({"key"=4711})"};
+    CHECK_THROWS(rexsapi::TJsonSchemaValidator{loader});
+  }
+}
+
+TEST_CASE("File json schema loader")
+{
+  SUBCASE("Load file")
+  {
+    rexsapi::TFileJsonSchemaLoader loader{projectDir() / "models" / "rexs-schema.json"};
+    const auto doc = loader.load();
+    CHECK_FALSE(doc.empty());
+  }
+
+  SUBCASE("Load non-existing file")
+  {
+    CHECK_THROWS((void)rexsapi::TFileJsonSchemaLoader{"non-exisiting-file.json"}.load());
+  }
+
+  SUBCASE("Load non-parsable file")
+  {
+    TemporaryDirectory guard;
+    {
+      std::ofstream stream{guard.getTempDirectoryPath() / "schema.json"};
+      stream << R"({"key"=4711})" << std::endl;
+    }
+    CHECK_THROWS((void)rexsapi::TFileJsonSchemaLoader{guard.getTempDirectoryPath() / "schema.json"}.load());
   }
 }
