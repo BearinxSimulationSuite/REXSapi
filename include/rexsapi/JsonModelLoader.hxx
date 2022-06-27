@@ -69,7 +69,7 @@ namespace rexsapi
                                                       std::vector<uint8_t>& buffer) const
   {
     try {
-      json j = json::parse(buffer);
+      const json j = json::parse(buffer);
       std::vector<std::string> errors;
       if (!m_Validator.validate(j, errors)) {
         for (const auto& error : errors) {
@@ -158,6 +158,7 @@ namespace rexsapi
     TRelations relations;
     std::set<uint64_t> usedComponents;
     for (const auto& relation : j["/model/relations"_json_pointer]) {
+      // TODO(lcf): add try..catch
       auto relationId = relation["id"].get<uint64_t>();
       auto relationType = relationTypeFromString(relation["type"].get<std::string>());
       std::optional<uint32_t> order;
@@ -218,7 +219,7 @@ namespace rexsapi
                    fmt::format("load_case id={} referenced component id={} does not exist", loadCaseId, componentId)});
           continue;
         }
-        auto context = fmt::format("load_case id={}", loadCaseId);
+        const auto context = fmt::format("load_case id={}", loadCaseId);
         TAttributes attributes =
           getAttributes(context, result, componentId, dbModel.findComponentById(component->getType()), componentRef);
         loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));

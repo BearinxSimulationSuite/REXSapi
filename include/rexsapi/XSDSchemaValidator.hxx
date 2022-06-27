@@ -529,7 +529,7 @@ namespace rexsapi::xml
         continue;
       }
       if (const auto* element = context.findElement(childName); element == nullptr) {
-        auto it = std::find_if(m_DirectElements.begin(), m_DirectElements.end(), [&childName](const auto& item) {
+        const auto it = std::find_if(m_DirectElements.begin(), m_DirectElements.end(), [&childName](const auto& item) {
           return item.second.getName() == childName;
         });
         if (it == m_DirectElements.end()) {
@@ -549,7 +549,7 @@ namespace rexsapi::xml
 
   [[nodiscard]] inline bool TSequence::checkContainsElement(const std::string& child) const
   {
-    auto it = std::find_if(m_Elements.begin(), m_Elements.end(), [&child](const auto& element) {
+    const auto it = std::find_if(m_Elements.begin(), m_Elements.end(), [&child](const auto& element) {
       return child == element.getName();
     });
 
@@ -558,7 +558,7 @@ namespace rexsapi::xml
 
   inline void TAttribute::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
-    auto attribute = node.attribute(m_Name.c_str());
+    const auto attribute = node.attribute(m_Name.c_str());
     if (attribute.empty() && m_Required) {
       context.addError(fmt::format("missing required attribute '{}'", m_Name));
     }
@@ -577,7 +577,7 @@ namespace rexsapi::xml
 
   inline void TElementRef::validate(const pugi::xml_node& node, TValidationContext& context) const
   {
-    auto nodes = node.select_nodes(m_Element.getName().c_str());
+    const auto nodes = node.select_nodes(m_Element.getName().c_str());
 
     if (nodes.size() < m_Min) {
       context.addError(fmt::format("too few '{}' elements, found {} instead of at least {}", m_Element.getName(),
@@ -620,7 +620,7 @@ namespace rexsapi::xml
 
   inline bool TAttributes::containsAttribute(const std::string& attribute) const
   {
-    auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attribute](const auto& att) {
+    const auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attribute](const auto& att) {
       return att.getName() == attribute;
     });
     return it != m_Attributes.end();
@@ -671,7 +671,7 @@ namespace rexsapi::xml
 
   inline void TEnumeration::validate(const std::string& value, TValidationContext& context) const
   {
-    auto it = std::find_if(m_EnumValues.begin(), m_EnumValues.end(), [&value](const auto& item) {
+    const auto it = std::find_if(m_EnumValues.begin(), m_EnumValues.end(), [&value](const auto& item) {
       return item == value;
     });
     if (it == m_EnumValues.end()) {
@@ -697,7 +697,7 @@ namespace rexsapi::xml
 
   [[nodiscard]] inline const TElement* TValidationContext::findElement(const std::string& name) const&
   {
-    auto it = m_Elements.find(name);
+    const auto it = m_Elements.find(name);
     if (it == m_Elements.end()) {
       return nullptr;
     }
@@ -760,7 +760,7 @@ namespace rexsapi::xml
 
   inline void TXSDSchemaValidator::init()
   {
-    if (auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchemaNS).c_str()); !root) {
+    if (const auto root = m_Doc.select_node(fmt::format("/{}:schema", xsdSchemaNS).c_str()); !root) {
       throw TException{fmt::format("{}:schema node not found", xsdSchemaNS)};
     }
 
@@ -768,11 +768,11 @@ namespace rexsapi::xml
 
     for (const auto& elements : m_Doc.select_nodes(fmt::format("/{0}:schema/{0}:simpleType", xsdSchemaNS).c_str())) {
       // ATTENTION: this is a strong simplification of simple types
-      auto restriction = elements.node().select_nodes(fmt::format("{0}:restriction", xsdSchemaNS).c_str());
+      const auto restriction = elements.node().select_nodes(fmt::format("{0}:restriction", xsdSchemaNS).c_str());
       if (!restriction.empty()) {
         std::optional<TEnumeration> enumeration;
         const auto& baseType = findType(restriction.first().node().attribute("base").as_string());
-        auto children = restriction.first().node().children();
+        const auto children = restriction.first().node().children();
 
         if (!children.empty()) {
           std::vector<std::string> enumValues;
@@ -814,7 +814,7 @@ namespace rexsapi::xml
 
   inline const TElement* TXSDSchemaValidator::findElement(const std::string& name) const&
   {
-    auto it = m_Elements.find(name);
+    const auto it = m_Elements.find(name);
     return it == m_Elements.end() ? nullptr : &(it->second);
   }
 
@@ -824,7 +824,7 @@ namespace rexsapi::xml
       return *p;
     }
 
-    auto node = m_Doc.select_node(fmt::format("/{0}:schema/{0}:element[@name='{1}']", xsdSchemaNS, name).c_str());
+    const auto node = m_Doc.select_node(fmt::format("/{0}:schema/{0}:element[@name='{1}']", xsdSchemaNS, name).c_str());
     if (!node) {
       throw TException{fmt::format("no element node '{}' found", name)};
     }
@@ -836,7 +836,7 @@ namespace rexsapi::xml
 
   inline const TSimpleType& TXSDSchemaValidator::findType(const std::string& name) const&
   {
-    auto it = m_Types.find(name);
+    const auto it = m_Types.find(name);
     if (it == m_Types.end()) {
       throw TException{fmt::format("no type '{}' found", name)};
     }
@@ -882,7 +882,7 @@ namespace rexsapi::xml
       attributes.addAttribute(TAttribute{attribute.node().attribute("name").as_string(), type,
                                          use ? std::string(use.as_string()) == "required" : false});
     }
-    auto anyAttribute = node.select_node(fmt::format("{0}:complexType/{0}:anyAttribute", xsdSchemaNS).c_str());
+    const auto anyAttribute = node.select_node(fmt::format("{0}:complexType/{0}:anyAttribute", xsdSchemaNS).c_str());
     if (!anyAttribute.node().empty()) {
       attributes.setRelaxed();
     }

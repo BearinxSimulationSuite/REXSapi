@@ -53,6 +53,7 @@ namespace rexsapi
 
     void serialize(const ordered_json& doc)
     {
+      // TODO (lcf): error handling
       std::ofstream stream{m_File};
       stream << doc.dump(2);
     }

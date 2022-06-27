@@ -36,7 +36,7 @@ namespace rexsapi::xml
   static inline std::string getStringAttribute(const pugi::xpath_node& node, const char* attribute,
                                                const std::string& def)
   {
-    if (auto att = node.node().attribute(attribute); !att.empty()) {
+    if (const auto att = node.node().attribute(attribute); !att.empty()) {
       return att.value();
     }
     return def;
@@ -44,7 +44,7 @@ namespace rexsapi::xml
 
   static inline bool getBoolAttribute(const pugi::xpath_node& node, const char* attribute, bool def)
   {
-    if (auto att = node.node().attribute(attribute); !att.empty()) {
+    if (const auto att = node.node().attribute(attribute); !att.empty()) {
       std::string val{att.value()};
       return val == "true";
     }

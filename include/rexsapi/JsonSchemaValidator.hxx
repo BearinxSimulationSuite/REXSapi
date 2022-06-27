@@ -82,6 +82,7 @@ namespace rexsapi
       try {
         parser.populateSchema(schemaDocumentAdapter, m_Schema);
       } catch (const std::exception& ex) {
+        // TODO(lcf): add exception message
         throw TException{"Cannot populate schema"};
       }
     }
@@ -99,7 +100,7 @@ namespace rexsapi
   inline json TFileJsonSchemaLoader::load() const
   {
     TResult result;
-    auto buffer = loadFile(result, m_JsonFile);
+    const auto buffer = loadFile(result, m_JsonFile);
     if (!result) {
       throw TException{
         fmt::format("Cannot load json schema '{}': {}", m_JsonFile.string(), result.getErrors()[0].getMessage())};

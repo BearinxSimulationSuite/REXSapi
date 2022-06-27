@@ -116,13 +116,13 @@ namespace rexsapi::database
 
   inline bool TModel::addUnit(TUnit&& unit)
   {
-    auto [_, added] = m_Units.try_emplace(unit.getId(), std::move(unit));
+    const auto [_, added] = m_Units.try_emplace(unit.getId(), std::move(unit));
     return added;
   }
 
   inline const TUnit& TModel::findUnitById(uint64_t id) const
   {
-    auto it = m_Units.find(id);
+    const auto it = m_Units.find(id);
     if (it == m_Units.end()) {
       throw TException{fmt::format("unit with id '{}' not found in database", std::to_string(id))};
     }
@@ -132,7 +132,7 @@ namespace rexsapi::database
 
   inline const TUnit& TModel::findUnitByName(const std::string& name) const
   {
-    auto it = std::find_if(m_Units.begin(), m_Units.end(), [&name](const auto& item) {
+    const auto it = std::find_if(m_Units.begin(), m_Units.end(), [&name](const auto& item) {
       const auto& [_, unit] = item;
       return unit.getName() == name;
     });
@@ -145,13 +145,13 @@ namespace rexsapi::database
 
   inline bool TModel::addType(uint64_t id, TValueType type)
   {
-    auto [_, added] = m_Types.try_emplace(id, type);
+    const auto [_, added] = m_Types.try_emplace(id, type);
     return added;
   }
 
   inline const TValueType& TModel::findValueTypeById(uint64_t id) const
   {
-    auto it = m_Types.find(id);
+    const auto it = m_Types.find(id);
     if (it == m_Types.end()) {
       throw TException{fmt::format("value type '{}' not found in database", std::to_string(id))};
     }
@@ -161,13 +161,13 @@ namespace rexsapi::database
 
   inline bool TModel::addAttribute(TAttribute&& attribute)
   {
-    auto [_, added] = m_Attributes.try_emplace(attribute.getAttributeId(), std::move(attribute));
+    const auto [_, added] = m_Attributes.try_emplace(attribute.getAttributeId(), std::move(attribute));
     return added;
   }
 
   inline const TAttribute& TModel::findAttributetById(const std::string& id) const
   {
-    auto it = m_Attributes.find(id);
+    const auto it = m_Attributes.find(id);
     if (it == m_Attributes.end()) {
       throw TException{fmt::format("attribute '{}' not found in database", id)};
     }
@@ -177,13 +177,13 @@ namespace rexsapi::database
 
   inline bool TModel::addComponent(TComponent&& component)
   {
-    auto [_, added] = m_Components.try_emplace(component.getComponentId(), std::move(component));
+    const auto [_, added] = m_Components.try_emplace(component.getComponentId(), std::move(component));
     return added;
   }
 
   inline const TComponent& TModel::findComponentById(const std::string& id) const
   {
-    auto it = m_Components.find(id);
+    const auto it = m_Components.find(id);
     if (it == m_Components.end()) {
       throw TException{fmt::format("component '{}' not found in database", id)};
     }

@@ -60,7 +60,7 @@ namespace rexsapi::database
         return;
       }
 
-      auto rexsModel = *doc.select_nodes("/rexsModel").begin();
+      const auto rexsModel = *doc.select_nodes("/rexsModel").begin();
       TModel model{TRexsVersion{xml::getStringAttribute(rexsModel, "version")},
                    xml::getStringAttribute(rexsModel, "language"), xml::getStringAttribute(rexsModel, "date"),
                    statusFromString(xml::getStringAttribute(rexsModel, "status"))};

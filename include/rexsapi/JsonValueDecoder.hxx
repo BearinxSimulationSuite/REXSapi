@@ -81,7 +81,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        const auto value = node.at("string").get<std::string>();
+        auto value = node.at("string").get<std::string>();
         return std::make_pair(TValue{value}, !value.empty());
       }
     };
@@ -95,7 +95,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
-        const auto value = node.at("file_reference").get<std::string>();
+        auto value = node.at("file_reference").get<std::string>();
         return std::make_pair(TValue{value}, !value.empty());
       }
     };
@@ -186,7 +186,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         std::vector<type> array;
-        auto arr = node.at(m_Name);
+        const auto arr = node.at(m_Name);
         for (const auto& element : arr) {
           array.emplace_back(element.template get<type>());
         }
@@ -203,7 +203,7 @@ namespace rexsapi
                                        const rexsapi::json& node) const override
       {
         std::vector<Bool> array;
-        auto arr = node.at("boolean_array");
+        const auto arr = node.at("boolean_array");
         for (const auto& element : arr) {
           array.emplace_back(element.template get<bool>());
         }
@@ -220,7 +220,7 @@ namespace rexsapi
         if (enumValue.has_value()) {
           std::vector<std::string> array;
           bool result{true};
-          auto arr = node.at("enum_array");
+          const auto arr = node.at("enum_array");
           for (const auto& element : arr) {
             auto value = element.get<std::string>();
             if (enumValue->check(value)) {

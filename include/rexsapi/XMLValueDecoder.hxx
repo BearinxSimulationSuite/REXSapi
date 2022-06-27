@@ -79,7 +79,7 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const pugi::xml_node& node) const override
       {
-        const std::string value = node.child_value();
+        std::string value = node.child_value();
         return std::make_pair(TValue{value}, !value.empty());
       }
     };
@@ -168,7 +168,7 @@ namespace rexsapi
         ElementDecoder decoder;
         bool result{true};
         for (const auto& arrayNode : node.select_nodes("array/c")) {
-          auto res = decoder.decode(enumValue, arrayNode.node());
+          const auto res = decoder.decode(enumValue, arrayNode.node());
           if (res.second) {
             const TValue& val = res.first;
             array.emplace_back(std::move(val.getValue<type>()));
@@ -189,7 +189,7 @@ namespace rexsapi
         TBooleanDecoder decoder;
         bool result{true};
         for (const auto& arrayNode : node.select_nodes("array/c")) {
-          auto res = decoder.decode(enumValue, arrayNode.node());
+          const auto res = decoder.decode(enumValue, arrayNode.node());
           if (res.second) {
             const TValue& val = res.first;
             array.emplace_back(val.getValue<bool>());
@@ -217,7 +217,7 @@ namespace rexsapi
           std::vector<type> r;
 
           for (const auto& column : row.node().select_nodes("c")) {
-            auto res = decoder.decode(enumValue, column.node());
+            const auto res = decoder.decode(enumValue, column.node());
             if (res.second) {
               const TValue& val = res.first;
               r.emplace_back(std::move(val.getValue<type>()));
@@ -251,7 +251,7 @@ namespace rexsapi
           std::vector<type> r;
 
           for (const auto& column : row.node().select_nodes("c")) {
-            auto res = decoder.decode(enumValue, column.node());
+            const auto res = decoder.decode(enumValue, column.node());
             if (res.second) {
               const TValue& val = res.first;
               r.emplace_back(std::move(val.getValue<type>()));

@@ -52,7 +52,7 @@ namespace rexsapi::database
 
   inline const TModel& TModelRegistry::getModel(const TRexsVersion& version, const std::string& language) const
   {
-    auto it = std::find_if(m_Models.begin(), m_Models.end(), [&version, &language](const auto& model) {
+    const auto it = std::find_if(m_Models.begin(), m_Models.end(), [&version, &language](const auto& model) {
       return model.getVersion() == version && model.getLanguage() == language;
     });
 

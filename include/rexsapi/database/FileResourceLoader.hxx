@@ -53,7 +53,7 @@ namespace rexsapi::database
 
     TResult result;
 
-    auto resources = findResources(result);
+    const auto resources = findResources(result);
     std::for_each(resources.begin(), resources.end(), [&callback, &result](const auto& resource) {
       auto buffer = loadFile(result, resource);
       if (buffer.size()) {

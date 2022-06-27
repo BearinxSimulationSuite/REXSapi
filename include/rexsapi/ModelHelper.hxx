@@ -106,17 +106,18 @@ namespace rexsapi
     uint64_t addComponent(uint64_t componentId)
     {
       auto res = ++m_InternalComponentId;
+      // TODO(lcf): check for duplicates
       m_ComponentsMapping[componentId] = res;
       return res;
     }
 
     inline const TComponent* getComponent(uint64_t referenceId, const TComponents& components) const&
     {
-      auto it = m_ComponentsMapping.find(referenceId);
+      const auto it = m_ComponentsMapping.find(referenceId);
       if (it == m_ComponentsMapping.end()) {
         return nullptr;
       }
-      auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
+      const auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
         return comp.getInternalId() == it->second;
       });
       return it_comp.operator->();

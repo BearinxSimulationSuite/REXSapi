@@ -59,12 +59,12 @@ namespace rexsapi
   inline std::optional<TModel> TXMLModelLoader::load(TResult& result, const database::TModelRegistry& registry,
                                                      std::vector<uint8_t>& buffer) const
   {
-    pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
+    const pugi::xml_document doc = loadXMLDocument(result, buffer, m_Validator);
     if (!result) {
       return {};
     }
 
-    auto rexsModel = *doc.select_nodes("/model").begin();
+    const auto rexsModel = *doc.select_nodes("/model").begin();
     auto language = xml::getStringAttribute(rexsModel, "applicationLanguage", "");
     TModelInfo info{
       xml::getStringAttribute(rexsModel, "applicationId"), xml::getStringAttribute(rexsModel, "applicationVersion"),
@@ -86,7 +86,7 @@ namespace rexsapi
       try {
         const auto& componentType = dbModel.findComponentById(xml::getStringAttribute(component, "type"));
 
-        auto attributeNodes =
+        const auto attributeNodes =
           doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
         TAttributes attributes = getAttributes(componentName, result, componentId, componentType, attributeNodes);
 
@@ -103,7 +103,7 @@ namespace rexsapi
       std::string relationId = xml::getStringAttribute(relation, "id");
       auto relationType = relationTypeFromString(xml::getStringAttribute(relation, "type"));
       std::optional<uint32_t> order;
-      if (auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
+      if (const auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
         order = orderAtt.as_uint();
         if (order.value() < 1) {
           result.addError(
@@ -159,11 +159,11 @@ namespace rexsapi
             continue;
           }
 
-          auto attributeNodes =
+          const auto attributeNodes =
             doc.select_nodes(fmt::format("/model/load_spectrum/load_case[@id = '{}']/component[@id = '{}']/attribute",
                                          loadCaseId, componentId)
                                .c_str());
-          auto context = fmt::format("load_case id={}", loadCaseId);
+          const auto context = fmt::format("load_case id={}", loadCaseId);
           TAttributes attributes = getAttributes(context, result, componentId,
                                                  dbModel.findComponentById(refComponent->getType()), attributeNodes);
           loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
