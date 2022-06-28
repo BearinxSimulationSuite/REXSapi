@@ -65,8 +65,7 @@ jobs:
           path: html
       - name: Create distribution zip
         if: ${{ env.COVERAGE == 'ON' }}
-        run: |
-          cpack --config CPackConfig.cmake
+        run: cd build && cpack --config CPackConfig.cmake
       - name: Archive rexsapi package
         if: ${{ env.COVERAGE == 'ON' }}
         uses: actions/upload-artifact@v2
