@@ -35,7 +35,7 @@ namespace
     {
       rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{m_Validator, buffer};
       auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
-      if (!model) {
+      if (!model || !result) {
         throw rexsapi::TException{"cannot load model"};
       }
       return std::move(*model);

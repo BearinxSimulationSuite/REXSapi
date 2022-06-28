@@ -260,7 +260,12 @@ namespace rexsapi
         pugi::xml_node loadCaseNode = loadSpectrumNode.append_child("load_case");
         loadCaseNode.append_attribute("id").set_value(std::to_string(++loadCaseId).c_str());
         for (const auto& loadComponent : loadCase.getLoadComponents()) {
-          auto compNode = serialize(loadCaseNode, loadComponent.getComponent());
+          const auto& component = loadComponent.getComponent();
+          pugi::xml_node compNode = loadCaseNode.append_child("component");
+          auto id = getComponentId(component.getInternalId());
+          compNode.append_attribute("id").set_value(id.c_str());
+          compNode.append_attribute("name").set_value(component.getName().c_str());
+          compNode.append_attribute("type").set_value(component.getType().c_str());
           serialize(compNode, loadComponent.getLoadAttributes());
         }
       }

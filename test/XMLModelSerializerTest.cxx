@@ -31,13 +31,13 @@ namespace
   class FileLoader
   {
   public:
-    rexsapi::TModel load(const std::filesystem::path& modelFile)
+    rexsapi::TModel load(const std::filesystem::path& modelFile, rexsapi::TMode mode = rexsapi::TMode::STRICT_MODE)
     {
       rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{m_Validator,
                                                                                                     modelFile};
       rexsapi::TResult result;
-      auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
-      if (!model) {
+      auto model = loader.load(mode, result, m_Registry);
+      if (!model || !result) {
         throw rexsapi::TException{"cannot load model"};
       }
       return std::move(*model);
@@ -58,7 +58,7 @@ namespace
                                                                                                       buffer};
       rexsapi::TResult result;
       auto model = loader.load(rexsapi::TMode::STRICT_MODE, result, m_Registry);
-      if (!model) {
+      if (!model || !result) {
         throw rexsapi::TException{"cannot load model"};
       }
       return std::move(*model);
@@ -74,7 +74,7 @@ namespace
 TEST_CASE("XML model file serializer test")
 {
   FileLoader loader;
-  auto model = loader.load(projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs");
+  auto model = loader.load(projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexs", rexsapi::TMode::RELAXED_MODE);
 
   SUBCASE("Serialize loaded model")
   {
@@ -83,7 +83,8 @@ TEST_CASE("XML model file serializer test")
     rexsapi::XMLModelSerializer modelSerializer;
     modelSerializer.serialize(model, xmlSerializer);
     CHECK(std::filesystem::exists(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs"));
-    auto roundtripModel = loader.load(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs");
+    auto roundtripModel =
+      loader.load(tmpDir.getTempDirectoryPath() / "FVA_worm_stage_1-4.rexs", rexsapi::TMode::RELAXED_MODE);
     CHECK(roundtripModel.getComponents().size() == model.getComponents().size());
     CHECK(roundtripModel.getRelations().size() == model.getRelations().size());
   }

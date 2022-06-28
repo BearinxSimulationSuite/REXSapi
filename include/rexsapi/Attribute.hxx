@@ -32,7 +32,8 @@ namespace rexsapi
     , m_Value{std::move(value)}
     {
       if (!(m_Unit == attribute.getUnit())) {
-        throw TException{fmt::format("specified incorrect unit ({}) for attribute id={}", m_Unit.getName(), getName())};
+        throw TException{
+          fmt::format("specified incorrect unit ({}) for attribute id={}", m_Unit.getName(), getAttributeId())};
       }
     }
 

@@ -55,6 +55,7 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   auto& loadCase = modelBuilder.addLoadCase();
   loadCase.addComponent(casingId).addAttribute("temperature_lubricant").unit("C").value(36.7);
   loadCase.addComponent(casingId).addAttribute("operating_viscosity").value(3.3);
+  loadCase.addComponent("my-bearing-id").addAttribute("mass_of_component").value(2.35);
 
   return modelBuilder.build("REXSApi Model Builder", "1.0", "en");
 }
@@ -70,11 +71,15 @@ static rexsapi::database::TModelRegistry createModelRegistry()
 
 int main(int, char**)
 {
-  auto registry = createModelRegistry();
-  auto model = createModel(registry);
-  rexsapi::XMLStringSerializer stringSerializer;
-  rexsapi::XMLModelSerializer modelSerializer;
-  modelSerializer.serialize(model, stringSerializer);
-  std::cout << stringSerializer.getModel() << std::endl;
+  try {
+    auto registry = createModelRegistry();
+    auto model = createModel(registry);
+    rexsapi::XMLStringSerializer stringSerializer;
+    rexsapi::XMLModelSerializer modelSerializer;
+    modelSerializer.serialize(model, stringSerializer);
+    std::cout << stringSerializer.getModel() << std::endl;
+  } catch (const std::exception& ex) {
+    std::cerr << "Exception: " << ex.what() << std::endl;
+  }
   return 0;
 }
