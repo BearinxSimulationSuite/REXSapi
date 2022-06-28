@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: rexsapi-package
-          path: rexsapi-0.1.24.zip
+          path: build/rexsapi-*.zip
 
   build-windows:
     name: ${{ matrix.os }} ${{ matrix.build_type }}
