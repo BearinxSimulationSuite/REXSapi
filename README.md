@@ -1,4 +1,5 @@
 ![Supported Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows-blue.svg)
+![License: Apache 2](https://img.shields.io/badge/license-Apache%202-blue)
 ![Language: C++17](https://img.shields.io/badge/language-C%2B%2B17-blue.svg)
 ![Version:](https://img.shields.io/badge/version-pre--alpha-orange)
 [![GitHub Build Status](https://github.com/BearinxSimulationSuite/REXSapi/workflows/CMake%20Build%20Matrix/badge.svg)](https://github.com/BearinxSimulationSuite/REXSapi/actions)
