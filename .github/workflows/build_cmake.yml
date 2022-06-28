@@ -63,6 +63,15 @@ jobs:
         with:
           name: code-coverage-report
           path: html
+      - name: Create distribution zip
+        if: ${{ env.COVERAGE == 'ON' }}
+        run: cd build && cpack --config CPackConfig.cmake
+      - name: Archive rexsapi package
+        if: ${{ env.COVERAGE == 'ON' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: rexsapi-package
+          path: build/rexsapi-*.zip
 
   build-windows:
     name: ${{ matrix.os }} ${{ matrix.build_type }}

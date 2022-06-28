@@ -4,4 +4,9 @@ FetchContent_Declare(
   GIT_TAG v2.4.8
 )
 
-FetchContent_MakeAvailable(doctest)
+FetchContent_GetProperties(doctest)
+
+if(NOT doctest_POPULATED)
+  set(DOCTEST_NO_INSTALL ON)
+  FetchContent_Populate(doctest)
+endif()
