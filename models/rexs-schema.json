@@ -199,7 +199,7 @@
                     "floating_point_array": {
                       "$id": "#root/model/components/items/attributes/items/floating_point_array",
                       "title": "floating_point_array",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/floating_point_array/items",
                         "title": "items",
@@ -209,7 +209,7 @@
                     "integer_array": {
                       "$id": "#root/model/components/items/attributes/items/integer_array",
                       "title": "integer_array",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/integer_array/items",
                         "title": "items",
@@ -219,7 +219,7 @@
                     "boolean_array": {
                       "$id": "#root/model/components/items/attributes/items/boolean_array",
                       "title": "boolean_array",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/boolean_array/items",
                         "title": "items",
@@ -229,7 +229,7 @@
                     "string_array": {
                       "$id": "#root/model/components/items/attributes/items/string_array",
                       "title": "string_array",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/string_array/items",
                         "title": "items",
@@ -240,7 +240,7 @@
                     "enum_array": {
                       "$id": "#root/model/components/items/attributes/items/enum_array",
                       "title": "enum_array",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/enum_array/items",
                         "title": "items",
@@ -251,7 +251,7 @@
                     "floating_point_matrix": {
                       "$id": "#root/model/components/items/attributes/items/floating_point_matrix",
                       "title": "floating_point_matrix",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/floating_point_matrix/items",
                         "title": "items",
@@ -266,7 +266,7 @@
                     "integer_matrix": {
                       "$id": "#root/model/components/items/attributes/items/integer_matrix",
                       "title": "integer_matrix",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/integer_matrix/items",
                         "title": "items",
@@ -281,7 +281,7 @@
                     "boolean_matrix": {
                       "$id": "#root/model/components/items/attributes/items/boolean_matrix",
                       "title": "boolean_matrix",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/boolean_matrix/items",
                         "title": "items",
@@ -296,7 +296,7 @@
                     "string_matrix": {
                       "$id": "#root/model/components/items/attributes/items/string_matrix",
                       "title": "string_matrix",
-                      "type": "array",
+                      "type": ["array", "null"],
                       "items": {
                         "$id": "#root/model/components/items/string_matrix/items",
                         "title": "items",
@@ -421,7 +421,7 @@
                               "floating_point_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point_array",
                                 "title": "floating_point_array",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/floating_point_array/items",
                                   "title": "items",
@@ -431,7 +431,7 @@
                               "integer_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer_array",
                                 "title": "integer_array",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/integer_array/items",
                                   "title": "items",
@@ -441,7 +441,7 @@
                               "boolean_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean_array",
                                 "title": "boolean_array",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/boolean_array/items",
                                   "title": "items",
@@ -451,7 +451,7 @@
                               "string_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string_array",
                                 "title": "string_array",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_array/items",
                                   "title": "items",
@@ -462,7 +462,7 @@
                               "enum_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/enum_array",
                                 "title": "enum_array",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/enum_array/items",
                                   "title": "items",
@@ -473,7 +473,7 @@
                               "floating_point_matrix": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point_matrix",
                                 "title": "floating_point_matrix",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/floating_point_matrix/items",
                                   "title": "items",
@@ -488,7 +488,7 @@
                               "integer_matrix": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer_matrix",
                                 "title": "integer_matrix",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/integer_matrix/items",
                                   "title": "items",
@@ -503,7 +503,7 @@
                               "boolean_matrix": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean_matrix",
                                 "title": "boolean_matrix",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/boolean_matrix/items",
                                   "title": "items",
@@ -518,7 +518,7 @@
                               "string_matrix": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string_matrix",
                                 "title": "string_matrix",
-                                "type": "array",
+                                "type": ["array", "null"],
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_matrix/items",
                                   "title": "items",

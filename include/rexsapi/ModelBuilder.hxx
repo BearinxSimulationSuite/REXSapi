@@ -106,7 +106,7 @@ namespace rexsapi
 
     TComponentBuilder& name(std::string name) &;
 
-    TComponentBuilder& addAttribute(const std::string& attribute) &;
+    TComponentBuilder& addAttribute(const std::string& attributeId) &;
 
     TComponentBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
 
@@ -122,6 +122,18 @@ namespace rexsapi
     const TComponent& getComponentForId(const TComponents& components, const TComponentId& id) const&;
 
   private:
+    void checkDuplicateComponent(const std::string& component, const std::string& id = "") const
+    {
+      const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component, &id](const auto& comp) {
+        bool res = comp.m_component->getComponentId() == component;
+        res |= comp.m_Id == TComponentId{id};
+        return res;
+      });
+      if (it != m_Components.end()) {
+        throw TException{fmt::format("component {} already added", component)};
+      }
+    }
+
     void checkComponent() const
     {
       if (m_Components.empty()) {
@@ -171,7 +183,7 @@ namespace rexsapi
 
     TLoadCaseBuilder& addComponent(std::string id) &;
 
-    TLoadCaseBuilder& addAttribute(const std::string& attribute) &;
+    TLoadCaseBuilder& addAttribute(const std::string& attributeId) &;
 
     TLoadCaseBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
 
@@ -183,6 +195,16 @@ namespace rexsapi
     TLoadCase build(const TComponents& components, const TComponentBuilder& componentBuilder) const;
 
   private:
+    void checkDuplicateComponent(const TComponentId& component) const
+    {
+      const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component](const auto& comp) {
+        return comp.m_Id == component;
+      });
+      if (it != m_Components.end()) {
+        throw TException{fmt::format("component id={} already added to loadcase", component.asString())};
+      }
+    }
+
     void checkComponent() const
     {
       if (m_Components.empty()) {
@@ -301,6 +323,7 @@ namespace rexsapi
 
   inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component) &
   {
+    checkDuplicateComponent(component);
     m_Components.emplace_back(
       detail::TComponentEntry{getNextComponentId(), &m_DatabaseModel.findComponentById(component)});
     return *this;
@@ -308,7 +331,7 @@ namespace rexsapi
 
   inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component, std::string id) &
   {
-    // TODO (lcf): check duplicate id
+    checkDuplicateComponent(component, id);
     m_Components.emplace_back(
       detail::TComponentEntry{TComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
     return *this;
@@ -426,12 +449,14 @@ namespace rexsapi
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(TComponentId id) &
   {
+    checkDuplicateComponent(id);
     m_Components.emplace_back(detail::TComponentEntry{TComponentId{std::move(id)}});
     return *this;
   }
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(std::string id) &
   {
+    checkDuplicateComponent(TComponentId{id});
     m_Components.emplace_back(detail::TComponentEntry{TComponentId{std::move(id)}});
     return *this;
   }
