@@ -161,39 +161,39 @@
                     "boolean": {
                       "$id": "#root/model/components/items/attributes/items/boolean",
                       "title": "boolean",
-                      "type": "boolean"
+                      "type": ["boolean", "null"]
                     },
                     "string": {
                       "$id": "#root/model/components/items/attributes/items/string",
                       "title": "string",
-                      "type": "string",
+                      "type": ["string", "null"],
                       "pattern": "^.*$"
                     },
                     "integer": {
                       "$id": "#root/model/components/items/attributes/items/integer",
                       "title": "integer",
-                      "type": "integer"
+                      "type": ["integer", "null"]
                     },
                     "floating_point": {
                       "$id": "#root/model/components/items/attributes/items/floating_point",
                       "title": "floating_point",
-                      "type": "number"
+                      "type": ["number", "null"]
                     },
                     "enum": {
                       "$id": "#root/model/components/items/attributes/items/enum",
                       "title": "enum",
-                      "type": "string",
+                      "type": ["string", "null"],
                       "pattern": "^.*$"
                     },
                     "reference_component": {
                       "$id": "#root/model/components/items/attributes/items/reference_component",
                       "title": "reference_component",
-                      "type": "integer"
+                      "type": ["integer", "null"]
                     },
                     "file_reference": {
                       "$id": "#root/model/components/items/attributes/items/file_reference",
                       "title": "file_reference",
-                      "type": "string",
+                      "type": ["string", "null"],
                       "pattern": "^.*$"
                     },
                     "floating_point_array": {
@@ -383,39 +383,39 @@
                               "boolean": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean",
                                 "title": "boolean",
-                                "type": "boolean"
+                                "type": ["boolean", "null"]
                               },
                               "string": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string",
                                 "title": "string",
-                                "type": "string",
+                                "type": ["string", "null"],
                                 "pattern": "^.*$"
                               },
                               "integer": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer",
                                 "title": "integer",
-                                "type": "integer"
+                                "type": ["integer", "null"]
                               },
                               "floating_point": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point",
                                 "title": "floating_point",
-                                "type": "number"
+                                "type": ["number", "null"]
                               },
                               "enum": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/enum",
                                 "title": "enum",
-                                "type": "string",
+                                "type": ["string", "null"],
                                 "pattern": "^.*$"
                               },
                               "reference_component": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/reference_component",
                                 "title": "reference_component",
-                                "type": "integer"
+                                "type": ["integer", "null"]
                               },
                               "file_reference": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/file_reference",
                                 "title": "file_reference",
-                                "type": "string",
+                                "type": ["string", "null"],
                                 "pattern": "^.*$"
                               },
                               "floating_point_array": {

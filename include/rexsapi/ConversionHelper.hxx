@@ -85,7 +85,7 @@ namespace rexsapi
   static inline std::string format(double d)
   {
     auto s = fmt::format("{:0.15G}", d);
-    if (s.find_last_of('.') == std::string::npos) {
+    if (s.find_last_of('.') == std::string::npos && s.find("E") == std::string::npos) {
       s += ".0";
     }
     return s;

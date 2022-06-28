@@ -17,8 +17,11 @@
 #include <rexsapi/ConversionHelper.hxx>
 
 #include <doctest.h>
+#include <iomanip>
+#include <iostream>
 #include <limits>
 #include <regex>
+
 
 TEST_CASE("Conversion unsigned integer test")
 {
@@ -108,5 +111,20 @@ TEST_CASE("String helper")
   {
     std::string s{"Some lower and some Upper ChaRacter"};
     CHECK(rexsapi::toupper(s) == "SOME LOWER AND SOME UPPER CHARACTER");
+  }
+}
+
+TEST_CASE("Format helper")
+{
+  SUBCASE("Small double")
+  {
+    CHECK(rexsapi::format(47.11) == "47.11");
+    CHECK(rexsapi::format(0.0) == "0.0");
+    CHECK(rexsapi::format(17.0) == "17.0");
+  }
+  SUBCASE("Big double")
+  {
+    CHECK(rexsapi::format(std::numeric_limits<double>::max()) == "1.79769313486232E+308");
+    CHECK(rexsapi::format(1.0e-10) == "1E-10");
   }
 }
