@@ -71,7 +71,11 @@ TEST_CASE("Json serialize new model")
     CHECK(roundtripModel.getComponents().size() == 6);
     CHECK(roundtripModel.getRelations().size() == 3);
     CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
-    CHECK(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);
+    REQUIRE(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);
+    CHECK(roundtripModel.getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
+    REQUIRE(roundtripModel.getLoadSpectrum().hasAccumulation());
+    REQUIRE(roundtripModel.getLoadSpectrum().getAccumulation().getLoadComponents().size() == 1);
+    CHECK(roundtripModel.getLoadSpectrum().getAccumulation().getLoadComponents()[0].getLoadAttributes().size() == 2);
   }
 
   SUBCASE("Serialize model to file")

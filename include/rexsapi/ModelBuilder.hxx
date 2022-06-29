@@ -89,6 +89,93 @@ namespace rexsapi
       std::string m_Name{};
       std::vector<TAttributeEntry> m_Attributes{};
     };
+
+    class TComponents
+    {
+    public:
+      explicit TComponents(const database::TModel& databaseModel)
+      : m_DatabaseModel{databaseModel}
+      {
+      }
+
+      const database::TModel& databaseModel() const
+      {
+        return m_DatabaseModel;
+      }
+
+      void addComponent(TComponentId id);
+
+      void addComponent(const std::string& component);
+
+      void addComponent(const std::string& component, std::string id);
+
+      const auto& components() const
+      {
+        return m_Components;
+      }
+
+      void name(std::string name)
+      {
+        lastComponent().m_Name = std::move(name);
+      }
+
+      TComponentId id() const
+      {
+        return lastComponent().m_Id;
+      }
+
+      void addAttribute(const std::string& attribute)
+      {
+        lastComponent().m_Attributes.emplace_back(
+          detail::TAttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+      }
+
+      void addCustomAttribute(const std::string& attribute, TValueType type)
+      {
+        lastComponent().m_Attributes.emplace_back(detail::TAttributeEntry{nullptr, attribute, type});
+      }
+
+      void unit(const std::string& unit);
+
+      void value(TValue val)
+      {
+        // TODO (lcf): check value type valid for attribute
+        lastAttribute().m_Value = std::move(val);
+      }
+
+    private:
+      TComponentId getNextComponentId();
+
+      void checkDuplicateComponent(const TComponentId& component) const;
+
+      void checkDuplicateComponent(const std::string& component, const std::string& id = "") const;
+
+      void checkComponent() const;
+
+      void checkAttribute() const;
+
+      TComponentEntry& lastComponent() &
+      {
+        checkComponent();
+        return m_Components.back();
+      }
+
+      const TComponentEntry& lastComponent() const&
+      {
+        checkComponent();
+        return m_Components.back();
+      }
+
+      TAttributeEntry& lastAttribute() &
+      {
+        checkAttribute();
+        return m_Components.back().m_Attributes.back();
+      }
+
+      uint64_t m_ComponentId{0};
+      const database::TModel& m_DatabaseModel;
+      std::vector<TComponentEntry> m_Components;
+    };
   }
 
 
@@ -96,7 +183,7 @@ namespace rexsapi
   {
   public:
     explicit TComponentBuilder(const database::TModel& databaseModel)
-    : m_DatabaseModel{databaseModel}
+    : m_Components{databaseModel}
     {
     }
 
@@ -122,44 +209,10 @@ namespace rexsapi
     const TComponent& getComponentForId(const TComponents& components, const TComponentId& id) const&;
 
   private:
-    void checkDuplicateComponent(const std::string& component, const std::string& id = "") const
-    {
-      const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component, &id](const auto& comp) {
-        bool res = comp.m_component->getComponentId() == component;
-        res |= comp.m_Id == TComponentId{id};
-        return res;
-      });
-      if (it != m_Components.end()) {
-        throw TException{fmt::format("component {} already added", component)};
-      }
-    }
-
-    void checkComponent() const
-    {
-      if (m_Components.empty()) {
-        throw TException{"no components added yet"};
-      }
-    }
-
-    void checkAttribute() const
-    {
-      checkComponent();
-      if (m_Components.back().m_Attributes.empty()) {
-        throw TException{"no attributes added yet"};
-      }
-    }
-
     uint64_t getComponentForId(const TComponentId& id) const;
 
-    [[nodiscard]] TComponentId getNextComponentId()
-    {
-      return TComponentId{++m_ComponentId};
-    }
-
     friend class TModelBuilder;
-    const database::TModel& m_DatabaseModel;
-    uint64_t m_ComponentId{0};
-    std::vector<detail::TComponentEntry> m_Components;
+    detail::TComponents m_Components;
     std::unordered_map<TComponentId, uint64_t> m_ComponentMapping;
   };
 
@@ -168,7 +221,7 @@ namespace rexsapi
   {
   public:
     explicit TLoadCaseBuilder(const database::TModel& databaseModel)
-    : m_DatabaseModel{databaseModel}
+    : m_Components{databaseModel}
     {
     }
 
@@ -195,33 +248,41 @@ namespace rexsapi
     TLoadCase build(const TComponents& components, const TComponentBuilder& componentBuilder) const;
 
   private:
-    void checkDuplicateComponent(const TComponentId& component) const
+    detail::TComponents m_Components;
+  };
+
+  class TAccumulationBuilder
+  {
+  public:
+    explicit TAccumulationBuilder(const database::TModel& databaseModel)
+    : m_Components{databaseModel}
     {
-      const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component](const auto& comp) {
-        return comp.m_Id == component;
-      });
-      if (it != m_Components.end()) {
-        throw TException{fmt::format("component id={} already added to loadcase", component.asString())};
-      }
     }
 
-    void checkComponent() const
-    {
-      if (m_Components.empty()) {
-        throw TException{"no components added yet"};
-      }
-    }
+    ~TAccumulationBuilder() = default;
 
-    void checkAttribute() const
-    {
-      checkComponent();
-      if (m_Components.back().m_Attributes.empty()) {
-        throw TException{"no attributes added yet"};
-      }
-    }
+    TAccumulationBuilder(const TAccumulationBuilder&) = delete;
+    TAccumulationBuilder& operator=(const TAccumulationBuilder&) = delete;
+    TAccumulationBuilder(TAccumulationBuilder&&) = default;
+    TAccumulationBuilder& operator=(TAccumulationBuilder&&) = delete;
 
-    const database::TModel& m_DatabaseModel;
-    std::vector<detail::TComponentEntry> m_Components;
+    TAccumulationBuilder& addComponent(TComponentId id) &;
+
+    TAccumulationBuilder& addComponent(std::string id) &;
+
+    TAccumulationBuilder& addAttribute(const std::string& attributeId) &;
+
+    TAccumulationBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
+
+    TAccumulationBuilder& unit(const std::string& unit) &;
+
+    template<typename T>
+    TAccumulationBuilder& value(T val) &;
+
+    TAccumulation build(const TComponents& components, const TComponentBuilder& componentBuilder) const;
+
+  private:
+    detail::TComponents m_Components;
   };
 
 
@@ -230,11 +291,13 @@ namespace rexsapi
   public:
     explicit TModelBuilder(const database::TModel& databaseModel)
     : m_ComponentBuilder{databaseModel}
+    , m_AccumulationBuilder{databaseModel}
     {
     }
 
     explicit TModelBuilder(TComponentBuilder componentBuilder)
     : m_ComponentBuilder{std::move(componentBuilder)}
+    , m_AccumulationBuilder{m_ComponentBuilder.m_Components.databaseModel()}
     {
     }
 
@@ -264,6 +327,8 @@ namespace rexsapi
     TModelBuilder& value(T val) &;
 
     [[nodiscard]] TLoadCaseBuilder& addLoadCase() &;
+
+    [[nodiscard]] TAccumulationBuilder& addAccumulation() &;
 
     [[nodiscard]] TComponentId id() const;
 
@@ -301,6 +366,7 @@ namespace rexsapi
     TComponentBuilder m_ComponentBuilder;
     std::vector<RelationEntry> m_Relations;
     std::vector<TLoadCaseBuilder> m_LoadCases;
+    TAccumulationBuilder m_AccumulationBuilder;
   };
 
 
@@ -320,70 +386,126 @@ namespace rexsapi
                       m_Id);
   }
 
+  inline void detail::TComponents::addComponent(TComponentId id)
+  {
+    checkDuplicateComponent(id);
+    m_Components.emplace_back(detail::TComponentEntry{TComponentId{std::move(id)}});
+  }
 
-  inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component) &
+  inline void detail::TComponents::addComponent(const std::string& component)
   {
     checkDuplicateComponent(component);
     m_Components.emplace_back(
       detail::TComponentEntry{getNextComponentId(), &m_DatabaseModel.findComponentById(component)});
+  }
+
+  inline void detail::TComponents::addComponent(const std::string& component, std::string id)
+  {
+    checkDuplicateComponent(component, id);
+    m_Components.emplace_back(
+      detail::TComponentEntry{TComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
+  }
+
+  inline TComponentId detail::TComponents::getNextComponentId()
+  {
+    return TComponentId{++m_ComponentId};
+  }
+
+  inline void detail::TComponents::checkDuplicateComponent(const TComponentId& component) const
+  {
+    const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component](const auto& comp) {
+      return comp.m_Id == component;
+    });
+    if (it != m_Components.end()) {
+      throw TException{fmt::format("component id={} already added to loadcase", component.asString())};
+    }
+  }
+
+  inline void detail::TComponents::checkDuplicateComponent(const std::string& component, const std::string& id) const
+  {
+    const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component, &id](const auto& comp) {
+      bool res = comp.m_component->getComponentId() == component;
+      res |= comp.m_Id == TComponentId{id};
+      return res;
+    });
+    if (it != m_Components.end()) {
+      throw TException{fmt::format("component {} already added", component)};
+    }
+  }
+
+  inline void detail::TComponents::checkComponent() const
+  {
+    if (m_Components.empty()) {
+      throw TException{"no components added yet"};
+    }
+  }
+
+  inline void detail::TComponents::checkAttribute() const
+  {
+    checkComponent();
+    if (m_Components.back().m_Attributes.empty()) {
+      throw TException{"no attributes added yet"};
+    }
+  }
+
+  inline void detail::TComponents::unit(const std::string& unit)
+  {
+    auto& attribute = lastAttribute();
+    // TODO (lcf): check unit
+    if (attribute.m_Attribute != nullptr) {
+      attribute.m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
+    } else {
+      attribute.m_Unit = TUnit{unit};
+    }
+  }
+
+
+  inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component) &
+  {
+    m_Components.addComponent(component);
     return *this;
   }
 
   inline TComponentBuilder& TComponentBuilder::addComponent(const std::string& component, std::string id) &
   {
-    checkDuplicateComponent(component, id);
-    m_Components.emplace_back(
-      detail::TComponentEntry{TComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
+    m_Components.addComponent(component, id);
     return *this;
   }
 
   inline TComponentBuilder& TComponentBuilder::name(std::string name) &
   {
-    checkComponent();
-    m_Components.back().m_Name = std::move(name);
+    m_Components.name(std::move(name));
     return *this;
   }
 
   inline TComponentBuilder& TComponentBuilder::addAttribute(const std::string& attribute) &
   {
-    checkComponent();
-    m_Components.back().m_Attributes.emplace_back(
-      detail::TAttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+    m_Components.addAttribute(attribute);
     return *this;
   }
 
   inline TComponentBuilder& TComponentBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
   {
-    checkComponent();
-    m_Components.back().m_Attributes.emplace_back(detail::TAttributeEntry{nullptr, attribute, type});
+    m_Components.addCustomAttribute(attribute, type);
     return *this;
   }
 
   inline TComponentBuilder& TComponentBuilder::unit(const std::string& unit) &
   {
-    checkAttribute();
-    // TODO (lcf): check unit
-    if (m_Components.back().m_Attributes.back().m_Attribute != nullptr) {
-      m_Components.back().m_Attributes.back().m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
-    } else {
-      m_Components.back().m_Attributes.back().m_Unit = TUnit{unit};
-    }
+    m_Components.unit(unit);
     return *this;
   }
 
   template<typename T>
   inline TComponentBuilder& TComponentBuilder::value(T val) &
   {
-    checkAttribute();
-    // TODO (lcf): check value type valid for attribute
-    m_Components.back().m_Attributes.back().m_Value = TValue{std::move(val)};
+    m_Components.value(TValue{std::move(val)});
     return *this;
   }
 
   inline TComponentId TComponentBuilder::id() const
   {
-    checkComponent();
-    return m_Components.back().m_Id;
+    return m_Components.id();
   }
 
   inline static TAttribute createAttribute(const detail::TAttributeEntry& entry)
@@ -409,7 +531,7 @@ namespace rexsapi
     uint64_t internalComponentId{0};
     TComponents components;
 
-    for (const auto& component : m_Components) {
+    for (const auto& component : m_Components.components()) {
       TAttributes attributes;
       for (const auto& attribute : component.m_Attributes) {
         attributes.emplace_back(createAttribute(attribute));
@@ -449,51 +571,38 @@ namespace rexsapi
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(TComponentId id) &
   {
-    checkDuplicateComponent(id);
-    m_Components.emplace_back(detail::TComponentEntry{TComponentId{std::move(id)}});
+    m_Components.addComponent(id);
     return *this;
   }
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addComponent(std::string id) &
   {
-    checkDuplicateComponent(TComponentId{id});
-    m_Components.emplace_back(detail::TComponentEntry{TComponentId{std::move(id)}});
+    m_Components.addComponent(TComponentId{id});
     return *this;
   }
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addAttribute(const std::string& attribute) &
   {
-    checkComponent();
-    m_Components.back().m_Attributes.emplace_back(
-      detail::TAttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+    m_Components.addAttribute(attribute);
     return *this;
   }
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
   {
-    checkComponent();
-    m_Components.back().m_Attributes.emplace_back(detail::TAttributeEntry{nullptr, attribute, type});
+    m_Components.addCustomAttribute(attribute, type);
     return *this;
   }
 
   inline TLoadCaseBuilder& TLoadCaseBuilder::unit(const std::string& unit) &
   {
-    checkAttribute();
-    if (m_Components.back().m_Attributes.back().m_Attribute != nullptr) {
-      m_Components.back().m_Attributes.back().m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
-    } else {
-      m_Components.back().m_Attributes.back().m_Unit = TUnit{unit};
-    }
-
+    m_Components.unit(unit);
     return *this;
   }
 
   template<typename T>
   inline TLoadCaseBuilder& TLoadCaseBuilder::value(T val) &
   {
-    checkAttribute();
-    // TODO (lcf): check value type valid for attribute
-    m_Components.back().m_Attributes.back().m_Value = TValue{std::move(val)};
+    m_Components.value(TValue{std::move(val)});
     return *this;
   }
 
@@ -501,7 +610,7 @@ namespace rexsapi
                                            const TComponentBuilder& componentBuilder) const
   {
     TLoadComponents loadComponents;
-    for (const auto& component : m_Components) {
+    for (const auto& component : m_Components.components()) {
       TAttributes loadAttributes;
 
       for (const auto& attribute : component.m_Attributes) {
@@ -512,6 +621,61 @@ namespace rexsapi
     }
 
     return TLoadCase{std::move(loadComponents)};
+  }
+
+
+  inline TAccumulationBuilder& TAccumulationBuilder::addComponent(TComponentId id) &
+  {
+    m_Components.addComponent(id);
+    return *this;
+  }
+
+  inline TAccumulationBuilder& TAccumulationBuilder::addComponent(std::string id) &
+  {
+    m_Components.addComponent(TComponentId{id});
+    return *this;
+  }
+
+  inline TAccumulationBuilder& TAccumulationBuilder::addAttribute(const std::string& attribute) &
+  {
+    m_Components.addAttribute(attribute);
+    return *this;
+  }
+
+  inline TAccumulationBuilder& TAccumulationBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
+  {
+    m_Components.addCustomAttribute(attribute, type);
+    return *this;
+  }
+
+  inline TAccumulationBuilder& TAccumulationBuilder::unit(const std::string& unit) &
+  {
+    m_Components.unit(unit);
+    return *this;
+  }
+
+  template<typename T>
+  inline TAccumulationBuilder& TAccumulationBuilder::value(T val) &
+  {
+    m_Components.value(TValue{std::move(val)});
+    return *this;
+  }
+
+  inline TAccumulation TAccumulationBuilder::build(const TComponents& components,
+                                                   const TComponentBuilder& componentBuilder) const
+  {
+    TLoadComponents loadComponents;
+    for (const auto& component : m_Components.components()) {
+      TAttributes loadAttributes;
+
+      for (const auto& attribute : component.m_Attributes) {
+        loadAttributes.emplace_back(createAttribute(attribute));
+      }
+      loadComponents.emplace_back(
+        TLoadComponent{componentBuilder.getComponentForId(components, component.m_Id), std::move(loadAttributes)});
+    }
+
+    return TAccumulation{std::move(loadComponents)};
   }
 
 
@@ -594,8 +758,13 @@ namespace rexsapi
 
   inline TLoadCaseBuilder& TModelBuilder::addLoadCase() &
   {
-    m_LoadCases.emplace_back(TLoadCaseBuilder{m_ComponentBuilder.m_DatabaseModel});
+    m_LoadCases.emplace_back(TLoadCaseBuilder{m_ComponentBuilder.m_Components.databaseModel()});
     return m_LoadCases.back();
+  }
+
+  inline TAccumulationBuilder& TModelBuilder::addAccumulation() &
+  {
+    return m_AccumulationBuilder;
   }
 
   inline TComponentId TModelBuilder::id() const
@@ -609,7 +778,7 @@ namespace rexsapi
     TRelations relations;
     const rexsapi::TModelInfo info{std::move(applicationId), std::move(applicationVersion),
                                    getTimeStringISO8601(std::chrono::system_clock::now()),
-                                   m_ComponentBuilder.m_DatabaseModel.getVersion(), std::move(language)};
+                                   m_ComponentBuilder.m_Components.databaseModel().getVersion(), std::move(language)};
     auto components = m_ComponentBuilder.build();
 
     // TODO (lcf): add model validation. check no components and/or no relations
@@ -625,10 +794,20 @@ namespace rexsapi
 
     TLoadCases loadCases;
     for (const auto& loadCase : m_LoadCases) {
-      loadCases.emplace_back(loadCase.build(components, m_ComponentBuilder));
+      auto tmpCase = loadCase.build(components, m_ComponentBuilder);
+      if (!tmpCase.getLoadComponents().empty()) {
+        loadCases.emplace_back(std::move(tmpCase));
+      }
+    }
+    std::optional<TAccumulation> accumulation;
+    {
+      auto accu = m_AccumulationBuilder.build(components, m_ComponentBuilder);
+      if (!accu.getLoadComponents().empty()) {
+        accumulation = std::move(accu);
+      }
     }
 
-    TLoadSpectrum spectrum{std::move(loadCases)};
+    TLoadSpectrum spectrum{std::move(loadCases), std::move(accumulation)};
 
     return TModel{info, std::move(components), std::move(relations), std::move(spectrum)};
   }

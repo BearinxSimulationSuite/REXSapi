@@ -78,12 +78,30 @@ namespace rexsapi
 
   using TLoadCases = std::vector<TLoadCase>;
 
+  class TAccumulation
+  {
+  public:
+    explicit TAccumulation(TLoadComponents components)
+    : m_Components{std::move(components)}
+    {
+    }
+
+    const TLoadComponents& getLoadComponents() const&
+    {
+      return m_Components;
+    }
+
+  private:
+    TLoadComponents m_Components;
+  };
+
 
   class TLoadSpectrum
   {
   public:
-    explicit TLoadSpectrum(TLoadCases loadCases)
+    explicit TLoadSpectrum(TLoadCases loadCases, std::optional<TAccumulation> accumulation)
     : m_LoadCases{std::move(loadCases)}
+    , m_Accumulation{std::move(accumulation)}
     {
     }
 
@@ -97,8 +115,22 @@ namespace rexsapi
       return m_LoadCases;
     }
 
+    [[nodiscard]] bool hasAccumulation() const
+    {
+      return m_Accumulation.has_value();
+    }
+
+    const TAccumulation& getAccumulation() const&
+    {
+      if (m_Accumulation.has_value()) {
+        return m_Accumulation.value();
+      }
+      throw TException{"model does not have an accumulation"};
+    }
+
   private:
     TLoadCases m_LoadCases;
+    std::optional<TAccumulation> m_Accumulation;
   };
 }
 

@@ -267,6 +267,19 @@ namespace rexsapi
       }
       loadCases.emplace_back(std::move(loadCaseNode));
     }
+
+    if (spectrum.hasAccumulation()) {
+      spectrumNode["accumulation"] = ordered_json{};
+      auto& accumulationNode = spectrumNode["accumulation"];
+      accumulationNode["components"] = json::array();
+      auto& components = accumulationNode["components"];
+      for (const auto& component : spectrum.getAccumulation().getLoadComponents()) {
+        ordered_json componentNode;
+        componentNode["id"] = getComponentId(component.getComponent().getInternalId());
+        serialize(componentNode, component.getLoadAttributes());
+        components.emplace_back(std::move(componentNode));
+      }
+    }
   }
 
   inline uint64_t JsonModelSerializer::getComponentId(uint64_t internalId) const

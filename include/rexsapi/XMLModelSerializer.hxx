@@ -76,7 +76,11 @@ namespace rexsapi
     pugi::xml_node relationsNode = models.append_child("relations");
     serialize(models, model.getComponents());
     serialize(relationsNode, model.getRelations());
-    serialize(models, model.getLoadSpectrum());
+
+    if (model.getLoadSpectrum().hasLoadCases()) {
+      pugi::xml_node loadSpectrum = models.append_child("load_spectrum");
+      serialize(loadSpectrum, model.getLoadSpectrum());
+    }
 
     serializer.serialize(m_Doc);
   }
@@ -250,24 +254,39 @@ namespace rexsapi
        }});
   }
 
-  inline void XMLModelSerializer::serialize(pugi::xml_node& modelNode, const TLoadSpectrum& loadSpectrum)
+  inline void XMLModelSerializer::serialize(pugi::xml_node& loadSpectrumNode, const TLoadSpectrum& loadSpectrum)
   {
-    if (loadSpectrum.hasLoadCases()) {
-      uint64_t loadCaseId{0};
-      pugi::xml_node loadSpectrumNode = modelNode.append_child("load_spectrum");
-      loadSpectrumNode.append_attribute("id").set_value("1");
-      for (const auto& loadCase : loadSpectrum.getLoadCases()) {
-        pugi::xml_node loadCaseNode = loadSpectrumNode.append_child("load_case");
-        loadCaseNode.append_attribute("id").set_value(std::to_string(++loadCaseId).c_str());
-        for (const auto& loadComponent : loadCase.getLoadComponents()) {
-          const auto& component = loadComponent.getComponent();
-          pugi::xml_node compNode = loadCaseNode.append_child("component");
-          auto id = getComponentId(component.getInternalId());
-          compNode.append_attribute("id").set_value(id.c_str());
+    loadSpectrumNode.append_attribute("id").set_value("1");
+
+    uint64_t loadCaseId{0};
+    for (const auto& loadCase : loadSpectrum.getLoadCases()) {
+      pugi::xml_node loadCaseNode = loadSpectrumNode.append_child("load_case");
+      loadCaseNode.append_attribute("id").set_value(std::to_string(++loadCaseId).c_str());
+      for (const auto& loadComponent : loadCase.getLoadComponents()) {
+        const auto& component = loadComponent.getComponent();
+        pugi::xml_node compNode = loadCaseNode.append_child("component");
+        auto id = getComponentId(component.getInternalId());
+        compNode.append_attribute("id").set_value(id.c_str());
+        if (!component.getName().empty()) {
           compNode.append_attribute("name").set_value(component.getName().c_str());
-          compNode.append_attribute("type").set_value(component.getType().c_str());
-          serialize(compNode, loadComponent.getLoadAttributes());
         }
+        compNode.append_attribute("type").set_value(component.getType().c_str());
+        serialize(compNode, loadComponent.getLoadAttributes());
+      }
+    }
+
+    if (loadSpectrum.hasAccumulation()) {
+      pugi::xml_node accumulationNode = loadSpectrumNode.append_child("accumulation");
+      for (const auto& loadComponent : loadSpectrum.getAccumulation().getLoadComponents()) {
+        const auto& component = loadComponent.getComponent();
+        pugi::xml_node compNode = accumulationNode.append_child("component");
+        auto id = getComponentId(component.getInternalId());
+        compNode.append_attribute("id").set_value(id.c_str());
+        if (!component.getName().empty()) {
+          compNode.append_attribute("name").set_value(component.getName().c_str());
+        }
+        compNode.append_attribute("type").set_value(component.getType().c_str());
+        serialize(compNode, loadComponent.getLoadAttributes());
       }
     }
   }

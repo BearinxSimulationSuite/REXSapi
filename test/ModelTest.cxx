@@ -64,7 +64,7 @@ TEST_CASE("Model test")
 
     rexsapi::TModelInfo info{"FVA Workbench", "7.1 - DEV gültig bis 30.4.2022", "2021-12-14T15:56:10+01:00",
                              rexsapi::TRexsVersion{"1.4"}, "de"};
-    rexsapi::TLoadSpectrum spectrum{rexsapi::TLoadCases{}};
+    rexsapi::TLoadSpectrum spectrum{rexsapi::TLoadCases{}, {}};
     rexsapi::TModel model{info, std::move(components), std::move(relations), std::move(spectrum)};
 
     CHECK(model.getInfo().getApplicationId() == "FVA Workbench");

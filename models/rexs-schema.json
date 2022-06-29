@@ -28,14 +28,12 @@
         "applicationId": {
           "$id": "#root/model/applicationId",
           "title": "applicationId",
-          "type": "string",
-          "pattern": "^.*$"
+          "type": "string"
         },
         "applicationVersion": {
           "$id": "#root/model/applicationVersion",
           "title": "applicationVersion",
-          "type": "string",
-          "pattern": "^.*$"
+          "type": "string"
         },
         "date": {
           "$id": "#root/model/date",
@@ -46,8 +44,7 @@
         "applicationLanguage": {
           "$id": "#root/model/applicationLanguage",
           "title": "applicationLanguage",
-          "type": "string",
-          "pattern": "^.*$"
+          "type": "string"
         },
         "relations": {
           "$id": "#root/model/relations",
@@ -67,8 +64,7 @@
               "type": {
                 "$id": "#root/model/relations/items/type",
                 "title": "type",
-                "type": "string",
-                "pattern": "^.*$"
+                "type": "string"
               },
               "order": {
                 "$id": "#root/model/relations/items/order",
@@ -93,14 +89,12 @@
                     "role": {
                       "$id": "#root/model/relations/items/refs/items/role",
                       "title": "role",
-                      "type": "string",
-                      "pattern": "^.*$"
+                      "type": "string"
                     },
                     "hint": {
                       "$id": "#root/model/relations/items/refs/items/hint",
                       "title": "hint",
-                      "type": "string",
-                      "pattern": "^.*$"
+                      "type": "string"
                     }
                   }
                 }
@@ -126,14 +120,12 @@
               "type": {
                 "$id": "#root/model/components/items/type",
                 "title": "type",
-                "type": "string",
-                "pattern": "^.*$"
+                "type": "string"
               },
               "name": {
                 "$id": "#root/model/components/items/name",
                 "title": "name",
-                "type": "string",
-                "pattern": "^.*$"
+                "type": "string"
               },
               "attributes": {
                 "$id": "#root/model/components/items/attributes",
@@ -149,14 +141,12 @@
                     "id": {
                       "$id": "#root/model/components/items/attributes/items/id",
                       "title": "id",
-                      "type": "string",
-                      "pattern": "^.*$"
+                      "type": "string"
                     },
                     "unit": {
                       "$id": "#root/model/components/items/attributes/items/unit",
                       "title": "unit",
-                      "type": "string",
-                      "pattern": "^.*$"
+                      "type": "string"
                     },
                     "boolean": {
                       "$id": "#root/model/components/items/attributes/items/boolean",
@@ -166,8 +156,7 @@
                     "string": {
                       "$id": "#root/model/components/items/attributes/items/string",
                       "title": "string",
-                      "type": ["string", "null"],
-                      "pattern": "^.*$"
+                      "type": ["string", "null"]
                     },
                     "integer": {
                       "$id": "#root/model/components/items/attributes/items/integer",
@@ -182,8 +171,7 @@
                     "enum": {
                       "$id": "#root/model/components/items/attributes/items/enum",
                       "title": "enum",
-                      "type": ["string", "null"],
-                      "pattern": "^.*$"
+                      "type": ["string", "null"]
                     },
                     "reference_component": {
                       "$id": "#root/model/components/items/attributes/items/reference_component",
@@ -193,8 +181,7 @@
                     "file_reference": {
                       "$id": "#root/model/components/items/attributes/items/file_reference",
                       "title": "file_reference",
-                      "type": ["string", "null"],
-                      "pattern": "^.*$"
+                      "type": ["string", "null"]
                     },
                     "floating_point_array": {
                       "$id": "#root/model/components/items/attributes/items/floating_point_array",
@@ -233,8 +220,7 @@
                       "items": {
                         "$id": "#root/model/components/items/string_array/items",
                         "title": "items",
-                        "type": "string",
-                        "pattern": "^.*$"
+                        "type": "string"
                       }
                     },
                     "enum_array": {
@@ -244,8 +230,7 @@
                       "items": {
                         "$id": "#root/model/components/items/enum_array/items",
                         "title": "items",
-                        "type": "string",
-                        "pattern": "^.*$"
+                        "type": "string"
                       }
                     },
                     "floating_point_matrix": {
@@ -304,8 +289,7 @@
                         "items": {
                           "$id": "#root/model/components/items/string_matrix/items/items",
                           "title": "items",
-                          "type": "string",
-                          "pattern": "^.*$"
+                          "type": "string"
                         }
                       }
                     }
@@ -330,7 +314,6 @@
               "$id": "#root/model/load_spectrum/load_cases",
               "title": "load_cases",
               "type": "array",
-              "default": [],
               "items": {
                 "$id": "#root/model/load_spectrum/load_cases/items",
                 "title": "items",
@@ -357,6 +340,16 @@
                           "title": "id",
                           "type": "integer"
                         },
+                        "type": {
+                          "$id": "#root/model/load_spectrum/load_cases/items/components/items/type",
+                          "title": "type",
+                          "type": "string"
+                        },
+                        "name": {
+                          "$id": "#root/model/load_spectrum/load_cases/items/components/items/name",
+                          "title": "name",
+                          "type": "string"
+                        },
                         "attributes": {
                           "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes",
                           "title": "attributes",
@@ -371,14 +364,12 @@
                               "id": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/id",
                                 "title": "id",
-                                "type": "string",
-                                "pattern": "^.*$"
+                                "type": "string"
                               },
                               "unit": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/unit",
                                 "title": "unit",
-                                "type": "string",
-                                "pattern": "^.*$"
+                                "type": "string"
                               },
                               "boolean": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/boolean",
@@ -388,8 +379,7 @@
                               "string": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/string",
                                 "title": "string",
-                                "type": ["string", "null"],
-                                "pattern": "^.*$"
+                                "type": ["string", "null"]
                               },
                               "integer": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/integer",
@@ -404,8 +394,7 @@
                               "enum": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/enum",
                                 "title": "enum",
-                                "type": ["string", "null"],
-                                "pattern": "^.*$"
+                                "type": ["string", "null"]
                               },
                               "reference_component": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/reference_component",
@@ -415,8 +404,7 @@
                               "file_reference": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/file_reference",
                                 "title": "file_reference",
-                                "type": ["string", "null"],
-                                "pattern": "^.*$"
+                                "type": ["string", "null"]
                               },
                               "floating_point_array": {
                                 "$id": "#root/model/load_spectrum/load_cases/items/components/items/attributes/items/floating_point_array",
@@ -455,8 +443,7 @@
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_array/items",
                                   "title": "items",
-                                  "type": "string",
-                                  "pattern": "^.*$"
+                                  "type": "string"
                                 }
                               },
                               "enum_array": {
@@ -466,8 +453,7 @@
                                 "items": {
                                   "$id": "#root/model/load_spectrum/load_cases/items/components/items/enum_array/items",
                                   "title": "items",
-                                  "type": "string",
-                                  "pattern": "^.*$"
+                                  "type": "string"
                                 }
                               },
                               "floating_point_matrix": {
@@ -526,9 +512,213 @@
                                   "items": {
                                     "$id": "#root/model/load_spectrum/load_cases/items/components/items/string_matrix/items/items",
                                     "title": "items",
-                                    "type": "string",
-                                    "pattern": "^.*$"
+                                    "type": "string"
                                   }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "accumulation": {
+              "$id": "#root/model/load_spectrum/accumulation",
+              "title": "accumulation",
+              "type": "object",
+              "required": ["components"],
+              "properties": {
+                "components": {
+                  "$id": "#root/model/load_spectrum/accumulation/items/components",
+                  "title": "components",
+                  "type": "array",
+                  "items": {
+                    "$id": "#root/model/load_spectrum/accumulation/items/components/items",
+                    "title": "items",
+                    "type": "object",
+                    "required": ["id", "attributes"],
+                    "properties": {
+                      "id": {
+                        "$id": "#root/model/load_spectrum/accumulation/items/components/items/id",
+                        "title": "id",
+                        "type": "integer"
+                      },
+                      "type": {
+                        "$id": "#root/model/load_spectrum/accumulation/items/components/items/type",
+                        "title": "type",
+                        "type": "string"
+                      },
+                      "name": {
+                        "$id": "#root/model/load_spectrum/accumulation/items/components/items/name",
+                        "title": "name",
+                        "type": "string"
+                      },
+                      "attributes": {
+                        "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes",
+                        "title": "attributes",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                          "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items",
+                          "title": "items",
+                          "type": "object",
+                          "required": ["id"],
+                          "properties": {
+                            "id": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/id",
+                              "title": "id",
+                              "type": "string"
+                            },
+                            "unit": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/unit",
+                              "title": "unit",
+                              "type": "string"
+                            },
+                            "boolean": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/boolean",
+                              "title": "boolean",
+                              "type": ["boolean", "null"]
+                            },
+                            "string": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/string",
+                              "title": "string",
+                              "type": ["string", "null"]
+                            },
+                            "integer": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/integer",
+                              "title": "integer",
+                              "type": ["integer", "null"]
+                            },
+                            "floating_point": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/floating_point",
+                              "title": "floating_point",
+                              "type": ["number", "null"]
+                            },
+                            "enum": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/enum",
+                              "title": "enum",
+                              "type": ["string", "null"]
+                            },
+                            "reference_component": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/reference_component",
+                              "title": "reference_component",
+                              "type": ["integer", "null"]
+                            },
+                            "file_reference": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/file_reference",
+                              "title": "file_reference",
+                              "type": ["string", "null"]
+                            },
+                            "floating_point_array": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/floating_point_array",
+                              "title": "floating_point_array",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/floating_point_array/items",
+                                "title": "items",
+                                "type": "number"
+                              }
+                            },
+                            "integer_array": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/integer_array",
+                              "title": "integer_array",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/integer_array/items",
+                                "title": "items",
+                                "type": "integer"
+                              }
+                            },
+                            "boolean_array": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/boolean_array",
+                              "title": "boolean_array",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/boolean_array/items",
+                                "title": "items",
+                                "type": "boolean"
+                              }
+                            },
+                            "string_array": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/string_array",
+                              "title": "string_array",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/string_array/items",
+                                "title": "items",
+                                "type": "string"
+                              }
+                            },
+                            "enum_array": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/enum_array",
+                              "title": "enum_array",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/enum_array/items",
+                                "title": "items",
+                                "type": "string"
+                              }
+                            },
+                            "floating_point_matrix": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/floating_point_matrix",
+                              "title": "floating_point_matrix",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/floating_point_matrix/items",
+                                "title": "items",
+                                "type": "array",
+                                "items": {
+                                  "$id": "#root/model/load_spectrum/accumulation/items/components/items/floating_point_matrix/items/items",
+                                  "title": "items",
+                                  "type": "number"
+                                }
+                              }
+                            },
+                            "integer_matrix": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/integer_matrix",
+                              "title": "integer_matrix",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/integer_matrix/items",
+                                "title": "items",
+                                "type": "array",
+                                "items": {
+                                  "$id": "#root/model/load_spectrum/accumulation/items/components/items/integer_matrix/items/items",
+                                  "title": "items",
+                                  "type": "integer"
+                                }
+                              }
+                            },
+                            "boolean_matrix": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/boolean_matrix",
+                              "title": "boolean_matrix",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/boolean_matrix/items",
+                                "title": "items",
+                                "type": "array",
+                                "items": {
+                                  "$id": "#root/model/load_spectrum/accumulation/items/components/items/boolean_matrix/items/items",
+                                  "title": "items",
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            "string_matrix": {
+                              "$id": "#root/model/load_spectrum/accumulation/items/components/items/attributes/items/string_matrix",
+                              "title": "string_matrix",
+                              "type": ["array", "null"],
+                              "items": {
+                                "$id": "#root/model/load_spectrum/accumulation/items/components/items/string_matrix/items",
+                                "title": "items",
+                                "type": "array",
+                                "items": {
+                                  "$id": "#root/model/load_spectrum/accumulation/items/components/items/string_matrix/items/items",
+                                  "title": "items",
+                                  "type": "string"
                                 }
                               }
                             }

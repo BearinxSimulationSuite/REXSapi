@@ -141,7 +141,19 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
   loadComponents.emplace_back(rexsapi::TLoadComponent{components[1], std::move(loadAttributes)});
   rexsapi::TLoadCase loadCase{std::move(loadComponents)};
   rexsapi::TLoadCases loadCases{std::move(loadCase)};
-  rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases)};
+
+  rexsapi::TLoadComponents accumulationComponents;
+  loadAttributes = rexsapi::TAttributes{};
+  loadAttributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("operating_time"),
+                                                  rexsapi::TUnit{dbModel.findUnitByName("h")}, rexsapi::TValue{15.5}});
+  loadAttributes.emplace_back(rexsapi::TAttribute{gearUnitComponent.findAttributeById("gravitational_acceleration"),
+                                                  rexsapi::TUnit{dbModel.findUnitByName("m / s^2")},
+                                                  rexsapi::TValue{0.99}});
+  accumulationComponents.emplace_back(rexsapi::TLoadComponent{components[0], std::move(loadAttributes)});
+
+  rexsapi::TAccumulation accumulation{std::move(accumulationComponents)};
+
+  rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases), std::move(accumulation)};
 
   rexsapi::TModelInfo info{"REXSApi Unit Test", "1.0", "2022-05-20T08:59:10+01:00", rexsapi::TRexsVersion{"1.4"}, "en"};
 

@@ -165,20 +165,31 @@ TEST_CASE("Json model loader test")
             {
               "id": 1,
               "type": "gear_unit",
+              "name":"Transmission unit",
               "attributes": [
                 { "id": "load_duration_fraction", "unit": "%", "floating_point": 15 }
               ]
             },
             {
               "id": 2,
-              "type": "shaft",
               "attributes": [
                 { "id": "load_duration_fraction", "unit": "%", "floating_point": 21 }
               ]
             }
           ]
         }
-      ]
+      ],
+      "accumulation": {
+        "components": [
+            {
+              "id": 1,
+              "type": "gear_unit",
+              "attributes": [
+                { "id": "operating_time", "floating_point": 35.8 }
+              ]
+            }          
+        ]
+      }
     }
   }
 })";
@@ -190,7 +201,12 @@ TEST_CASE("Json model loader test")
     REQUIRE(model);
     REQUIRE(model->getComponents().size() == 2);
     REQUIRE(model->getRelations().size() == 2);
-    REQUIRE(model->getLoadSpectrum().hasLoadCases());
+    CHECK(model->getLoadSpectrum().hasLoadCases());
+    REQUIRE(model->getLoadSpectrum().getLoadCases().size() == 1);
+    REQUIRE(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 8);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getLoadAttributes().size() == 1);
+    REQUIRE(model->getLoadSpectrum().hasAccumulation());
   }
 
   SUBCASE("Load invalid json document")

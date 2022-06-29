@@ -75,9 +75,26 @@ TEST_CASE("Load spectrum test")
     CHECK(loadCase.getLoadComponents()[1].getComponent().getAttributes().size() == 2);
     CHECK(loadCase.getLoadComponents()[1].getLoadAttributes().size() == 1);
 
-    rexsapi::TLoadCases loadCases{std::move(loadCase)};
-    rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases)};
+    rexsapi::TLoadComponents accumulationComponents;
+    loadAttributes = rexsapi::TAttributes{};
+    loadAttributes.emplace_back(rexsapi::TAttribute{gearCasingComponent.findAttributeById("operating_viscosity"),
+                                                    rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                                    rexsapi::TValue{15.5}});
+    loadAttributes.emplace_back(rexsapi::TAttribute{gearCasingComponent.findAttributeById("mean_operating_temperature"),
+                                                    rexsapi::TUnit{dbModel.findUnitByName("C")},
+                                                    rexsapi::TValue{60.5}});
+    accumulationComponents.emplace_back(rexsapi::TLoadComponent{components[0], std::move(loadAttributes)});
 
+    rexsapi::TAccumulation accumulation{std::move(accumulationComponents)};
+
+    rexsapi::TLoadCases loadCases{std::move(loadCase)};
+    rexsapi::TLoadSpectrum loadSpectrum{std::move(loadCases), std::move(accumulation)};
+
+    CHECK(loadSpectrum.hasLoadCases());
     REQUIRE(loadSpectrum.getLoadCases().size() == 1);
+    CHECK(loadSpectrum.getLoadCases()[0].getLoadComponents().size() == 2);
+    REQUIRE(loadSpectrum.hasAccumulation());
+    REQUIRE(loadSpectrum.getAccumulation().getLoadComponents().size() == 1);
+    CHECK(loadSpectrum.getAccumulation().getLoadComponents()[0].getLoadAttributes().size() == 2);
   }
 }
