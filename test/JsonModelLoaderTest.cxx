@@ -173,7 +173,7 @@ TEST_CASE("Json model loader test")
             {
               "id": 2,
               "attributes": [
-                { "id": "load_duration_fraction", "unit": "%", "floating_point": 21 }
+                { "id": "custom_load_duration_fraction", "unit": "%", "floating_point": 21 }
               ]
             }
           ]
@@ -197,6 +197,7 @@ TEST_CASE("Json model loader test")
     rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
+    CHECK(result.getErrors().size() == 5);
     CHECK_FALSE(result.isCritical());
     REQUIRE(model);
     REQUIRE(model->getComponents().size() == 2);
@@ -296,6 +297,16 @@ TEST_CASE("Json model loader test")
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
     CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load complex model without loadmodel from file")
+  {
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexsj", registry,
+                           rexsapi::TMode::RELAXED_MODE);
+    REQUIRE(model);
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(result.getErrors().size() == 5);
   }
 
   SUBCASE("Load model from non-existent file failure")

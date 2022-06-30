@@ -25,10 +25,8 @@ TEST_CASE("Json schema validator test")
 {
   const auto* schema = R"({
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Products",
     "type": "array",
     "items": {
-      "title": "Product",
       "type": "object",
       "properties": {
         "id": {
@@ -51,10 +49,8 @@ TEST_CASE("Json schema validator test")
 
   const auto* invalidSchema = R"({
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Products",
     "type": "array",
     "items": {
-      "title": "Product",
       "type": "object",
       "properties": {
         "id": {
@@ -80,17 +76,20 @@ TEST_CASE("Json schema validator test")
     "oneOf": [
       {
         "type": "object",
-        "boolean": {
-          "title": "boolean",
-          "type": "boolean"
+        "$id": "#root/boolean",
+        "properties": {
+          "boolean": {
+            "type": "boolean"
+          }
         },
         "required": ["boolean"]
       },
       {
-        "string": {
-          "title": "string",
-          "type": "string",
-          "pattern": "^.*$"
+        "type": "object",
+        "properties": {
+          "string": {
+            "type": "string"
+          }
         },
         "required": ["string"]
       }
@@ -99,13 +98,11 @@ TEST_CASE("Json schema validator test")
     "properties": {
       "id": {
         "title": "id",
-        "type": "string",
-        "pattern": "^.*$"
+        "type": "string"
       },
       "unit": {
         "title": "unit",
-        "type": "string",
-        "pattern": "^.*$"
+        "type": "string"
       }
     },
     "required": ["id"],
@@ -161,11 +158,15 @@ TEST_CASE("Json schema validator test")
       "string": "hutzli"
     }
     )";
-    const auto* invalidValue = R"({
+    const auto* invalidValue1 = R"({
+      "id": "puschel",
+      "unit": "m^2"
+    }
+    )";
+    const auto* invalidValue2 = R"({
       "id": "puschel",
       "unit": "m^2",
-      "string": "hutzli",
-      "boolean": false
+      "boolean": "hutzli"
     }
     )";
 
@@ -176,8 +177,12 @@ TEST_CASE("Json schema validator test")
     CHECK(validator.validate(rexsapi::json::parse(value), errors));
     CHECK(errors.empty());
 
-    CHECK_FALSE(validator.validate(rexsapi::json::parse(invalidValue), errors));
-    CHECK(errors.size() == 1);
+    CHECK_FALSE(validator.validate(rexsapi::json::parse(invalidValue1), errors));
+    CHECK(errors.size() == 5);
+
+    errors.clear();
+    CHECK_FALSE(validator.validate(rexsapi::json::parse(invalidValue2), errors));
+    CHECK(errors.size() == 6);
   }
 
   SUBCASE("Invalid schema")
