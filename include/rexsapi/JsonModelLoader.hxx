@@ -53,6 +53,10 @@ namespace rexsapi
     TLoadCases getLoadCases(TResult& result, const ComponentMapping& componentMapping, const TComponents& components,
                             const database::TModel& dbModel, const json& j) const;
 
+    std::optional<TAccumulation> getAccumulation(TResult& result, const ComponentMapping& componentMapping,
+                                                 const TComponents& components, const database::TModel& dbModel,
+                                                 const json& j) const;
+
     TValueType getValueType(const json& attribute) const;
 
     TModeAdapter m_Mode;
@@ -94,8 +98,10 @@ namespace rexsapi
       TComponents components = getComponents(result, componentMapping, dbModel, j);
       TRelations relations = getRelations(result, componentMapping, components, j);
       TLoadCases loadCases = getLoadCases(result, componentMapping, components, dbModel, j);
+      std::optional<TAccumulation> accumulation = getAccumulation(result, componentMapping, components, dbModel, j);
 
-      return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
+      return TModel{info, std::move(components), std::move(relations),
+                    TLoadSpectrum{std::move(loadCases), std::move(accumulation)}};
     } catch (const json::exception& ex) {
       result.addError(TError{TErrorLevel::CRIT, fmt::format("cannot parse json document: {}", ex.what())});
     }
@@ -228,6 +234,31 @@ namespace rexsapi
     }
 
     return loadCases;
+  }
+
+  inline std::optional<TAccumulation>
+  TJsonModelLoader::getAccumulation(TResult& result, const ComponentMapping& componentMapping,
+                                    const TComponents& components, const database::TModel& dbModel, const json& j) const
+  {
+    if (!j.contains("/model/load_spectrum/accumulation"_json_pointer)) {
+      return std::optional<TAccumulation>{};
+    }
+
+    TLoadComponents loadComponents;
+    for (const auto& componentRef : j["/model/load_spectrum/accumulation/components"_json_pointer]) {
+      auto componentId = componentRef["id"].get<uint64_t>();
+      const auto* component = componentMapping.getComponent(componentId, components);
+      if (component == nullptr) {
+        result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                               fmt::format("accumulation referenced component id={} does not exist", componentId)});
+        continue;
+      }
+      TAttributes attributes = getAttributes("accumulation", result, componentId,
+                                             dbModel.findComponentById(component->getType()), componentRef);
+      loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
+    }
+
+    return TAccumulation{std::move(loadComponents)};
   }
 
   inline TValueType TJsonModelLoader::getValueType(const json& attribute) const

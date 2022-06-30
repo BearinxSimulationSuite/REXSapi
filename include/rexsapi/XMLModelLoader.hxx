@@ -171,8 +171,32 @@ namespace rexsapi
         loadCases.emplace_back(std::move(loadComponents));
       }
     }
+    std::optional<TAccumulation> accumulation;
+    {
+      TLoadComponents loadComponents;
+      for (const auto& component : doc.select_nodes("/model/load_spectrum/accumulation/component")) {
+        std::string componentId = xml::getStringAttribute(component, "id");
 
-    return TModel{info, std::move(components), std::move(relations), TLoadSpectrum{std::move(loadCases)}};
+        const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
+        if (refComponent == nullptr) {
+          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                 fmt::format("accumulation component id={} does not exist", componentId)});
+          continue;
+        }
+
+        const auto attributeNodes = doc.select_nodes(
+          fmt::format("/model/load_spectrum/accumulation/component[@id = '{}']/attribute", componentId).c_str());
+        TAttributes attributes = getAttributes("accumulation", result, componentId,
+                                               dbModel.findComponentById(refComponent->getType()), attributeNodes);
+        loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
+      }
+      if (!loadComponents.empty()) {
+        accumulation = TAccumulation{std::move(loadComponents)};
+      }
+    }
+
+    return TModel{info, std::move(components), std::move(relations),
+                  TLoadSpectrum{std::move(loadCases), std::move(accumulation)}};
   }
 
   inline TAttributes TXMLModelLoader::getAttributes(const std::string& context, TResult& result,

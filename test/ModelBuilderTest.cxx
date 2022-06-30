@@ -128,6 +128,7 @@ TEST_CASE("Model builder test")
     CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
     CHECK(model.getRelations()[0].getOrder().has_value());
     CHECK_FALSE(model.getLoadSpectrum().hasLoadCases());
+    CHECK_FALSE(model.getLoadSpectrum().hasAccumulation());
   }
 
   SUBCASE("Model builder with load cases")
@@ -156,6 +157,37 @@ TEST_CASE("Model builder test")
     CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
     CHECK(model.getRelations()[0].getOrder().has_value());
     CHECK(model.getLoadSpectrum().hasLoadCases());
+    CHECK_FALSE(model.getLoadSpectrum().hasAccumulation());
+  }
+
+  SUBCASE("Model builder with load cases & accumulation")
+  {
+    auto id =
+      builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11).id();
+    builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
+    builder.addCustomAttribute("custom_puschel", rexsapi::TValueType::STRING).unit("m").value("hutzli");
+    builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0);
+    builder.addRelation(rexsapi::TRelationType::ASSEMBLY).addRef(rexsapi::TRelationRole::GEAR, id);
+    builder.addRef(rexsapi::TRelationRole::PART, "my-id").order(1);
+    builder.hint("some hint");
+    builder.addLoadCase().addComponent(id).addAttribute("torque_acting_on_shaft_u").value(4.77);
+    builder.addLoadCase().addComponent("my-id").addAttribute("operating_viscosity").value(0.11);
+    builder.addAccumulation().addComponent(id).addAttribute("bulk_temperature").value(37.5);
+    auto model = builder.build("Test Appl", "1.35", {});
+    CHECK(model.getInfo().getApplicationId() == "Test Appl");
+    CHECK(model.getInfo().getApplicationVersion() == "1.35");
+    CHECK_FALSE(model.getInfo().getApplicationLanguage());
+    CHECK(model.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
+    REQUIRE(model.getComponents().size() == 2);
+    REQUIRE(model.getComponents()[0].getAttributes().size() == 3);
+    CHECK(model.getComponents()[0].getAttributes()[0].getAttributeId() == "conversion_factor");
+    CHECK(model.getComponents()[0].getAttributes()[1].getAttributeId() == "display_color");
+    CHECK(model.getComponents()[0].getAttributes()[2].getAttributeId() == "custom_puschel");
+    REQUIRE(model.getRelations().size() == 1);
+    CHECK(model.getRelations()[0].getType() == rexsapi::TRelationType::ASSEMBLY);
+    CHECK(model.getRelations()[0].getOrder().has_value());
+    CHECK(model.getLoadSpectrum().hasLoadCases());
+    CHECK(model.getLoadSpectrum().hasAccumulation());
   }
 
   SUBCASE("Model builder errors")
@@ -166,6 +198,10 @@ TEST_CASE("Model builder test")
     auto casingId = builder.addComponent("gear_casing").id();
     CHECK_THROWS(builder.value(47.11));
     CHECK_THROWS(builder.unit("%"));
+    CHECK_THROWS_WITH(builder.addComponent("gear_casing"), "component id=gear_casing already added");
+    builder.addAttribute("operating_viscosity").value(0.11);
+    CHECK_THROWS_WITH(builder.addAttribute("operating_viscosity"),
+                      "attribute id=operating_viscosity already added to component id=2");
 
     CHECK_THROWS_WITH(builder.order(5), "no relations added yet");
     CHECK_THROWS_WITH(builder.addRef(rexsapi::TRelationRole::PART, "4711"), "no relations added yet");

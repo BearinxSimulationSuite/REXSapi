@@ -120,6 +120,11 @@ TEST_CASE("XML Model loader test")
               <attribute id="custom_load_duration_fraction" unit="%">30</attribute>
             </component>
           </load_case>
+            <accumulation>
+              <component id="1" type="gear_unit">
+                <attribute id="operating_time" unit="h">47.5</attribute>
+              </component>
+            </accumulation>
         </load_spectrum>
       </model>
     )";
@@ -149,6 +154,7 @@ TEST_CASE("XML Model loader test")
     REQUIRE(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
     CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 4);
     CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[1].getAttributes().size() == 7);
+    REQUIRE(model->getLoadSpectrum().hasAccumulation());
   }
 
   SUBCASE("Load simple model from file")

@@ -165,20 +165,31 @@ TEST_CASE("Json model loader test")
             {
               "id": 1,
               "type": "gear_unit",
+              "name":"Transmission unit",
               "attributes": [
                 { "id": "load_duration_fraction", "unit": "%", "floating_point": 15 }
               ]
             },
             {
               "id": 2,
-              "type": "shaft",
               "attributes": [
-                { "id": "load_duration_fraction", "unit": "%", "floating_point": 21 }
+                { "id": "custom_load_duration_fraction", "unit": "%", "floating_point": 21 }
               ]
             }
           ]
         }
-      ]
+      ],
+      "accumulation": {
+        "components": [
+            {
+              "id": 1,
+              "type": "gear_unit",
+              "attributes": [
+                { "id": "operating_time", "floating_point": 35.8 }
+              ]
+            }          
+        ]
+      }
     }
   }
 })";
@@ -186,11 +197,17 @@ TEST_CASE("Json model loader test")
     rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
     auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
     CHECK(result);
+    CHECK(result.getErrors().size() == 5);
     CHECK_FALSE(result.isCritical());
     REQUIRE(model);
     REQUIRE(model->getComponents().size() == 2);
     REQUIRE(model->getRelations().size() == 2);
-    REQUIRE(model->getLoadSpectrum().hasLoadCases());
+    CHECK(model->getLoadSpectrum().hasLoadCases());
+    REQUIRE(model->getLoadSpectrum().getLoadCases().size() == 1);
+    REQUIRE(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents().size() == 2);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 8);
+    CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getLoadAttributes().size() == 1);
+    REQUIRE(model->getLoadSpectrum().hasAccumulation());
   }
 
   SUBCASE("Load invalid json document")
@@ -280,6 +297,16 @@ TEST_CASE("Json model loader test")
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
     CHECK(attributes.size() == 2);
+  }
+
+  SUBCASE("Load complex model without loadmodel from file")
+  {
+    auto model = loadModel(result, projectDir() / "test" / "example_models" / "FVA_worm_stage_1-4.rexsj", registry,
+                           rexsapi::TMode::RELAXED_MODE);
+    REQUIRE(model);
+    CHECK(result);
+    CHECK_FALSE(result.isCritical());
+    REQUIRE(result.getErrors().size() == 5);
   }
 
   SUBCASE("Load model from non-existent file failure")

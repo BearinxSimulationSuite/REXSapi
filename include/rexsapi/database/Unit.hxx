@@ -40,7 +40,7 @@ namespace rexsapi::database
       return m_Name;
     }
 
-    [[nodiscard]] bool compare(const std::string& name) const
+    [[nodiscard]] bool compare(std::string_view name) const
     {
       return m_Name == name;
     }
@@ -48,6 +48,11 @@ namespace rexsapi::database
     friend bool operator==(const TUnit& lhs, const TUnit& rhs)
     {
       return lhs.compare(rhs.getName());
+    }
+
+    friend bool operator!=(const TUnit& lhs, const TUnit& rhs)
+    {
+      return !lhs.compare(rhs.getName());
     }
 
   private:

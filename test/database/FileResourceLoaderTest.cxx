@@ -16,6 +16,7 @@
 
 #include <rexsapi/database/FileResourceLoader.hxx>
 
+#include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
 
 #include <doctest.h>
@@ -52,6 +53,23 @@ TEST_CASE("File resource loader test")
   {
     rexsapi::database::TFileResourceLoader loader{projectDir() / "non-existing-models"};
     CHECK_THROWS(loader.load([](const rexsapi::TResult&, std::vector<uint8_t>&) {
+      // nothing to do
     }));
+  }
+
+  SUBCASE("No callback")
+  {
+    rexsapi::database::TFileResourceLoader loader{projectDir() / "models"};
+    CHECK_THROWS(loader.load({}));
+  }
+
+  SUBCASE("No files")
+  {
+    TemporaryDirectory guard{};
+    rexsapi::database::TFileResourceLoader loader{guard.getTempDirectoryPath()};
+    auto result = loader.load([](const rexsapi::TResult&, std::vector<uint8_t>&) {
+      // nothing to do
+    });
+    CHECK_FALSE(result);
   }
 }

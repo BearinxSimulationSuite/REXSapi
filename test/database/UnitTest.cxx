@@ -34,5 +34,8 @@ TEST_CASE("Database unit test")
     CHECK(unit.compare("N / (mm s^0.5 K)"));
     CHECK_FALSE(unit.compare("N / mm s^0.5 K"));
     CHECK_FALSE(unit.compare(""));
+
+    CHECK(unit == rexsapi::database::TUnit{47, "N / (mm s^0.5 K)"});
+    CHECK(unit != rexsapi::database::TUnit{37, "N / (mm mum)"});
   }
 }
