@@ -63,6 +63,7 @@ namespace rexsapi::database
 
     return result;
   }
+
   inline std::vector<std::filesystem::path> TFileResourceLoader::findResources(TResult& result) const
   {
     if (!std::filesystem::exists(m_Path) || !std::filesystem::is_directory(m_Path)) {
@@ -71,10 +72,8 @@ namespace rexsapi::database
 
     std::vector<std::filesystem::path> resources;
     for (const auto& p : std::filesystem::directory_iterator(m_Path)) {
-      // TODO (lcf): check file name structure with regex
       if (p.path().extension() == ".xml") {
         if (!std::filesystem::is_regular_file(p.path())) {
-          result.addError(TError{TErrorLevel::ERR, fmt::format("Resource '{}' is not a file", p.path().string())});
           continue;
         }
 
