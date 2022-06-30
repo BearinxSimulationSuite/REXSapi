@@ -14,7 +14,7 @@ The project is still in an early phase and the API may still change considerable
 
 # Supported REXS Versions
 
-The implementation currently supports versions 1.0 to 1.4.
+The implementation currently supports versions 1.0 to 1.4. It supports model files in xml and json format.
 
 # Supported Platforms
 
@@ -52,5 +52,7 @@ The library is header only. A build is only necessary if you want to run the tes
 RESTapi uses the following thirdparty open source software
 
 - [fmt](https://github.com/fmtlib/fmt)
+- [nlohmann json](https://github.com/nlohmann/json)
 - [pugixml](https://github.com/zeux/pugixml)
+- [valijson](https://github.com/tristanpenman/valijson)
 - [doctest](https://github.com/doctest/doctest)
