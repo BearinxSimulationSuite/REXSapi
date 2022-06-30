@@ -6,7 +6,7 @@
 
 # REXSapi
 
-C++ implementation of the REXS specification.
+C++ implementation of the [REXS specification](https://www.rexs.info/rexs_de.html).
 
 # Status
 
