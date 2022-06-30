@@ -81,6 +81,14 @@ namespace rexsapi
       std::optional<TValueType> m_ValueType{};
       std::optional<TUnit> m_Unit{};
       TValue m_Value{};
+
+      bool operator==(const std::string& attribute) const
+      {
+        if (m_Attribute) {
+          return m_Attribute->getAttributeId() == attribute;
+        }
+        return m_AttributeId == attribute;
+      }
     };
 
     struct TComponentEntry {
@@ -126,12 +134,14 @@ namespace rexsapi
 
       void addAttribute(const std::string& attribute)
       {
+        checkDuplicateAttribute(lastComponent(), attribute);
         lastComponent().m_Attributes.emplace_back(
           detail::TAttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
       }
 
       void addCustomAttribute(const std::string& attribute, TValueType type)
       {
+        checkDuplicateAttribute(lastComponent(), attribute);
         lastComponent().m_Attributes.emplace_back(detail::TAttributeEntry{nullptr, attribute, type});
       }
 
@@ -149,6 +159,8 @@ namespace rexsapi
       void checkDuplicateComponent(const TComponentId& component) const;
 
       void checkDuplicateComponent(const std::string& component, const std::string& id = "") const;
+
+      void checkDuplicateAttribute(const detail::TComponentEntry& component, const std::string& attribute) const;
 
       void checkComponent() const;
 
@@ -380,7 +392,6 @@ namespace rexsapi
                                  return std::to_string(n);
                                },
                                [](const std::string& s) {
-                                 // TODO (lcf): add "" for string
                                  return s;
                                }},
                       m_Id);
@@ -429,7 +440,20 @@ namespace rexsapi
       return res;
     });
     if (it != m_Components.end()) {
-      throw TException{fmt::format("component {} already added", component)};
+      throw TException{fmt::format("component id={} already added", component)};
+    }
+  }
+
+  inline void detail::TComponents::checkDuplicateAttribute(const detail::TComponentEntry& component,
+                                                           const std::string& attribute) const
+  {
+    const auto it =
+      std::find_if(component.m_Attributes.begin(), component.m_Attributes.end(), [&attribute](const auto& att) {
+        return att == attribute;
+      });
+    if (it != component.m_Attributes.end()) {
+      throw TException{
+        fmt::format("attribute id={} already added to component id={}", attribute, component.m_Id.asString())};
     }
   }
 
@@ -451,9 +475,13 @@ namespace rexsapi
   inline void detail::TComponents::unit(const std::string& unit)
   {
     auto& attribute = lastAttribute();
-    // TODO (lcf): check unit
     if (attribute.m_Attribute != nullptr) {
-      attribute.m_Unit = TUnit{m_DatabaseModel.findUnitByName(unit)};
+      const auto& tmp = m_DatabaseModel.findUnitByName(unit);
+      if (attribute.m_Attribute->getUnit() != tmp) {
+        throw TException{
+          fmt::format("unit {} does not match attribute id={} unit", unit, attribute.m_Attribute->getAttributeId())};
+      }
+      attribute.m_Unit = TUnit{tmp};
     } else {
       attribute.m_Unit = TUnit{unit};
     }

@@ -198,6 +198,10 @@ TEST_CASE("Model builder test")
     auto casingId = builder.addComponent("gear_casing").id();
     CHECK_THROWS(builder.value(47.11));
     CHECK_THROWS(builder.unit("%"));
+    CHECK_THROWS_WITH(builder.addComponent("gear_casing"), "component id=gear_casing already added");
+    builder.addAttribute("operating_viscosity").value(0.11);
+    CHECK_THROWS_WITH(builder.addAttribute("operating_viscosity"),
+                      "attribute id=operating_viscosity already added to component id=2");
 
     CHECK_THROWS_WITH(builder.order(5), "no relations added yet");
     CHECK_THROWS_WITH(builder.addRef(rexsapi::TRelationRole::PART, "4711"), "no relations added yet");
