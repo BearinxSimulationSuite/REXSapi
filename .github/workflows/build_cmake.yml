@@ -2,6 +2,8 @@ name: CMake Build Matrix
 
 on:
   push:
+    paths-ignore:
+      - "**/README.md"
   pull_request:
   release:
     branches:
