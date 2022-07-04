@@ -63,31 +63,33 @@ target_include_directories(rexsapi SYSTEM INTERFACE "${valijson_SOURCE_DIR}/incl
 target_include_directories(rexsapi INTERFACE ${PROJECT_BINARY_DIR})
 target_compile_options(rexsapi INTERFACE ${REXSAPI_COMPILE_OPTIONS})
 
-install(
-  DIRECTORY "${PROJECT_SOURCE_DIR}/include"
-  DESTINATION .
-)
-install(
-  DIRECTORY "${PROJECT_BINARY_DIR}/rexsapi"
-  DESTINATION ./include
-)
-install(
-  DIRECTORY "${fmt_SOURCE_DIR}/include" "${valijson_SOURCE_DIR}/include"
-  DESTINATION ./deps
-)
-install(
-  DIRECTORY "${json_SOURCE_DIR}/single_include/" "${pugixml_SOURCE_DIR}/src/"
-  DESTINATION ./deps/include
-)
-install(
-  DIRECTORY "${PROJECT_SOURCE_DIR}/examples"
-  DESTINATION .
-  FILES_MATCHING PATTERN "*.cxx"
-  PATTERN "REXSTransmission*" EXCLUDE
-)
+if(REXSAPI_MASTER_PROJECT)
+  install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/include"
+    DESTINATION .
+  )
+  install(
+    DIRECTORY "${PROJECT_BINARY_DIR}/rexsapi"
+    DESTINATION ./include
+  )
+  install(
+    DIRECTORY "${fmt_SOURCE_DIR}/include" "${valijson_SOURCE_DIR}/include"
+    DESTINATION ./deps
+  )
+  install(
+    DIRECTORY "${json_SOURCE_DIR}/single_include/" "${pugixml_SOURCE_DIR}/src/"
+    DESTINATION ./deps/include
+  )
+  install(
+    DIRECTORY "${PROJECT_SOURCE_DIR}/examples"
+    DESTINATION .
+    FILES_MATCHING PATTERN "*.cxx"
+    PATTERN "REXSTransmission*" EXCLUDE
+  )
 
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-set(CPACK_GENERATOR "ZIP")
-set(CPACK_PACKAGE_CHECKSUM "SHA256")
-include(CPack)
+  set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+  set(CPACK_GENERATOR "ZIP")
+  set(CPACK_PACKAGE_CHECKSUM "SHA256")
+  include(CPack)
+endif()
