@@ -35,8 +35,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
-find_package(Threads REQUIRED)
-
 include(cmake/fetch_fmt.cmake)
 include(cmake/fetch_json.cmake)
 include(cmake/fetch_pugixml.cmake)

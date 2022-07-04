@@ -52,8 +52,6 @@ target_include_directories(rexsapi_test PRIVATE ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(rexsapi_test PRIVATE
   rexsapi
-  Threads::Threads
-  ${CMAKE_DL_LIBS}
 )
 
 if(COVERAGE)
