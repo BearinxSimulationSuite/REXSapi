@@ -5,16 +5,22 @@ if(POLICY CMP0110)
   cmake_policy(SET CMP0110 OLD)
 endif()
 
-enable_testing()
-
 include(FetchContent)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+if(NOT DEFINED REXSAPI_MASTER_PROJECT)
+  set(REXSAPI_MASTER_PROJECT OFF)
+
+  if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(REXSAPI_MASTER_PROJECT ON)
+    message(STATUS "Building REXSapi as master project")
+  endif()
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  add_definitions(-DDEBUG)
+option(BUILD_WITH_EXAMPLES "Build with examples" ${REXSAPI_MASTER_PROJECT})
+option(BUILD_WIHT_TESTS "Build with tests" ${REXSAPI_MASTER_PROJECT})
+
+if(NOT CMAKE_BUILD_TYPE AND REXSAPI_MASTER_PROJECT)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -26,10 +32,6 @@ elseif(CMAKE_BUILD_TYPE MATCHES "Release")
 else()
   message(FATAL_ERROR "Unknown build type ${CMAKE_BUILD_TYPE} specified")
 endif()
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/archive)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
@@ -65,5 +67,14 @@ else()
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
-add_subdirectory(examples)
+
+if(BUILD_WITH_EXAMPLES)
+  message(STATUS "Building with examples")
+  add_subdirectory(examples)
+endif()
+
+if(BUILD_WIHT_TESTS)
+  enable_testing()
+  message(STATUS "Building with tests")
+  add_subdirectory(test)
+endif()
