@@ -18,6 +18,7 @@ endif()
 
 option(BUILD_WITH_EXAMPLES "Build with examples" ${REXSAPI_MASTER_PROJECT})
 option(BUILD_WIHT_TESTS "Build with tests" ${REXSAPI_MASTER_PROJECT})
+option(BUILD_WITH_TOOLS "Build with tools" ON)
 
 if(NOT CMAKE_BUILD_TYPE AND REXSAPI_MASTER_PROJECT)
   set(CMAKE_BUILD_TYPE Release)
@@ -76,3 +77,9 @@ if(BUILD_WIHT_TESTS)
   message(STATUS "Building with tests")
   add_subdirectory(test)
 endif()
+
+if(BUILD_WITH_TOOLS)
+  message(STATUS "Building with tools")
+  add_subdirectory(tools)
+endif(
+)
