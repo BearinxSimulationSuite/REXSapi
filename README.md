@@ -1,7 +1,7 @@
-![Supported Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20Mac-blue.svg)
 ![License: Apache 2](https://img.shields.io/badge/license-Apache%202-blue)
 ![Language: C++17](https://img.shields.io/badge/language-C%2B%2B17-blue.svg)
-![Version:](https://img.shields.io/badge/version-pre--alpha-orange)
+![Version:](https://img.shields.io/badge/version-alpha-orange)
 [![GitHub Build Status](https://github.com/BearinxSimulationSuite/REXSapi/workflows/CMake%20Build%20Matrix/badge.svg)](https://github.com/BearinxSimulationSuite/REXSapi/actions)
 
 # REXSapi
@@ -10,7 +10,7 @@ The REXSapi library is a C++ implementation of the [REXS specification](https://
 
 # Status
 
-The project is still in an early phase and the API may still change considerable in the near future. We wouldn't recommend the usage of the library at the current point in time. 
+The project is still in an early phase and the API may still change in the near future. We wouldn't recommend the usage of the library at the current point in time. 
 
 # Supported REXS Versions
 
