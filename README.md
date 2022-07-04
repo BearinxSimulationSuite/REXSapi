@@ -27,13 +27,17 @@ The library can be used on
 
 You need a C++17 compatible compiler to use the library.
 
+# Tools
+
+The library comes packaged with two tools: model_converter and model_checker. The model_converter can convert REXS model files between xml and json format. The model_checker checks files for compatibility with the REXSapi library. The library expects REXS model files to be conformant to the REXS specification. However, the library supports a so called _relaxed_ mode where most errors to the specfication are turned into warnings in order to process files even if they are not 100% compliant to the specifcation.
+
 # Integration
 
 The library is header only and can be easily integrated into existing projects. Using CMake is the recommended way to use the library. However, the library also comes as a zip package which can be used without CMake. You have to set the C++ standard of your project to C++17 in order to build with the library. The library has dependencies to other open source software. This dependencies will be either automatically downloaded by CMake or are prepackaged in the zip package.
 
 ## CMake
 
-Just clone the git repository and add REXSapi as a sub directory in an appropriate CMakeLists.txt file. Then use the provided rexsapi interface as library. If you want to build with the examples or the tests, you can set `BUILD_WITH_EXAMPLES` and/or `BUILD_WITH_TESTS` to `ON`.
+Just clone the git repository and add REXSapi as a sub directory in an appropriate CMakeLists.txt file. Then use the provided rexsapi interface as library. If you want to build with the examples, tools or the tests, you can set `BUILD_WITH_EXAMPLES`, `BUILD_WITH_TESTS`, and/or `BUILD_WITH_TOOLS` to `ON`.
 
 ```
   set(CMAKE_CXX_STANDARD 17)
