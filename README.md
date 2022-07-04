@@ -87,6 +87,18 @@ The library is header only. A build is only necessary if you want to run the tes
 - Open the local folder of the REXSapi project
 - Visual Studio will configure the project automatically
 
+## Mac
+- You will need the following software packages
+  - XCode 12.4
+  - cmake 3.16.3 or higher
+- To install cmake on Mac
+  - Call `brew install cmake`
+- Create a build directory in the source directory of REXSapi and change to it
+- Call `cmake -GXcode -DCMAKE_BUILD_TYPE=Release ..`
+- Call `cmake --build . --config Release`
+- To run the tests
+  - Call `ctest -VV -C Release`
+
 ## External Dependencies
 
 RESTapi uses the following thirdparty open source software
