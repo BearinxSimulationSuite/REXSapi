@@ -17,6 +17,7 @@
 #ifndef REXSAPI_VALUE_DETAILS_HXX
 #define REXSAPI_VALUE_DETAILS_HXX
 
+#include <rexsapi/Base64.hxx>
 #include <rexsapi/Types.hxx>
 
 #include <variant>
@@ -32,6 +33,74 @@ namespace rexsapi
 
   namespace detail
   {
+    template<typename T,
+             typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
+    class CodedValueArray
+    {
+    public:
+      static std::string encode(const std::vector<T>& array)
+      {
+        const auto* data = reinterpret_cast<const uint8_t*>(array.data());
+        const auto len = array.size() * sizeof(T);
+        return base64Encode(data, len);
+      }
+
+      static std::vector<T> decode(std::string_view value)
+      {
+        std::vector<T> array;
+        const auto data = base64Decode(value);
+        const auto count = data.size() / sizeof(T);
+        array.reserve(count);
+        const auto values = reinterpret_cast<const T*>(data.data());
+        for (size_t n = 0; n < count; ++n) {
+          array.emplace_back(values[n]);
+        }
+
+        return array;
+      }
+    };
+
+    template<typename T,
+             typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
+    class CodedValueMatrix
+    {
+    public:
+      static std::string encode(const TMatrix<T>& matrix)
+      {
+        const auto count = matrix.m_Values.size() * matrix.m_Values.size() * sizeof(T);
+        std::vector<T> array;
+        array.reserve(count);
+        for (const auto& row : matrix.m_Values) {
+          for (const auto& column : row) {
+            array.emplace_back(column);
+          }
+        }
+        const auto* data = reinterpret_cast<const uint8_t*>(array.data());
+        const auto len = array.size() * sizeof(T);
+        return base64Encode(data, len);
+      }
+
+      static TMatrix<T> decode(std::string_view value)
+      {
+        TMatrix<T> matrix;
+        const auto data = base64Decode(value);
+        const auto count = data.size() / sizeof(T);
+        const auto elementCount = static_cast<size_t>(::sqrt(count));
+        const auto values = reinterpret_cast<const T*>(data.data());
+        matrix.m_Values.reserve(elementCount);
+        for (size_t row = 0; row < elementCount; ++row) {
+          std::vector<T> col;
+          col.reserve(elementCount);
+          for (size_t column = 0; column < elementCount; ++column) {
+            col.emplace_back(values[(row * elementCount) + column]);
+          }
+          matrix.m_Values.emplace_back(std::move(col));
+        }
+
+        return matrix;
+      }
+    };
+
     using Variant = std::variant<std::monostate, double, bool, int64_t, std::string, std::vector<double>,
                                  std::vector<Bool>, std::vector<int64_t>, std::vector<std::string>,
                                  std::vector<std::vector<int64_t>>, TMatrix<double>, TMatrix<std::string>>;
