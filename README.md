@@ -29,7 +29,7 @@ You need a C++17 compatible compiler to use the library.
 
 # Tools
 
-The library comes packaged with two tools: model_converter and model_checker. The model_converter can convert REXS model files between xml and json format. The model_checker checks files for compatibility with the REXSapi library. The library expects REXS model files to be conformant to the REXS specification. However, the library supports a so called _relaxed_ mode where most errors to the specfication are turned into warnings in order to process files even if they are not 100% compliant to the specifcation.
+The library comes packaged with two tools: `model_converter` and `model_checker`. The `model_converter` can convert REXS model files between xml and json format. The `model_checker` checks files for compatibility with the REXSapi library. The library expects REXS model files to be conformant to the REXS specification. However, the library supports a so called _relaxed_ mode where most errors to the specfication are turned into warnings in order to process files even if they are not 100% compliant to the specifcation.
 
 # Integration
 
