@@ -85,7 +85,7 @@ namespace rexsapi
         TMatrix<T> matrix;
         const auto data = base64Decode(value);
         const auto count = data.size() / sizeof(T);
-        const auto elementCount = static_cast<size_t>(::sqrt(count));
+        const auto elementCount = static_cast<size_t>(::sqrt(static_cast<double>(count)));
         const auto values = reinterpret_cast<const T*>(data.data());
         matrix.m_Values.reserve(elementCount);
         for (size_t row = 0; row < elementCount; ++row) {
