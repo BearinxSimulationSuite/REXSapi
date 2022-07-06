@@ -43,12 +43,18 @@ TEST_CASE("XML value decoder test")
     <attribute id="enum">injection_lubrication</attribute>
     <attribute id="reference component">17</attribute>
     <attribute id="file reference">/root/my/path</attribute>
+    <attribute id="coded float32 array">
+      <array code="float32">MveeQZ6hM0I=</array>
+    </attribute>
     <attribute id="float array">
       <array>
         <c>1.0</c>
         <c>2.0</c>
         <c>3.0</c>
       </array>
+    </attribute>
+    <attribute id="coded integer array">
+      <array code="int32">AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=</array>
     </attribute>
     <attribute id="integer array">
       <array>
@@ -181,11 +187,26 @@ TEST_CASE("XML value decoder test")
     CHECK(result.first.getValue<std::vector<int64_t>>()[1] == 2);
   }
 
+  SUBCASE("Decode coded integer array")
+  {
+    auto result = decoder.decode(rexsapi::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "coded integer array"));
+    CHECK(result.second);
+    REQUIRE(result.first.getValue<std::vector<int64_t>>().size() == 8);
+    CHECK(result.first.getValue<std::vector<int64_t>>()[1] == 2);
+  }
+
   SUBCASE("Decode float array")
   {
     auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "float array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<double>>().size() == 3);
+  }
+
+  SUBCASE("Decode coded float32 array")
+  {
+    auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float32 array"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<std::vector<double>>().size() == 2);
   }
 
   SUBCASE("Decode boolean array")

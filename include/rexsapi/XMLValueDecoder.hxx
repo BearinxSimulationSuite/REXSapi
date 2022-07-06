@@ -21,6 +21,7 @@
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
 #include <rexsapi/Xml.hxx>
+#include <rexsapi/XmlUtils.hxx>
 #include <rexsapi/database/EnumValues.hxx>
 
 #include <memory>
@@ -158,7 +159,7 @@ namespace rexsapi
     template<typename ElementDecoder>
     class TArrayDecoder : public TXMLDecoder
     {
-    private:
+    protected:
       using type = typename ElementDecoder::Type;
 
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
@@ -176,6 +177,92 @@ namespace rexsapi
           result &= res.second;
         }
         return std::make_pair(TValue{std::move(array)}, result);
+      }
+    };
+
+    template<TCodedValueType v>
+    struct Enum2type {
+      enum { value = static_cast<uint8_t>(v) };
+    };
+
+    template<typename T>
+    struct TypeForCodedValueType {
+      using Type = T;
+    };
+
+    template<>
+    struct TypeForCodedValueType<Enum2type<TCodedValueType::Int32>> {
+      using Type = int32_t;
+    };
+
+    template<>
+    struct TypeForCodedValueType<Enum2type<TCodedValueType::Float32>> {
+      using Type = float;
+    };
+
+    template<>
+    struct TypeForCodedValueType<Enum2type<TCodedValueType::Float64>> {
+      using Type = double;
+    };
+
+    template<typename T>
+    struct ValueTypeForCodedValueType {
+      using Type = T;
+    };
+
+    template<>
+    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Int32>> {
+      using Type = int64_t;
+    };
+
+    template<>
+    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Float32>> {
+      using Type = double;
+    };
+
+    template<>
+    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Float64>> {
+      using Type = double;
+    };
+
+    template<typename T1, typename T2>
+    struct TCodedValueDecoder {
+      static TValue decode(std::string_view value)
+      {
+        if (!std::is_same_v<T1, typename ValueTypeForCodedValueType<T2>::Type>) {
+          throw TException{"coded value type does not correspond to attribute value type"};
+        }
+        auto result = detail::CodedValueArray<typename TypeForCodedValueType<T2>::Type>::decode(value);
+        return TValue{std::vector<T1>{result.begin(), result.end()}};
+      }
+    };
+
+    template<typename ElementDecoder>
+    class TCodedArrayDecoder : public TArrayDecoder<ElementDecoder>
+    {
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
+      {
+        TValue value;
+        auto codedType = rexsapi::codedValueFromString(xml::getStringAttribute(node.first_child(), "code"));
+        switch (codedType) {
+          case TCodedValueType::None:
+            return TArrayDecoder<ElementDecoder>::onDecode(enumValue, node);
+          case TCodedValueType::Int32: {
+            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Int32>>::decode(node.first_child().child_value());
+            break;
+          }
+          case TCodedValueType::Float32: {
+            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Float32>>::decode(node.first_child().child_value());
+            break;
+          }
+          case TCodedValueType::Float64: {
+            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Float64>>::decode(node.first_child().child_value());
+            break;
+          }
+        }
+        return std::make_pair(std::move(value), true);
       }
     };
 
@@ -279,8 +366,8 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT] = std::make_unique<xml::TFloatDecoder>();
     m_Decoder[TValueType::STRING] = std::make_unique<xml::TStringDecoder>();
     m_Decoder[TValueType::ENUM] = std::make_unique<xml::TEnumDecoder>();
-    m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TIntegerDecoder>>();
-    m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<xml::TCodedArrayDecoder<xml::TIntegerDecoder>>();
+    m_Decoder[TValueType::FLOATING_POINT_ARRAY] = std::make_unique<xml::TCodedArrayDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TBoolArrayDecoder>();
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
     m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TStringDecoder>>();
