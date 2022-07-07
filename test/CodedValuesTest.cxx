@@ -24,8 +24,8 @@ TEST_CASE("Coded values test")
   SUBCASE("int32 array")
   {
     std::vector<int32_t> ints{1, 2, 3, 4, 5, 6, 7, 8};
-    const auto encoded = rexsapi::detail::CodedValueArray<int32_t>::encode(ints);
-    const auto decoded = rexsapi::detail::CodedValueArray<int32_t>::decode(encoded);
+    const auto encoded = rexsapi::detail::TCodedValueArray<int32_t>::encode(ints);
+    const auto decoded = rexsapi::detail::TCodedValueArray<int32_t>::decode(encoded);
     REQUIRE(decoded.size() == 8);
     CHECK(encoded == "AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=");
     CHECK(decoded[0] == 1);
@@ -36,21 +36,21 @@ TEST_CASE("Coded values test")
   SUBCASE("float32 array")
   {
     const char* value = "MveeQZ6hM0I=";
-    const auto decoded = rexsapi::detail::CodedValueArray<float>::decode(value);
+    const auto decoded = rexsapi::detail::TCodedValueArray<float>::decode(value);
 
     REQUIRE(decoded.size() == 2);
     CHECK(decoded[0] == doctest::Approx(19.8707));
     CHECK(decoded[1] == doctest::Approx(44.9078));
 
-    const auto encoded = rexsapi::detail::CodedValueArray<float>::encode(decoded);
+    const auto encoded = rexsapi::detail::TCodedValueArray<float>::encode(decoded);
     CHECK(encoded == value);
   }
 
   SUBCASE("float64 matrix")
   {
     rexsapi::TMatrix<double> matrix{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}};
-    const auto encoded = rexsapi::detail::CodedValueMatrix<double>::encode(matrix);
-    const auto decoded = rexsapi::detail::CodedValueMatrix<double>::decode(encoded);
+    const auto encoded = rexsapi::detail::TCodedValueMatrix<double>::encode(matrix);
+    const auto decoded = rexsapi::detail::TCodedValueMatrix<double>::decode(encoded);
     REQUIRE(decoded.m_Values.size() == 3);
     REQUIRE(decoded.m_Values[0].size() == 3);
     CHECK(decoded.m_Values[0][0] == doctest::Approx{1.0});

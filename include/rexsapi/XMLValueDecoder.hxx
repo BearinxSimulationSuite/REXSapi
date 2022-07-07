@@ -188,27 +188,28 @@ namespace rexsapi
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
                                        const pugi::xml_node& node) const override
       {
+        const auto child = node.first_child();
         TValue value;
-        auto codedType = rexsapi::detail::codedValueFromString(xml::getStringAttribute(node.first_child(), "code"));
+        const auto codedType = rexsapi::detail::codedValueFromString(xml::getStringAttribute(child, "code"));
         switch (codedType) {
           case detail::TCodedValueType::None:
             return TArrayDecoder<ElementDecoder>::onDecode(enumValue, node);
           case detail::TCodedValueType::Int32: {
-            value = detail::TCodedValueDecoder<
+            value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(node.first_child().child_value());
+              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float32: {
-            value = detail::TCodedValueDecoder<
+            value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(node.first_child().child_value());
+              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float64: {
-            value = detail::TCodedValueDecoder<
+            value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(node.first_child().child_value());
+              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
             break;
           }
         }
@@ -240,7 +241,7 @@ namespace rexsapi
     template<typename ElementDecoder>
     class TMatrixDecoder : public TXMLDecoder
     {
-    private:
+    protected:
       using type = typename ElementDecoder::Type;
 
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
@@ -268,6 +269,52 @@ namespace rexsapi
         result &= matrix.validate();
 
         return std::make_pair(TValue{std::move(matrix)}, result);
+      }
+    };
+
+    template<typename ElementDecoder>
+    class TCodedMatrixDecoder : public TMatrixDecoder<ElementDecoder>
+    {
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const pugi::xml_node& node) const override
+      {
+        const auto child = node.first_child();
+        TValue value;
+        const auto codedType = rexsapi::detail::codedValueFromString(xml::getStringAttribute(child, "code"));
+        switch (codedType) {
+          case detail::TCodedValueType::None:
+            return TMatrixDecoder<ElementDecoder>::onDecode(enumValue, node);
+          case detail::TCodedValueType::Int32: {
+            value = detail::TCodedValueMatrixDecoder<
+              typename TMatrixDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
+            break;
+          }
+          case detail::TCodedValueType::Float32: {
+            value = detail::TCodedValueMatrixDecoder<
+              typename TMatrixDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
+            break;
+          }
+          case detail::TCodedValueType::Float64: {
+            value = detail::TCodedValueMatrixDecoder<
+              typename TMatrixDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
+            break;
+          }
+        }
+        if (codedType != detail::TCodedValueType::None) {
+          const auto rows = convertToUint64(xml::getStringAttribute(child, "rows"));
+          const auto columns = convertToUint64(xml::getStringAttribute(child, "columns"));
+          if (rows != columns) {
+            throw TException{"matrix rows != columns"};
+          }
+          if (value.getValue<TMatrix<typename TMatrixDecoder<ElementDecoder>::type>>().m_Values.size() != rows) {
+            throw TException{"decoded matrix size does not correspond to configured size"};
+          }
+        }
+        return std::make_pair(std::move(value), true);
       }
     };
 
@@ -321,7 +368,7 @@ namespace rexsapi
     m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<xml::TBoolArrayDecoder>();
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TEnumDecoder>>();
     m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<xml::TArrayDecoder<xml::TStringDecoder>>();
-    m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TFloatDecoder>>();
+    m_Decoder[TValueType::FLOATING_POINT_MATRIX] = std::make_unique<xml::TCodedMatrixDecoder<xml::TFloatDecoder>>();
     m_Decoder[TValueType::STRING_MATRIX] = std::make_unique<xml::TMatrixDecoder<xml::TStringDecoder>>();
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<xml::TIntegerDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<xml::TStringDecoder>();
@@ -337,7 +384,11 @@ namespace rexsapi
       return std::make_pair(TValue{}, false);
     }
 
-    return m_Decoder.at(type)->decode(enumValue, node);
+    try {
+      return m_Decoder.at(type)->decode(enumValue, node);
+    } catch (const std::exception&) {
+      return std::make_pair(TValue{}, false);
+    }
   }
 
   inline static bool isArray(const pugi::xml_node& node)

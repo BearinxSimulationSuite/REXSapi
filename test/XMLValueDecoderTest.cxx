@@ -77,6 +77,9 @@ TEST_CASE("XML value decoder test")
         <c>dip_lubrication</c>
       </array>
     </attribute>
+    <attribute id="coded float matrix">
+      <matrix code="float64" rows="3" columns="3">AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA</matrix>
+    </attribute>
     <attribute id="float matrix">
       <matrix>
         <r>
@@ -204,7 +207,8 @@ TEST_CASE("XML value decoder test")
 
   SUBCASE("Decode coded float32 array")
   {
-    auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float32 array"));
+    auto result =
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float32 array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<double>>().size() == 2);
   }
@@ -229,6 +233,17 @@ TEST_CASE("XML value decoder test")
   SUBCASE("Decode float matrix")
   {
     auto result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<rexsapi::TMatrix<double>>().m_Values.size() == 3);
+    for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {
+      CHECK(row.size() == 3);
+    }
+  }
+
+  SUBCASE("Decode coded float matrix")
+  {
+    auto result =
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "coded float matrix"));
     CHECK(result.second);
     CHECK(result.first.getValue<rexsapi::TMatrix<double>>().m_Values.size() == 3);
     for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {
@@ -285,7 +300,17 @@ TEST_CASE("XML value decoder error test")
           <c>3.3</c>
         </r>
       </matrix>
-    </attribute>  </component>
+    </attribute>
+    <attribute id="coded float matrix 1">
+      <matrix code="float64" rows="6" columns="3">AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA</matrix>
+    </attribute>
+    <attribute id="coded float matrix 2">
+      <matrix code="float32" rows="3" columns="3">AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA</matrix>
+    </attribute>
+    <attribute id="coded integer array">
+      <array code="int32">AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=</array>
+    </attribute>
+  </component>
   )";
   std::vector<uint8_t> buffer{document.begin(), document.end()};
   pugi::xml_document doc;
@@ -333,10 +358,29 @@ TEST_CASE("XML value decoder error test")
     CHECK_FALSE(decoder.decode(rexsapi::TValueType::INTEGER_ARRAY, enumValue, getNode(doc, "integer array")).second);
   }
 
+  SUBCASE("Decode coded integer array")
+  {
+    CHECK_FALSE(decoder.decode(rexsapi::TValueType::FLOATING_POINT, enumValue, getNode(doc, "integer array")).second);
+  }
+
   SUBCASE("Decode float matrix")
   {
     CHECK_FALSE(
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "float matrix")).second);
+  }
+
+  SUBCASE("Decode coded float matrix wrong rows")
+  {
+    CHECK_FALSE(
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "coded float matrix 1"))
+        .second);
+  }
+
+  SUBCASE("Decode coded float matrix wrong type size")
+  {
+    CHECK_FALSE(
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "coded float matrix 2"))
+        .second);
   }
 }
 

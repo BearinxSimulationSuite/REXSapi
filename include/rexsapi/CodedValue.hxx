@@ -31,7 +31,7 @@ namespace rexsapi::detail
 
   template<typename T,
            typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
-  class CodedValueArray
+  class TCodedValueArray
   {
   public:
     static std::string encode(const std::vector<T>& array)
@@ -58,7 +58,7 @@ namespace rexsapi::detail
 
   template<typename T,
            typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
-  class CodedValueMatrix
+  class TCodedValueMatrix
   {
   public:
     static std::string encode(const TMatrix<T>& matrix)
@@ -97,11 +97,6 @@ namespace rexsapi::detail
     }
   };
 
-  /*
-  template<TCodedValueType v>
-  struct Enum2type {
-    enum { value = static_cast<uint8_t>(v) };
-  };*/
 
   template<typename T>
   struct TypeForCodedValueType {
@@ -144,14 +139,26 @@ namespace rexsapi::detail
   };
 
   template<typename T1, typename T2>
-  struct TCodedValueDecoder {
+  struct TCodedValueArrayDecoder {
     static TValue decode(std::string_view value)
     {
       if (!std::is_same_v<T1, typename ValueTypeForCodedValueType<T2>::Type>) {
         throw TException{"coded value type does not correspond to attribute value type"};
       }
-      auto result = CodedValueArray<typename TypeForCodedValueType<T2>::Type>::decode(value);
+      auto result = TCodedValueArray<typename TypeForCodedValueType<T2>::Type>::decode(value);
       return TValue{std::vector<T1>{result.begin(), result.end()}};
+    }
+  };
+
+  template<typename T1, typename T2>
+  struct TCodedValueMatrixDecoder {
+    static TValue decode(std::string_view value)
+    {
+      if (!std::is_same_v<T1, typename ValueTypeForCodedValueType<T2>::Type>) {
+        throw TException{"coded value type does not correspond to attribute value type"};
+      }
+      auto result = TCodedValueMatrix<typename TypeForCodedValueType<T2>::Type>::decode(value);
+      return TValue{TMatrix<T1>{result}};
     }
   };
 

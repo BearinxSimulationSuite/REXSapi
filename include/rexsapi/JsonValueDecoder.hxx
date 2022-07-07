@@ -331,7 +331,7 @@ namespace rexsapi
 
     try {
       return m_Decoder.at(type)->decode(enumValue, node);
-    } catch (const json::exception&) {
+    } catch (const std::exception&) {
       return std::make_pair(TValue{}, false);
     }
   }
