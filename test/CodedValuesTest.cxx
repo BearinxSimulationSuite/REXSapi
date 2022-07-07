@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <rexsapi/Value.hxx>
+#include <rexsapi/CodedValue.hxx>
 
 #include <doctest.h>
 
@@ -66,5 +66,23 @@ TEST_CASE("Coded values test")
     CHECK(decoded.m_Values[2][2] == doctest::Approx{9.0});
     CHECK(encoded ==
           "AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
+  }
+}
+
+TEST_CASE("Coded value enum test")
+{
+  SUBCASE("From string")
+  {
+    CHECK(rexsapi::detail::codedValueFromString("int32") == rexsapi::detail::TCodedValueType::Int32);
+    CHECK(rexsapi::detail::codedValueFromString("float32") == rexsapi::detail::TCodedValueType::Float32);
+    CHECK(rexsapi::detail::codedValueFromString("float64") == rexsapi::detail::TCodedValueType::Float64);
+  }
+
+  SUBCASE("To string")
+  {
+    CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::None) == "none");
+    CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Int32) == "int32");
+    CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Float32) == "float32");
+    CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Float64) == "float64");
   }
 }

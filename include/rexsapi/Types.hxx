@@ -152,46 +152,21 @@ namespace rexsapi
   static TRelationRoleType getRoleType(TRelationRole role);
 
 
-  enum class TCodedValueType { None, Int32, Float32, Float64 };
+  template<uint8_t v>
+  struct Enum2type {
+    enum { value = v };
+  };
 
-  static TCodedValueType codedValueFromString(const std::string& value);
-  static std::string toCodedValueString(TCodedValueType value);
+  template<typename T>
+  constexpr typename std::underlying_type<T>::type to_underlying(T t) noexcept
+  {
+    return static_cast<typename std::underlying_type<T>::type>(t);
+  }
+
 
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
-
-  static inline TCodedValueType codedValueFromString(const std::string& type)
-  {
-    if (type.empty()) {
-      return TCodedValueType::None;
-    }
-    if (type == "int32") {
-      return TCodedValueType::Int32;
-    }
-    if (type == "float32") {
-      return TCodedValueType::Float32;
-    }
-    if (type == "float64") {
-      return TCodedValueType::Float64;
-    }
-    throw TException{fmt::format("unknown value type '{}'", type)};
-  }
-
-  static inline std::string toCodedValueString(TCodedValueType value)
-  {
-    switch (value) {
-      case TCodedValueType::None:
-        return "none";
-      case TCodedValueType::Int32:
-        return "int32";
-      case TCodedValueType::Float32:
-        return "float32";
-      case TCodedValueType::Float64:
-        return "float64";
-    }
-    throw TException{fmt::format("unknown value type '{}'", static_cast<int64_t>(value))};
-  }
 
   static inline TValueType typeFromString(const std::string& type)
   {

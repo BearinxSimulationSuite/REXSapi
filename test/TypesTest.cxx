@@ -113,24 +113,6 @@ TEST_CASE("Relation role test")
   }
 }
 
-TEST_CASE("Coded value test")
-{
-  SUBCASE("From string")
-  {
-    CHECK(rexsapi::codedValueFromString("int32") == rexsapi::TCodedValueType::Int32);
-    CHECK(rexsapi::codedValueFromString("float32") == rexsapi::TCodedValueType::Float32);
-    CHECK(rexsapi::codedValueFromString("float64") == rexsapi::TCodedValueType::Float64);
-  }
-
-  SUBCASE("To string")
-  {
-    CHECK(rexsapi::toCodedValueString(rexsapi::TCodedValueType::None) == "none");
-    CHECK(rexsapi::toCodedValueString(rexsapi::TCodedValueType::Int32) == "int32");
-    CHECK(rexsapi::toCodedValueString(rexsapi::TCodedValueType::Float32) == "float32");
-    CHECK(rexsapi::toCodedValueString(rexsapi::TCodedValueType::Float64) == "float64");
-  }
-}
-
 TEST_CASE("Bool test")
 {
   rexsapi::Bool bTrue{true};

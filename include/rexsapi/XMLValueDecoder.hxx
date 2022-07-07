@@ -17,6 +17,7 @@
 #ifndef REXSAPI_XML_VALUE_DECODER_HXX
 #define REXSAPI_XML_VALUE_DECODER_HXX
 
+#include <rexsapi/CodedValue.hxx>
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
@@ -180,63 +181,6 @@ namespace rexsapi
       }
     };
 
-    template<TCodedValueType v>
-    struct Enum2type {
-      enum { value = static_cast<uint8_t>(v) };
-    };
-
-    template<typename T>
-    struct TypeForCodedValueType {
-      using Type = T;
-    };
-
-    template<>
-    struct TypeForCodedValueType<Enum2type<TCodedValueType::Int32>> {
-      using Type = int32_t;
-    };
-
-    template<>
-    struct TypeForCodedValueType<Enum2type<TCodedValueType::Float32>> {
-      using Type = float;
-    };
-
-    template<>
-    struct TypeForCodedValueType<Enum2type<TCodedValueType::Float64>> {
-      using Type = double;
-    };
-
-    template<typename T>
-    struct ValueTypeForCodedValueType {
-      using Type = T;
-    };
-
-    template<>
-    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Int32>> {
-      using Type = int64_t;
-    };
-
-    template<>
-    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Float32>> {
-      using Type = double;
-    };
-
-    template<>
-    struct ValueTypeForCodedValueType<Enum2type<TCodedValueType::Float64>> {
-      using Type = double;
-    };
-
-    template<typename T1, typename T2>
-    struct TCodedValueDecoder {
-      static TValue decode(std::string_view value)
-      {
-        if (!std::is_same_v<T1, typename ValueTypeForCodedValueType<T2>::Type>) {
-          throw TException{"coded value type does not correspond to attribute value type"};
-        }
-        auto result = detail::CodedValueArray<typename TypeForCodedValueType<T2>::Type>::decode(value);
-        return TValue{std::vector<T1>{result.begin(), result.end()}};
-      }
-    };
-
     template<typename ElementDecoder>
     class TCodedArrayDecoder : public TArrayDecoder<ElementDecoder>
     {
@@ -245,20 +189,26 @@ namespace rexsapi
                                        const pugi::xml_node& node) const override
       {
         TValue value;
-        auto codedType = rexsapi::codedValueFromString(xml::getStringAttribute(node.first_child(), "code"));
+        auto codedType = rexsapi::detail::codedValueFromString(xml::getStringAttribute(node.first_child(), "code"));
         switch (codedType) {
-          case TCodedValueType::None:
+          case detail::TCodedValueType::None:
             return TArrayDecoder<ElementDecoder>::onDecode(enumValue, node);
-          case TCodedValueType::Int32: {
-            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Int32>>::decode(node.first_child().child_value());
+          case detail::TCodedValueType::Int32: {
+            value = detail::TCodedValueDecoder<
+              typename TArrayDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(node.first_child().child_value());
             break;
           }
-          case TCodedValueType::Float32: {
-            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Float32>>::decode(node.first_child().child_value());
+          case detail::TCodedValueType::Float32: {
+            value = detail::TCodedValueDecoder<
+              typename TArrayDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(node.first_child().child_value());
             break;
           }
-          case TCodedValueType::Float64: {
-            value = TCodedValueDecoder<typename TArrayDecoder<ElementDecoder>::type,Enum2type<TCodedValueType::Float64>>::decode(node.first_child().child_value());
+          case detail::TCodedValueType::Float64: {
+            value = detail::TCodedValueDecoder<
+              typename TArrayDecoder<ElementDecoder>::type,
+              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(node.first_child().child_value());
             break;
           }
         }
