@@ -14,7 +14,7 @@ The project is still in an early phase and the API may still change in the near 
 
 # Supported REXS Versions
 
-The library uses REXS database model files in order to validate REXS model files. Database model files can be downloaded from the [REXS database page](https://database.rexs.info/). Currently, the implementation supports versions 1.0 to 1.4, but newer database files should also work. Version 1.0 to 1.4 database model files in english and german can also be found in the models directory of the project.
+The library uses REXS database model files in order to validate REXS model files. Database model files can be downloaded from the [REXS database page](https://database.rexs.info/). Currently, the implementation supports versions 1.0 to 1.4, but newer database files should also work. Version 1.0 to 1.4 database model files in english and german can also be found in the models directory of this project.
 
 The library supports REXS model files in xml and json format.
 
