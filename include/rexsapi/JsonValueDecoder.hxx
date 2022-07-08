@@ -340,7 +340,7 @@ namespace rexsapi
           const auto& val = coded["value"].template get<std::string>();
           switch (codedType) {
             case detail::TCodedValueType::None:
-              break;
+              throw TException{"unknown code"};
             case detail::TCodedValueType::Int32: {
               value =
                 detail::TCodedValueMatrixDecoder<Type,

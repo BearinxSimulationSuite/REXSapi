@@ -29,8 +29,7 @@ namespace rexsapi::detail
   static std::string toCodedValueString(TCodedValueType value);
 
 
-  template<typename T,
-           typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
+  template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>* = nullptr>
   class TCodedValueArray
   {
   public:
@@ -56,8 +55,7 @@ namespace rexsapi::detail
     }
   };
 
-  template<typename T,
-           typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value>::type* = nullptr>
+  template<typename T, std::enable_if_t<std::is_integral<T>::value || std::is_floating_point<T>::value>* = nullptr>
   class TCodedValueMatrix
   {
   public:
