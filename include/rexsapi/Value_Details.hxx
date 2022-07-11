@@ -48,6 +48,17 @@ namespace rexsapi
       return std::get<bool>(value);
     }
 
+    template<uint8_t v>
+    struct Enum2type {
+      enum { value = v };
+    };
+
+    template<typename T>
+    constexpr typename std::underlying_type<T>::type to_underlying(T t) noexcept
+    {
+      return static_cast<typename std::underlying_type<T>::type>(t);
+    }
+
     template<typename T>
     struct TypeForValueType {
       using Type = T;
@@ -129,39 +140,48 @@ namespace rexsapi
     };
   }
 
-  using TFloatType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::FLOATING_POINT)>>::Type;
-  using TBoolType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::BOOLEAN)>>::Type;
-  using TIntType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::INTEGER)>>::Type;
-  using TEnumType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::ENUM)>>::Type;
-  using TStringType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::STRING)>>::Type;
-  using TFileReferenceType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::FILE_REFERENCE)>>::Type;
-  using TBoolArrayType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::BOOLEAN_ARRAY)>>::Type;
-  using TFloatArrayType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::FLOATING_POINT_ARRAY)>>::Type;
-  using TIntArrayType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::INTEGER_ARRAY)>>::Type;
-  using TEnumArrayType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::ENUM_ARRAY)>>::Type;
-  using TStringArrayType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::STRING_ARRAY)>>::Type;
+  using TFloatType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT)>>::Type;
+  using TBoolType = detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::BOOLEAN)>>::Type;
+  using TIntType = detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::INTEGER)>>::Type;
+  using TEnumType = detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::ENUM)>>::Type;
+  using TStringType = detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::STRING)>>::Type;
+  using TFileReferenceType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::FILE_REFERENCE)>>::Type;
+  using TBoolArrayType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::BOOLEAN_ARRAY)>>::Type;
+  using TFloatArrayType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT_ARRAY)>>::Type;
+  using TIntArrayType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::INTEGER_ARRAY)>>::Type;
+  using TEnumArrayType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::ENUM_ARRAY)>>::Type;
+  using TStringArrayType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::STRING_ARRAY)>>::Type;
   using TReferenceComponentType =
-    detail::TypeForValueType<Enum2type<to_underlying(TValueType::REFERENCE_COMPONENT)>>::Type;
-  using TFloatMatrixType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::FLOATING_POINT_MATRIX)>>::Type;
-  using TStringMatrixType = detail::TypeForValueType<Enum2type<to_underlying(TValueType::STRING_MATRIX)>>::Type;
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::REFERENCE_COMPONENT)>>::Type;
+  using TFloatMatrixType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT_MATRIX)>>::Type;
+  using TStringMatrixType =
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::STRING_MATRIX)>>::Type;
   using TArrayOfIntArraysType =
-    detail::TypeForValueType<Enum2type<to_underlying(TValueType::ARRAY_OF_INTEGER_ARRAYS)>>::Type;
+    detail::TypeForValueType<detail::Enum2type<detail::to_underlying(TValueType::ARRAY_OF_INTEGER_ARRAYS)>>::Type;
 
-  using FloatTag = Enum2type<to_underlying(TValueType::FLOATING_POINT)>;
-  using IntTag = Enum2type<to_underlying(TValueType::INTEGER)>;
-  using BoolTag = Enum2type<to_underlying(TValueType::BOOLEAN)>;
-  using EnumTag = Enum2type<to_underlying(TValueType::ENUM)>;
-  using StringTag = Enum2type<to_underlying(TValueType::STRING)>;
-  using FileReferenceTag = Enum2type<to_underlying(TValueType::FILE_REFERENCE)>;
-  using FloatArrayTag = Enum2type<to_underlying(TValueType::FLOATING_POINT_ARRAY)>;
-  using BoolArrayTag = Enum2type<to_underlying(TValueType::BOOLEAN_ARRAY)>;
-  using IntArrayTag = Enum2type<to_underlying(TValueType::INTEGER_ARRAY)>;
-  using EnumArrayTag = Enum2type<to_underlying(TValueType::ENUM_ARRAY)>;
-  using StringArrayTag = Enum2type<to_underlying(TValueType::STRING_ARRAY)>;
-  using ReferenceComponentTag = Enum2type<to_underlying(TValueType::REFERENCE_COMPONENT)>;
-  using FloatMatrixTag = Enum2type<to_underlying(TValueType::FLOATING_POINT_MATRIX)>;
-  using StringMatrixTag = Enum2type<to_underlying(TValueType::STRING_MATRIX)>;
-  using ArrayOfIntArraysTag = Enum2type<to_underlying(TValueType::ARRAY_OF_INTEGER_ARRAYS)>;
+  using FloatTag = detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT)>;
+  using IntTag = detail::Enum2type<detail::to_underlying(TValueType::INTEGER)>;
+  using BoolTag = detail::Enum2type<detail::to_underlying(TValueType::BOOLEAN)>;
+  using EnumTag = detail::Enum2type<detail::to_underlying(TValueType::ENUM)>;
+  using StringTag = detail::Enum2type<detail::to_underlying(TValueType::STRING)>;
+  using FileReferenceTag = detail::Enum2type<detail::to_underlying(TValueType::FILE_REFERENCE)>;
+  using FloatArrayTag = detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT_ARRAY)>;
+  using BoolArrayTag = detail::Enum2type<detail::to_underlying(TValueType::BOOLEAN_ARRAY)>;
+  using IntArrayTag = detail::Enum2type<detail::to_underlying(TValueType::INTEGER_ARRAY)>;
+  using EnumArrayTag = detail::Enum2type<detail::to_underlying(TValueType::ENUM_ARRAY)>;
+  using StringArrayTag = detail::Enum2type<detail::to_underlying(TValueType::STRING_ARRAY)>;
+  using ReferenceComponentTag = detail::Enum2type<detail::to_underlying(TValueType::REFERENCE_COMPONENT)>;
+  using FloatMatrixTag = detail::Enum2type<detail::to_underlying(TValueType::FLOATING_POINT_MATRIX)>;
+  using StringMatrixTag = detail::Enum2type<detail::to_underlying(TValueType::STRING_MATRIX)>;
+  using ArrayOfIntArraysTag = detail::Enum2type<detail::to_underlying(TValueType::ARRAY_OF_INTEGER_ARRAYS)>;
 }
 
 #endif

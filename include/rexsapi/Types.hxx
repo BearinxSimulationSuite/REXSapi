@@ -179,18 +179,6 @@ namespace rexsapi
   static TRelationRoleType getRoleType(TRelationRole role);
 
 
-  template<uint8_t v>
-  struct Enum2type {
-    enum { value = v };
-  };
-
-  template<typename T>
-  constexpr typename std::underlying_type<T>::type to_underlying(T t) noexcept
-  {
-    return static_cast<typename std::underlying_type<T>::type>(t);
-  }
-
-
   /////////////////////////////////////////////////////////////////////////////
   // Implementation
   /////////////////////////////////////////////////////////////////////////////

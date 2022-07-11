@@ -197,19 +197,19 @@ namespace rexsapi
           case detail::TCodedValueType::Int32: {
             value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float32: {
             value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float64: {
             value = detail::TCodedValueArrayDecoder<
               typename TArrayDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
             break;
           }
         }
@@ -288,19 +288,19 @@ namespace rexsapi
           case detail::TCodedValueType::Int32: {
             value = detail::TCodedValueMatrixDecoder<
               typename TMatrixDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Int32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float32: {
             value = detail::TCodedValueMatrixDecoder<
               typename TMatrixDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Float32)>>::decode(child.child_value());
             break;
           }
           case detail::TCodedValueType::Float64: {
             value = detail::TCodedValueMatrixDecoder<
               typename TMatrixDecoder<ElementDecoder>::type,
-              Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
+              detail::Enum2type<detail::to_underlying(detail::TCodedValueType::Float64)>>::decode(child.child_value());
             break;
           }
         }

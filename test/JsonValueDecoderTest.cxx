@@ -43,6 +43,7 @@ TEST_CASE("Json value decoder test")
     "file reference": { "file_reference": "/root/my/path" },
     "float array": { "floating_point_array": [1.0, 2.0, 3.0] },
     "coded float array": { "floating_point_array_coded": { "code": "float32", "value": "MveeQZ6hM0I" } },
+    "coded float64 array": { "floating_point_array_coded": { "code": "float64", "value": "AAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA" } },
     "integer array": { "integer_array": [1, 2, 3] },
     "coded integer array": { "integer_array_coded": { "code": "int32", "value": "AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=" } },
     "boolean array": { "boolean_array": [true, false, false] },
@@ -50,6 +51,7 @@ TEST_CASE("Json value decoder test")
     "enum array": { "enum_array": ["injection_lubrication", "dip_lubrication", "dip_lubrication"] },
     "float matrix": { "floating_point_matrix": [[1.1, 1.2, 1.3], [2.1, 2.2, 2.3], [3.1, 3.2, 3.3]] },
     "coded float matrix": { "floating_point_matrix_coded": { "code": "float64", "rows": 3, "columns": 3, "value": "AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA" } },
+    "coded float32 matrix": { "floating_point_matrix_coded": { "code": "float32", "rows": 3, "columns": 3, "value": "AACAPwAAAEAAAEBAAACAQAAAoEAAAMBAAADgQAAAAEEAABBB" } },
     "string matrix": { "string_matrix": [["a", "b"], ["c", "d"], ["e", "f"]] },
     "array of integer arrays": { "array_of_integer_arrays": [[1, 1, 1], [2, 2], [3]] }
   }
@@ -145,6 +147,10 @@ TEST_CASE("Json value decoder test")
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<double>>().size() == 2);
+
+    result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float64 array"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<std::vector<double>>().size() == 3);
   }
 
   SUBCASE("Decode boolean array")
@@ -185,6 +191,14 @@ TEST_CASE("Json value decoder test")
   {
     auto result =
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "coded float matrix"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<rexsapi::TMatrix<double>>().m_Values.size() == 3);
+    for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {
+      CHECK(row.size() == 3);
+    }
+
+    result =
+      decoder.decode(rexsapi::TValueType::FLOATING_POINT_MATRIX, enumValue, getNode(doc, "coded float32 matrix"));
     CHECK(result.second);
     CHECK(result.first.getValue<rexsapi::TMatrix<double>>().m_Values.size() == 3);
     for (const auto& row : result.first.getValue<rexsapi::TMatrix<double>>().m_Values) {

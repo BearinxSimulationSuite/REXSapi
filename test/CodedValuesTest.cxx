@@ -90,6 +90,11 @@ TEST_CASE("Coded values test")
     CHECK(res.first == "AADgQAAAAEEAABBB");
   }
 
+  SUBCASE("Encode array failure")
+  {
+    CHECK_THROWS(rexsapi::detail::encodeArray(std::vector<double>{7.0, 8.0, 9.0}, rexsapi::TCodeType::None));
+  }
+
   SUBCASE("Encode double matrix")
   {
     const auto res = rexsapi::detail::encodeMatrix(
@@ -98,6 +103,20 @@ TEST_CASE("Coded values test")
     CHECK(res.first ==
           "AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
   }
+
+  SUBCASE("Encode double matrix optimized")
+  {
+    const auto res = rexsapi::detail::encodeMatrix(
+      rexsapi::TMatrix<double>{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}, rexsapi::TCodeType::Optimized);
+    CHECK(res.second == rexsapi::detail::TCodedValueType::Float32);
+    CHECK(res.first == "AACAPwAAAEAAAEBAAACAQAAAoEAAAMBAAADgQAAAAEEAABBB");
+  }
+
+  SUBCASE("Encode matrix failure")
+  {
+    CHECK_THROWS(rexsapi::detail::encodeMatrix(
+      rexsapi::TMatrix<double>{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}, rexsapi::TCodeType::None));
+  }
 }
 
 TEST_CASE("Coded value decoder test")
@@ -105,7 +124,7 @@ TEST_CASE("Coded value decoder test")
   SUBCASE("Int array decoder")
   {
     auto val = rexsapi::detail::TCodedValueArrayDecoder<
-      int64_t, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
+      int64_t, rexsapi::detail::Enum2type<rexsapi::detail::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
       decode("AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=");
     CHECK(val.coded() == rexsapi::TCodeType::Default);
     CHECK_NOTHROW(val.getValue<rexsapi::TIntArrayType>());
@@ -114,7 +133,7 @@ TEST_CASE("Coded value decoder test")
   SUBCASE("Float array decoder")
   {
     auto val = rexsapi::detail::TCodedValueArrayDecoder<
-      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
+      double, rexsapi::detail::Enum2type<rexsapi::detail::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
       decode("AAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
     CHECK(val.coded() == rexsapi::TCodeType::Default);
     CHECK_NOTHROW(val.getValue<rexsapi::TFloatArrayType>());
@@ -123,7 +142,7 @@ TEST_CASE("Coded value decoder test")
   SUBCASE("Float array decoder optimized")
   {
     auto val = rexsapi::detail::TCodedValueArrayDecoder<
-      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float32)>>::
+      double, rexsapi::detail::Enum2type<rexsapi::detail::to_underlying(rexsapi::detail::TCodedValueType::Float32)>>::
       decode("AADgQAAAAEEAABBB");
     CHECK(val.coded() == rexsapi::TCodeType::Optimized);
     CHECK_NOTHROW(val.getValue<rexsapi::TFloatArrayType>());
@@ -132,7 +151,7 @@ TEST_CASE("Coded value decoder test")
   SUBCASE("Float matrix decoder")
   {
     auto val = rexsapi::detail::TCodedValueMatrixDecoder<
-      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
+      double, rexsapi::detail::Enum2type<rexsapi::detail::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
       decode("AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
     CHECK(val.coded() == rexsapi::TCodeType::Default);
     CHECK_NOTHROW(val.getValue<rexsapi::TFloatMatrixType>());
@@ -140,9 +159,10 @@ TEST_CASE("Coded value decoder test")
 
   SUBCASE("Array decoder type mismatch")
   {
-    CHECK_THROWS(rexsapi::detail::TCodedValueArrayDecoder<
-                 double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
-                   decode("AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA="));
+    CHECK_THROWS(
+      rexsapi::detail::TCodedValueArrayDecoder<
+        double, rexsapi::detail::Enum2type<rexsapi::detail::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
+        decode("AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA="));
   }
 }
 
@@ -163,6 +183,7 @@ TEST_CASE("Coded value enum test")
     CHECK(rexsapi::detail::codedValueFromString("int32") == rexsapi::detail::TCodedValueType::Int32);
     CHECK(rexsapi::detail::codedValueFromString("float32") == rexsapi::detail::TCodedValueType::Float32);
     CHECK(rexsapi::detail::codedValueFromString("float64") == rexsapi::detail::TCodedValueType::Float64);
+    CHECK_THROWS(rexsapi::detail::codedValueFromString("puschel"));
   }
 
   SUBCASE("To string")
@@ -171,5 +192,6 @@ TEST_CASE("Coded value enum test")
     CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Int32) == "int32");
     CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Float32) == "float32");
     CHECK(rexsapi::detail::toCodedValueString(rexsapi::detail::TCodedValueType::Float64) == "float64");
+    CHECK_THROWS(rexsapi::detail::toCodedValueString(static_cast<rexsapi::detail::TCodedValueType>(14)));
   }
 }

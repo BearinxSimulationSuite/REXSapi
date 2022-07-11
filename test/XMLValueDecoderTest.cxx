@@ -46,6 +46,9 @@ TEST_CASE("XML value decoder test")
     <attribute id="coded float32 array">
       <array code="float32">MveeQZ6hM0I=</array>
     </attribute>
+    <attribute id="coded float64 array">
+      <array code="float64">AAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA</array>
+    </attribute>
     <attribute id="float array">
       <array>
         <c>1.0</c>
@@ -211,6 +214,10 @@ TEST_CASE("XML value decoder test")
       decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float32 array"));
     CHECK(result.second);
     CHECK(result.first.getValue<std::vector<double>>().size() == 2);
+
+    result = decoder.decode(rexsapi::TValueType::FLOATING_POINT_ARRAY, enumValue, getNode(doc, "coded float64 array"));
+    CHECK(result.second);
+    CHECK(result.first.getValue<std::vector<double>>().size() == 3);
   }
 
   SUBCASE("Decode boolean array")
