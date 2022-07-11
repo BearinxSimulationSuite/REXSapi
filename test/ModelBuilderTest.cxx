@@ -72,6 +72,11 @@ TEST_CASE("Component builder test")
     builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11);
     auto gearId = builder.id();
     builder.addAttribute("display_color").value(rexsapi::TFloatArrayType{30.0, 10.0, 55.0}).unit("%");
+    builder.addAttribute("support_vector").unit("mm").value(rexsapi::TFloatArrayType{70.0, 0.0, 0.0}).coded();
+    builder.addAttribute("u_axis_vector")
+      .unit("mm")
+      .value(rexsapi::TFloatArrayType{0.0, 65.0, 0.0})
+      .coded(rexsapi::TCodeType::Optimized);
     auto casingId =
       builder.addComponent("gear_casing", "my-id").addAttribute("temperature_lubricant").value(128.0).id();
     CHECK(casingId == rexsapi::TComponentId{"my-id"});
@@ -81,9 +86,14 @@ TEST_CASE("Component builder test")
     CHECK(components[0].getType() == "cylindrical_gear");
     CHECK(components[1].getName() == "");
     CHECK(components[1].getType() == "gear_casing");
-    REQUIRE(components[0].getAttributes().size() == 2);
+    REQUIRE(components[0].getAttributes().size() == 4);
     CHECK(components[0].getAttributes()[0].getAttributeId() == "conversion_factor");
     CHECK(components[0].getAttributes()[0].getValueAsString() == "2.11");
+    CHECK(components[0].getAttributes()[0].getValue().coded() == rexsapi::TCodeType::None);
+    CHECK(components[0].getAttributes()[2].getAttributeId() == "support_vector");
+    CHECK(components[0].getAttributes()[2].getValue().coded() == rexsapi::TCodeType::Default);
+    CHECK(components[0].getAttributes()[3].getAttributeId() == "u_axis_vector");
+    CHECK(components[0].getAttributes()[3].getValue().coded() == rexsapi::TCodeType::Optimized);
     CHECK(components[1].getInternalId() == builder.getComponentForId(components, casingId).getInternalId());
     CHECK(components[0].getInternalId() == builder.getComponentForId(components, gearId).getInternalId());
   }

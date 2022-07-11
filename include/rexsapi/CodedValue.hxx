@@ -97,8 +97,47 @@ namespace rexsapi::detail
 
 
   template<typename T>
+  inline std::pair<std::string, TCodedValueType> encodeArray(const std::vector<T>&, TCodeType);
+
+  template<>
+  inline std::pair<std::string, TCodedValueType> encodeArray(const std::vector<int64_t>& array, TCodeType)
+  {
+    std::vector<int32_t> tmp{array.begin(), array.end()};
+    return std::make_pair(TCodedValueArray<int32_t>::encode(tmp), TCodedValueType::Int32);
+  }
+
+  template<>
+  inline std::pair<std::string, TCodedValueType> encodeArray(const std::vector<double>& array, TCodeType type)
+  {
+    if (type == TCodeType::Default) {
+      return std::make_pair(TCodedValueArray<double>::encode(array), TCodedValueType::Float64);
+    }
+    if (type == TCodeType::Optimized) {
+      std::vector<float> tmp{array.begin(), array.end()};
+      return std::make_pair(TCodedValueArray<float>::encode(tmp), TCodedValueType::Float32);
+    }
+    throw TException{"should never reach this"};
+  }
+
+  template<typename T>
+  inline std::pair<std::string, TCodedValueType> encodeMatrix(const TMatrix<T>&, TCodeType);
+
+  template<>
+  inline std::pair<std::string, TCodedValueType> encodeMatrix(const TMatrix<double>& matrix, TCodeType type)
+  {
+    if (type == TCodeType::Default) {
+      return std::make_pair(TCodedValueMatrix<double>::encode(matrix), TCodedValueType::Float64);
+    }
+    if (type == TCodeType::Optimized) {
+      TMatrix<float> tmp{matrix};
+      return std::make_pair(TCodedValueMatrix<float>::encode(tmp), TCodedValueType::Float32);
+    }
+    throw TException{"should never reach this"};
+  }
+
+
+  template<typename T>
   struct TypeForCodedValueType {
-    using Type = T;
   };
 
   template<>
@@ -118,7 +157,6 @@ namespace rexsapi::detail
 
   template<typename T>
   struct ValueTypeForCodedValueType {
-    using Type = T;
   };
 
   template<>
@@ -136,6 +174,14 @@ namespace rexsapi::detail
     using Type = double;
   };
 
+  static inline TCodeType getCodedType(TCodedValueType type)
+  {
+    if (type == TCodedValueType::Float32) {
+      return TCodeType::Optimized;
+    }
+    return TCodeType::Default;
+  }
+
   template<typename T1, typename T2>
   struct TCodedValueArrayDecoder {
     static TValue decode(std::string_view value)
@@ -144,7 +190,9 @@ namespace rexsapi::detail
         throw TException{"coded value type does not correspond to attribute value type"};
       }
       auto result = TCodedValueArray<typename TypeForCodedValueType<T2>::Type>::decode(value);
-      return TValue{std::vector<T1>{result.begin(), result.end()}};
+      TValue val{std::vector<T1>{result.begin(), result.end()}};
+      val.coded(getCodedType(TCodedValueType{T2::value}));
+      return val;
     }
   };
 
@@ -156,7 +204,9 @@ namespace rexsapi::detail
         throw TException{"coded value type does not correspond to attribute value type"};
       }
       auto result = TCodedValueMatrix<typename TypeForCodedValueType<T2>::Type>::decode(value);
-      return TValue{TMatrix<T1>{result}};
+      TValue val{TMatrix<T1>{result}};
+      val.coded(getCodedType(TCodedValueType{T2::value}));
+      return val;
     }
   };
 

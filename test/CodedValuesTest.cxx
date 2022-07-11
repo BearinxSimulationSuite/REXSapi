@@ -67,6 +67,93 @@ TEST_CASE("Coded values test")
     CHECK(encoded ==
           "AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
   }
+
+  SUBCASE("Encode int64 array")
+  {
+    const auto res =
+      rexsapi::detail::encodeArray(std::vector<int64_t>{1, 2, 3, 4, 5, 6, 7, 8}, rexsapi::TCodeType::Default);
+    CHECK(res.second == rexsapi::detail::TCodedValueType::Int32);
+    CHECK(res.first == "AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=");
+  }
+
+  SUBCASE("Encode double array")
+  {
+    const auto res = rexsapi::detail::encodeArray(std::vector<double>{7.0, 8.0, 9.0}, rexsapi::TCodeType::Default);
+    CHECK(res.second == rexsapi::detail::TCodedValueType::Float64);
+    CHECK(res.first == "AAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
+  }
+
+  SUBCASE("Encode double array optimized")
+  {
+    const auto res = rexsapi::detail::encodeArray(std::vector<double>{7.0, 8.0, 9.0}, rexsapi::TCodeType::Optimized);
+    CHECK(res.second == rexsapi::detail::TCodedValueType::Float32);
+    CHECK(res.first == "AADgQAAAAEEAABBB");
+  }
+
+  SUBCASE("Encode double matrix")
+  {
+    const auto res = rexsapi::detail::encodeMatrix(
+      rexsapi::TMatrix<double>{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}, rexsapi::TCodeType::Default);
+    CHECK(res.second == rexsapi::detail::TCodedValueType::Float64);
+    CHECK(res.first ==
+          "AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
+  }
+}
+
+TEST_CASE("Coded value decoder test")
+{
+  SUBCASE("Int array decoder")
+  {
+    auto val = rexsapi::detail::TCodedValueArrayDecoder<
+      int64_t, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
+      decode("AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA=");
+    CHECK(val.coded() == rexsapi::TCodeType::Default);
+    CHECK_NOTHROW(val.getValue<rexsapi::TIntArrayType>());
+  }
+
+  SUBCASE("Float array decoder")
+  {
+    auto val = rexsapi::detail::TCodedValueArrayDecoder<
+      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
+      decode("AAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
+    CHECK(val.coded() == rexsapi::TCodeType::Default);
+    CHECK_NOTHROW(val.getValue<rexsapi::TFloatArrayType>());
+  }
+
+  SUBCASE("Float array decoder optimized")
+  {
+    auto val = rexsapi::detail::TCodedValueArrayDecoder<
+      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float32)>>::
+      decode("AADgQAAAAEEAABBB");
+    CHECK(val.coded() == rexsapi::TCodeType::Optimized);
+    CHECK_NOTHROW(val.getValue<rexsapi::TFloatArrayType>());
+  }
+
+  SUBCASE("Float matrix decoder")
+  {
+    auto val = rexsapi::detail::TCodedValueMatrixDecoder<
+      double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Float64)>>::
+      decode("AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhAAAAAAAAAHEAAAAAAAAAgQAAAAAAAACJA");
+    CHECK(val.coded() == rexsapi::TCodeType::Default);
+    CHECK_NOTHROW(val.getValue<rexsapi::TFloatMatrixType>());
+  }
+
+  SUBCASE("Array decoder type mismatch")
+  {
+    CHECK_THROWS(rexsapi::detail::TCodedValueArrayDecoder<
+                 double, rexsapi::Enum2type<rexsapi::to_underlying(rexsapi::detail::TCodedValueType::Int32)>>::
+                   decode("AQAAAAIAAAADAAAABAAAAAUAAAAGAAAABwAAAAgAAAA="));
+  }
+}
+
+TEST_CASE("Coded value type test")
+{
+  SUBCASE("Get type")
+  {
+    CHECK(rexsapi::detail::getCodedType(rexsapi::detail::TCodedValueType::Float32) == rexsapi::TCodeType::Optimized);
+    CHECK(rexsapi::detail::getCodedType(rexsapi::detail::TCodedValueType::Float64) == rexsapi::TCodeType::Default);
+    CHECK(rexsapi::detail::getCodedType(rexsapi::detail::TCodedValueType::Int32) == rexsapi::TCodeType::Default);
+  }
 }
 
 TEST_CASE("Coded value enum test")

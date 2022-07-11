@@ -80,6 +80,8 @@ namespace rexsapi
 
   template<typename T>
   struct TMatrix {
+    using value_type = T;
+
     TMatrix() = default;
 
     explicit TMatrix(std::vector<std::vector<T>> v)

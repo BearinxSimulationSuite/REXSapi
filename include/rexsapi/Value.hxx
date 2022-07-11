@@ -26,6 +26,9 @@
 
 namespace rexsapi
 {
+  enum class TCodeType { None, Default, Optimized };
+
+
   class TValue
   {
   public:
@@ -80,8 +83,19 @@ namespace rexsapi
 
     std::string asString() const;
 
+    void coded(TCodeType type)
+    {
+      m_CodeType = type;
+    }
+
+    TCodeType coded() const
+    {
+      return m_CodeType;
+    }
+
   private:
     detail::Variant m_Value;
+    TCodeType m_CodeType{TCodeType::None};
   };
 
 
