@@ -17,6 +17,7 @@
 #ifndef REXSAPI_JSON_VALUE_DECODER_HXX
 #define REXSAPI_JSON_VALUE_DECODER_HXX
 
+#include <rexsapi/CodedValue.hxx>
 #include <rexsapi/ConversionHelper.hxx>
 #include <rexsapi/Json.hxx>
 #include <rexsapi/Types.hxx>
@@ -48,6 +49,8 @@ namespace rexsapi
 
   namespace detail::json
   {
+    static inline bool is_coded(const rexsapi::json& node);
+
     class TJsonDecoder
     {
     public:
@@ -181,11 +184,12 @@ namespace rexsapi
       {
       }
 
-    private:
+    protected:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
         std::vector<type> array;
+
         const auto arr = node.at(m_Name);
         for (const auto& element : arr) {
           array.emplace_back(element.template get<type>());
@@ -194,6 +198,51 @@ namespace rexsapi
       }
 
       std::string m_Name;
+    };
+
+    template<typename Type>
+    class TCodedArrayDecoder : public TArrayDecoder<Type>
+    {
+    public:
+      explicit TCodedArrayDecoder(std::string name)
+      : TArrayDecoder<Type>{std::move(name)}
+      {
+      }
+
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const rexsapi::json& node) const override
+      {
+        if (is_coded(node)) {
+          TValue value;
+          const auto& coded = node.at(TArrayDecoder<Type>::m_Name + "_coded");
+          const auto codedType = detail::codedValueFromString(coded["code"].template get<std::string>());
+          const auto& val = coded["value"].template get<std::string>();
+          switch (codedType) {
+            case detail::TCodedValueType::None:
+              break;
+            case detail::TCodedValueType::Int32: {
+              value =
+                detail::TCodedValueArrayDecoder<Type, Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(
+                  val);
+              break;
+            }
+            case detail::TCodedValueType::Float32: {
+              value = detail::TCodedValueArrayDecoder<
+                Type, Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(val);
+              break;
+            }
+            case detail::TCodedValueType::Float64: {
+              value = detail::TCodedValueArrayDecoder<
+                Type, Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(val);
+              break;
+            }
+          }
+          return std::make_pair(std::move(value), true);
+        }
+
+        return TArrayDecoder<Type>::onDecode(enumValue, node);
+      }
     };
 
     class TBoolArrayDecoder : public TJsonDecoder
@@ -246,7 +295,7 @@ namespace rexsapi
       {
       }
 
-    private:
+    protected:
       std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>&,
                                        const rexsapi::json& node) const override
       {
@@ -262,6 +311,61 @@ namespace rexsapi
         return std::make_pair(TValue{std::move(matrix)}, result);
       }
       std::string m_Name;
+    };
+
+    template<typename Type>
+    class TCodedMatrixDecoder : public TMatrixDecoder<Type>
+    {
+    public:
+      using type = Type;
+
+      explicit TCodedMatrixDecoder(std::string name)
+      : TMatrixDecoder<Type>{std::move(name)}
+      {
+      }
+
+    private:
+      std::pair<TValue, bool> onDecode(const std::optional<const database::TEnumValues>& enumValue,
+                                       const rexsapi::json& node) const override
+      {
+        if (is_coded(node)) {
+          TValue value;
+          const auto& coded = node.at(TMatrixDecoder<Type>::m_Name + "_coded");
+          const auto codedType = detail::codedValueFromString(coded["code"].template get<std::string>());
+          const auto rows = coded["rows"].template get<uint64_t>();
+          const auto columns = coded["columns"].template get<uint64_t>();
+          if (rows != columns) {
+            throw TException{"matrix rows != columns"};
+          }
+          const auto& val = coded["value"].template get<std::string>();
+          switch (codedType) {
+            case detail::TCodedValueType::None:
+              throw TException{"unknown code"};
+            case detail::TCodedValueType::Int32: {
+              value =
+                detail::TCodedValueMatrixDecoder<Type,
+                                                 Enum2type<to_underlying(detail::TCodedValueType::Int32)>>::decode(val);
+              break;
+            }
+            case detail::TCodedValueType::Float32: {
+              value = detail::TCodedValueMatrixDecoder<
+                Type, Enum2type<to_underlying(detail::TCodedValueType::Float32)>>::decode(val);
+              break;
+            }
+            case detail::TCodedValueType::Float64: {
+              value = detail::TCodedValueMatrixDecoder<
+                Type, Enum2type<to_underlying(detail::TCodedValueType::Float64)>>::decode(val);
+              break;
+            }
+          }
+          if (value.getValue<TMatrix<Type>>().m_Values.size() != rows) {
+            throw TException{"decoded matrix size does not correspond to configured size"};
+          }
+          return std::make_pair(std::move(value), true);
+        }
+
+        return TMatrixDecoder<Type>::onDecode(enumValue, node);
+      }
     };
 
     template<typename Type>
@@ -306,19 +410,38 @@ namespace rexsapi
     m_Decoder[TValueType::FLOATING_POINT] = std::make_unique<detail::json::TFloatDecoder>();
     m_Decoder[TValueType::STRING] = std::make_unique<detail::json::TStringDecoder>();
     m_Decoder[TValueType::ENUM] = std::make_unique<detail::json::TEnumDecoder>();
-    m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<detail::json::TArrayDecoder<int64_t>>("integer_array");
+    m_Decoder[TValueType::INTEGER_ARRAY] = std::make_unique<detail::json::TCodedArrayDecoder<int64_t>>("integer_array");
     m_Decoder[TValueType::FLOATING_POINT_ARRAY] =
-      std::make_unique<detail::json::TArrayDecoder<double>>("floating_point_array");
+      std::make_unique<detail::json::TCodedArrayDecoder<double>>("floating_point_array");
     m_Decoder[TValueType::BOOLEAN_ARRAY] = std::make_unique<detail::json::TBoolArrayDecoder>();
     m_Decoder[TValueType::STRING_ARRAY] = std::make_unique<detail::json::TArrayDecoder<std::string>>("string_array");
     m_Decoder[TValueType::ENUM_ARRAY] = std::make_unique<detail::json::TEnumArrayDecoder>();
     m_Decoder[TValueType::FLOATING_POINT_MATRIX] =
-      std::make_unique<detail::json::TMatrixDecoder<double>>("floating_point_matrix");
+      std::make_unique<detail::json::TCodedMatrixDecoder<double>>("floating_point_matrix");
     m_Decoder[TValueType::STRING_MATRIX] = std::make_unique<detail::json::TMatrixDecoder<std::string>>("string_matrix");
     m_Decoder[TValueType::REFERENCE_COMPONENT] = std::make_unique<detail::json::TReferenceDecoder>();
     m_Decoder[TValueType::FILE_REFERENCE] = std::make_unique<detail::json::TFileReferenceDecoder>();
     m_Decoder[TValueType::ARRAY_OF_INTEGER_ARRAYS] =
       std::make_unique<detail::json::TArrayOfArraysDecoder<int64_t>>("array_of_integer_arrays");
+  }
+
+  static inline bool detail::json::is_coded(const rexsapi::json& node)
+  {
+    for (const auto& [key, _] : node.items()) {
+      if (key == "id" || key == "unit") {
+        continue;
+      }
+      if (key == "floating_point_array_coded") {
+        return true;
+      }
+      if (key == "integer_array_coded") {
+        return true;
+      }
+      if (key == "floating_point_matrix_coded") {
+        return true;
+      }
+    }
+    return false;
   }
 
   inline std::pair<TValue, bool> TJsonValueDecoder::decode(TValueType type,
@@ -331,7 +454,7 @@ namespace rexsapi
 
     try {
       return m_Decoder.at(type)->decode(enumValue, node);
-    } catch (const json::exception&) {
+    } catch (const std::exception&) {
       return std::make_pair(TValue{}, false);
     }
   }

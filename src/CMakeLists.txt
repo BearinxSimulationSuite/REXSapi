@@ -9,6 +9,8 @@ target_sources(rexsapi INTERFACE
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Rexsapi.hxx
 
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Attribute.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/Base64.hxx
+  ${PROJECT_SOURCE_DIR}/include/rexsapi/CodedValue.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Component.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/ConversionHelper.hxx
   ${PROJECT_SOURCE_DIR}/include/rexsapi/Defines.hxx

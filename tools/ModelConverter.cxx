@@ -111,7 +111,9 @@ int main(int argc, char** argv)
           default:
             throw rexsapi::TException{"Format is not implemented"};
         }
-        std::cout << fmt::format("Converted {} to {}", modelFile.string(), file.string()) << std::endl;
+        std::cout << fmt::format("Converted {} to {}", modelFile.string(),
+                                 std::filesystem::canonical(outputPath / file).string())
+                  << std::endl;
       }
     }
   } catch (const std::exception& ex) {

@@ -17,6 +17,7 @@
 #ifndef REXSAPI_JSON_MODEL_SERIALIZER_HXX
 #define REXSAPI_JSON_MODEL_SERIALIZER_HXX
 
+#include <rexsapi/CodedValue.hxx>
 #include <rexsapi/Json.hxx>
 #include <rexsapi/Model.hxx>
 
@@ -124,10 +125,52 @@ namespace rexsapi
     }
   }
 
+  template<typename T>
+  inline void encodeCodedArray(ordered_json& j, TCodeType type, const std::vector<T>& array)
+  {
+    if (type != TCodeType::None) {
+      j = json::object();
+      auto [val, code] = detail::encodeArray(array, type);
+      j["code"] = detail::toCodedValueString(code);
+      j["value"] = std::move(val);
+    } else {
+      j = json::array();
+      for (const auto& element : array) {
+        j.emplace_back(element);
+      }
+    }
+  }
+
+  template<typename T>
+  inline void encodeCodedMatrix(ordered_json& j, TCodeType type, const TMatrix<T>& matrix)
+  {
+    if (type != TCodeType::None) {
+      j = json::object();
+      auto [val, code] = detail::encodeMatrix(matrix, type);
+      j["code"] = detail::toCodedValueString(code);
+      j["rows"] = matrix.m_Values.size();
+      j["columns"] = matrix.m_Values.size();
+      j["value"] = std::move(val);
+    } else {
+      j = json::array();
+      for (const auto& row : matrix.m_Values) {
+        auto columns = json::array();
+        for (const auto& column : row) {
+          columns.emplace_back(column);
+        }
+        j.emplace_back(std::move(columns));
+      }
+    }
+  }
+
   inline void JsonModelSerializer::serialize(ordered_json& attributeNode, const TAttribute& attribute)
   {
     attributeNode[toTypeString(attribute.getValueType())] = nullptr;
-    auto& j = attributeNode[toTypeString(attribute.getValueType())];
+    auto typeName = toTypeString(attribute.getValueType());
+    if (attribute.getValue().coded() != TCodeType::None) {
+      typeName += "_coded";
+    }
+    auto& j = attributeNode[typeName];
     if (attribute.getValue().isEmpty()) {
       return;
     }
@@ -151,11 +194,8 @@ namespace rexsapi
                              [&j](rexsapi::FileReferenceTag, const auto& s) -> void {
                                j = s;
                              },
-                             [&j](rexsapi::FloatArrayTag, const auto& a) -> void {
-                               j = json::array();
-                               for (const auto& element : a) {
-                                 j.emplace_back(element);
-                               }
+                             [&j, &attribute](rexsapi::FloatArrayTag, const auto& a) -> void {
+                               encodeCodedArray(j, attribute.getValue().coded(), a);
                              },
                              [&j](rexsapi::BoolArrayTag, const auto& a) -> void {
                                j = json::array();
@@ -163,11 +203,8 @@ namespace rexsapi
                                  j.emplace_back(*element);
                                }
                              },
-                             [&j](rexsapi::IntArrayTag, const auto& a) -> void {
-                               j = json::array();
-                               for (const auto& element : a) {
-                                 j.emplace_back(element);
-                               }
+                             [&j, &attribute](rexsapi::IntArrayTag, const auto& a) -> void {
+                               encodeCodedArray(j, attribute.getValue().coded(), a);
                              },
                              [&j](rexsapi::EnumArrayTag, const auto& a) -> void {
                                j = json::array();
@@ -184,15 +221,8 @@ namespace rexsapi
                              [&j](rexsapi::ReferenceComponentTag, const auto& n) -> void {
                                j = n;
                              },
-                             [&j](rexsapi::FloatMatrixTag, const auto& m) -> void {
-                               j = json::array();
-                               for (const auto& row : m.m_Values) {
-                                 auto columns = json::array();
-                                 for (const auto& column : row) {
-                                   columns.emplace_back(column);
-                                 }
-                                 j.emplace_back(std::move(columns));
-                               }
+                             [&j, &attribute](rexsapi::FloatMatrixTag, const auto& m) -> void {
+                               encodeCodedMatrix(j, attribute.getValue().coded(), m);
                              },
                              [&j](rexsapi::StringMatrixTag, const auto& m) -> void {
                                j = json::array();

@@ -267,6 +267,16 @@ namespace rexsapi
       if (key == "id" || key == "unit") {
         continue;
       }
+      if (key == "floating_point_array_coded") {
+        return TValueType::FLOATING_POINT_ARRAY;
+      }
+      if (key == "integer_array_coded") {
+        return TValueType::INTEGER_ARRAY;
+      }
+      if (key == "floating_point_matrix_coded") {
+        return TValueType::FLOATING_POINT_MATRIX;
+      }
+
       return typeFromString(key);
     }
 

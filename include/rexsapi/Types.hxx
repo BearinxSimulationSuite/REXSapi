@@ -45,6 +45,7 @@ namespace rexsapi
   static TValueType typeFromString(const std::string& type);
   static std::string toTypeString(TValueType type);
 
+
   struct Bool {
     Bool() = default;
 
@@ -76,8 +77,34 @@ namespace rexsapi
     bool m_Value{false};
   };
 
+
   template<typename T>
   struct TMatrix {
+    using value_type = T;
+
+    TMatrix() = default;
+
+    explicit TMatrix(std::vector<std::vector<T>> v)
+    : m_Values{std::move(v)}
+    {
+    }
+
+    // left out "explicit" deliberately
+    template<typename S>
+    TMatrix(const TMatrix<S>& m)
+    {
+      for (const auto& row : m.m_Values) {
+        m_Values.emplace_back(std::vector<T>{row.begin(), row.end()});
+      }
+    }
+
+    TMatrix(const TMatrix<T>& m) = default;
+    TMatrix(TMatrix<T>&& m) = default;
+    TMatrix& operator=(const TMatrix<T>& m) = default;
+    TMatrix& operator=(TMatrix<T>&& m) = default;
+
+    ~TMatrix() = default;
+
     bool validate() const
     {
       if (m_Values.size()) {

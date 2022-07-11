@@ -25,6 +25,11 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   componentBuilder.addAttribute("viscosity_at_100_degree_celsius").unit("mm^2 / s").value(37.0);
   componentBuilder.addAttribute("viscosity_at_40_degree_celsius").unit("mm^2 / s").value(220.0);
 
+  auto flankDataId = componentBuilder.addComponent("gear_flank_data_set").id();
+  componentBuilder.addAttribute("topographical_deviation_normals")
+    .value(rexsapi::TFloatMatrixType{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}})
+    .coded();
+
   rexsapi::TModelBuilder modelBuilder{std::move(componentBuilder)};
 
   modelBuilder.addComponent("concept_bearing", "my-bearing-id").name("Wälzlager");
@@ -36,11 +41,14 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("misalignment_in_v_direction").unit("mum").value(0.0);
   modelBuilder.addAttribute("misalignment_in_w_direction").unit("mum").value(0.0);
   modelBuilder.addAttribute("reference_component_for_position").value(1);
-  modelBuilder.addAttribute("support_vector").unit("mm").value(rexsapi::TFloatArrayType{70.0, 0.0, 0.0});
+  modelBuilder.addAttribute("support_vector").unit("mm").value(rexsapi::TFloatArrayType{70.0, 0.0, 0.0}).coded();
   modelBuilder.addAttribute("u_axis_vector").unit("mm").value(rexsapi::TFloatArrayType{1.0, 0.0, 0.0});
   modelBuilder.addAttribute("u_coordinate_on_shaft_inner_side").unit("mm").value(70.0);
   modelBuilder.addAttribute("u_coordinate_on_shaft_outer_side").unit("mm").value(70.0);
-  modelBuilder.addAttribute("w_axis_vector").unit("mm").value(rexsapi::TFloatArrayType{0.0, 0.0, 1.0});
+  modelBuilder.addAttribute("w_axis_vector")
+    .unit("mm")
+    .value(rexsapi::TFloatArrayType{0.0, 0.0, 1.0})
+    .coded(rexsapi::TCodeType::Optimized);
   modelBuilder.addAttribute("axial_stiffness").unit("N / m").value(1.0E20);
   modelBuilder.addAttribute("radial_stiffness").unit("N / m").value(1.0E20);
   modelBuilder.addAttribute("bending_stiffness").unit("N mm / rad").value(0.0);
@@ -50,7 +58,8 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
     .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
     .addRef(rexsapi::TRelationRole::ORIGIN, "my-bearing-id")
-    .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId);
+    .addRef(rexsapi::TRelationRole::REFERENCED, lubricantId)
+    .addRef(rexsapi::TRelationRole::GEAR, flankDataId);
 
   auto& loadCase = modelBuilder.addLoadCase();
   loadCase.addComponent(casingId).addAttribute("temperature_lubricant").unit("C").value(36.7);

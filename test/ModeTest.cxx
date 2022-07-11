@@ -25,6 +25,7 @@ TEST_CASE("Mode test")
   {
     CHECK(rexsapi::toModeString(rexsapi::TMode::STRICT_MODE) == "strict");
     CHECK(rexsapi::toModeString(rexsapi::TMode::RELAXED_MODE) == "relaxed");
+    CHECK_THROWS(rexsapi::toModeString(static_cast<rexsapi::TMode>(27)));
   }
 
   SUBCASE("Strict mode adaptor")

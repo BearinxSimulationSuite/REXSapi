@@ -174,4 +174,16 @@ TEST_CASE("Value test")
     CHECK(aofiVal == rexsapi::TValue{std::vector<int64_t>{42, 815, 4711}});
     CHECK_FALSE(aofiVal == rexsapi::TValue{std::vector<int64_t>{42, 816, 4711}});
   }
+
+  SUBCASE("Coded")
+  {
+    rexsapi::TValue boolVal{true};
+    CHECK(boolVal.coded() == rexsapi::TCodeType::None);
+
+    rexsapi::TValue arrayVal{std::vector<int64_t>{42, 816, 4711}};
+    arrayVal.coded(rexsapi::TCodeType::Default);
+    CHECK(arrayVal.coded() == rexsapi::TCodeType::Default);
+    arrayVal.coded(rexsapi::TCodeType::Optimized);
+    CHECK(arrayVal.coded() == rexsapi::TCodeType::Optimized);
+  }
 }

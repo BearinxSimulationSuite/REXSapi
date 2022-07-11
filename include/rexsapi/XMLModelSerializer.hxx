@@ -17,6 +17,7 @@
 #ifndef REXSAPI_XML_MODEL_SERIALIZER_HXX
 #define REXSAPI_XML_MODEL_SERIALIZER_HXX
 
+#include <rexsapi/CodedValue.hxx>
 #include <rexsapi/Model.hxx>
 #include <rexsapi/Xml.hxx>
 
@@ -158,6 +159,47 @@ namespace rexsapi
     }
   }
 
+  template<typename T>
+  inline void xmlEncodeCodedArray(pugi::xml_node& attNode, const TValue& value, const std::vector<T>& array,
+                                  std::function<std::string(typename std::vector<T>::value_type)>&& formatter)
+  {
+    auto arrayNode = attNode.append_child("array");
+
+    if (value.coded() != TCodeType::None) {
+      const auto [val, code] = detail::encodeArray(array, value.coded());
+      arrayNode.append_attribute("code").set_value(detail::toCodedValueString(code).c_str());
+      arrayNode.append_child(pugi::node_pcdata).set_value(val.c_str());
+    } else {
+      for (const T& element : array) {
+        auto child = arrayNode.append_child("c");
+        child.append_child(pugi::node_pcdata).set_value(formatter(element).c_str());
+      }
+    }
+  }
+
+  template<typename T>
+  inline void xmlEncodeCodedMatrix(pugi::xml_node& attNode, const TValue& value, const TMatrix<T>& matrix,
+                                   std::function<std::string(typename TMatrix<T>::value_type)>&& formatter)
+  {
+    auto matrixNode = attNode.append_child("matrix");
+
+    if (value.coded() != TCodeType::None) {
+      const auto [val, code] = detail::encodeMatrix(matrix, value.coded());
+      matrixNode.append_attribute("code").set_value(detail::toCodedValueString(code).c_str());
+      matrixNode.append_attribute("rows").set_value(matrix.m_Values.size());
+      matrixNode.append_attribute("columns").set_value(matrix.m_Values.size());
+      matrixNode.append_child(pugi::node_pcdata).set_value(val.c_str());
+    } else {
+      for (const auto& row : matrix.m_Values) {
+        auto rowNode = matrixNode.append_child("r");
+        for (const auto& column : row) {
+          auto child = rowNode.append_child("c");
+          child.append_child(pugi::node_pcdata).set_value(formatter(column).c_str());
+        }
+      }
+    }
+  }
+
   inline void XMLModelSerializer::serialize(pugi::xml_node& attNode, const TAttribute& attribute)
   {
     if (attribute.getValue().isEmpty()) {
@@ -184,12 +226,10 @@ namespace rexsapi
        [&attNode](rexsapi::FileReferenceTag, const auto& s) -> void {
          attNode.append_child(pugi::node_pcdata).set_value(s.c_str());
        },
-       [&attNode](rexsapi::FloatArrayTag, const auto& a) -> void {
-         auto arrayNode = attNode.append_child("array");
-         for (const auto& element : a) {
-           auto child = arrayNode.append_child("c");
-           child.append_child(pugi::node_pcdata).set_value(format(element).c_str());
-         }
+       [&attNode, &attribute](rexsapi::FloatArrayTag, const auto& a) -> void {
+         xmlEncodeCodedArray(attNode, attribute.getValue(), a, [](double element) {
+           return format(element);
+         });
        },
        [&attNode](rexsapi::BoolArrayTag, const auto& a) -> void {
          auto arrayNode = attNode.append_child("array");
@@ -198,12 +238,10 @@ namespace rexsapi
            child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element.m_Value).c_str());
          }
        },
-       [&attNode](rexsapi::IntArrayTag, const auto& a) -> void {
-         auto arrayNode = attNode.append_child("array");
-         for (const auto& element : a) {
-           auto child = arrayNode.append_child("c");
-           child.append_child(pugi::node_pcdata).set_value(fmt::format("{}", element).c_str());
-         }
+       [&attNode, &attribute](rexsapi::IntArrayTag, const auto& a) -> void {
+         xmlEncodeCodedArray(attNode, attribute.getValue(), a, [](auto element) {
+           return fmt::format("{}", element);
+         });
        },
        [&attNode](rexsapi::EnumArrayTag, const auto& a) -> void {
          auto arrayNode = attNode.append_child("array");
@@ -222,15 +260,10 @@ namespace rexsapi
        [&attNode](rexsapi::ReferenceComponentTag, const auto& n) -> void {
          attNode.append_child(pugi::node_pcdata).set_value(fmt::format("{}", n).c_str());
        },
-       [&attNode](rexsapi::FloatMatrixTag, const auto& m) -> void {
-         auto matrixNode = attNode.append_child("matrix");
-         for (const auto& row : m.m_Values) {
-           auto rowNode = matrixNode.append_child("r");
-           for (const auto& column : row) {
-             auto child = rowNode.append_child("c");
-             child.append_child(pugi::node_pcdata).set_value(format(column).c_str());
-           }
-         }
+       [&attNode, &attribute](rexsapi::FloatMatrixTag, const auto& m) -> void {
+         xmlEncodeCodedMatrix(attNode, attribute.getValue(), m, [](double element) {
+           return format(element);
+         });
        },
        [&attNode](rexsapi::StringMatrixTag, const auto& m) -> void {
          auto matrixNode = attNode.append_child("matrix");

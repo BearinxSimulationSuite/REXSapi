@@ -81,6 +81,7 @@ namespace rexsapi
       std::optional<TValueType> m_ValueType{};
       std::optional<TUnit> m_Unit{};
       TValue m_Value{};
+      TCodeType m_CodeType{TCodeType::None};
 
       bool operator==(const std::string& attribute) const
       {
@@ -89,6 +90,8 @@ namespace rexsapi
         }
         return m_AttributeId == attribute;
       }
+
+      TAttribute createAttribute() const;
     };
 
     struct TComponentEntry {
@@ -153,6 +156,11 @@ namespace rexsapi
         lastAttribute().m_Value = std::move(val);
       }
 
+      void coded(TCodeType type)
+      {
+        lastAttribute().m_CodeType = type;
+      }
+
     private:
       TComponentId getNextComponentId();
 
@@ -214,6 +222,8 @@ namespace rexsapi
     template<typename T>
     TComponentBuilder& value(T val) &;
 
+    TComponentBuilder& coded(TCodeType type = TCodeType::Default) &;
+
     [[nodiscard]] TComponentId id() const;
 
     [[nodiscard]] TComponents build();
@@ -257,6 +267,8 @@ namespace rexsapi
     template<typename T>
     TLoadCaseBuilder& value(T val) &;
 
+    TLoadCaseBuilder& coded(TCodeType type = TCodeType::Default) &;
+
     TLoadCase build(const TComponents& components, const TComponentBuilder& componentBuilder) const;
 
   private:
@@ -290,6 +302,8 @@ namespace rexsapi
 
     template<typename T>
     TAccumulationBuilder& value(T val) &;
+
+    TAccumulationBuilder& coded(TCodeType type = TCodeType::Default) &;
 
     TAccumulation build(const TComponents& components, const TComponentBuilder& componentBuilder) const;
 
@@ -337,6 +351,8 @@ namespace rexsapi
 
     template<typename T>
     TModelBuilder& value(T val) &;
+
+    TModelBuilder& coded(TCodeType type = TCodeType::Default) &;
 
     [[nodiscard]] TLoadCaseBuilder& addLoadCase() &;
 
@@ -396,6 +412,28 @@ namespace rexsapi
                                }},
                       m_Id);
   }
+
+
+  inline TAttribute detail::TAttributeEntry::createAttribute() const
+  {
+    TValue val = m_Value;
+    val.coded(m_CodeType);
+
+    TUnit unit{};
+    if (m_Attribute != nullptr) {
+      if (m_Unit.has_value()) {
+        unit = *m_Unit;
+      } else {
+        unit = TUnit{m_Attribute->getUnit()};
+      }
+      return TAttribute{*m_Attribute, unit, std::move(val)};
+    }
+    if (m_Unit.has_value()) {
+      unit = *m_Unit;
+    }
+    return TAttribute{m_AttributeId, unit, *m_ValueType, std::move(val)};
+  }
+
 
   inline void detail::TComponents::addComponent(TComponentId id)
   {
@@ -531,26 +569,15 @@ namespace rexsapi
     return *this;
   }
 
+  inline TComponentBuilder& TComponentBuilder::coded(TCodeType type) &
+  {
+    m_Components.coded(type);
+    return *this;
+  }
+
   inline TComponentId TComponentBuilder::id() const
   {
     return m_Components.id();
-  }
-
-  inline static TAttribute createAttribute(const detail::TAttributeEntry& entry)
-  {
-    TUnit unit{};
-    if (entry.m_Attribute != nullptr) {
-      if (entry.m_Unit.has_value()) {
-        unit = *entry.m_Unit;
-      } else {
-        unit = TUnit{entry.m_Attribute->getUnit()};
-      }
-      return TAttribute{*entry.m_Attribute, unit, entry.m_Value};
-    }
-    if (entry.m_Unit.has_value()) {
-      unit = *entry.m_Unit;
-    }
-    return TAttribute{entry.m_AttributeId, unit, *entry.m_ValueType, entry.m_Value};
   }
 
   inline TComponents TComponentBuilder::build()
@@ -562,7 +589,7 @@ namespace rexsapi
     for (const auto& component : m_Components.components()) {
       TAttributes attributes;
       for (const auto& attribute : component.m_Attributes) {
-        attributes.emplace_back(createAttribute(attribute));
+        attributes.emplace_back(attribute.createAttribute());
       }
       components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
                                          component.m_Name, std::move(attributes)});
@@ -634,6 +661,12 @@ namespace rexsapi
     return *this;
   }
 
+  inline TLoadCaseBuilder& TLoadCaseBuilder::coded(TCodeType type) &
+  {
+    m_Components.coded(type);
+    return *this;
+  }
+
   inline TLoadCase TLoadCaseBuilder::build(const TComponents& components,
                                            const TComponentBuilder& componentBuilder) const
   {
@@ -642,7 +675,7 @@ namespace rexsapi
       TAttributes loadAttributes;
 
       for (const auto& attribute : component.m_Attributes) {
-        loadAttributes.emplace_back(createAttribute(attribute));
+        loadAttributes.emplace_back(attribute.createAttribute());
       }
       loadComponents.emplace_back(
         TLoadComponent{componentBuilder.getComponentForId(components, component.m_Id), std::move(loadAttributes)});
@@ -689,6 +722,12 @@ namespace rexsapi
     return *this;
   }
 
+  inline TAccumulationBuilder& TAccumulationBuilder::coded(TCodeType type) &
+  {
+    m_Components.coded(type);
+    return *this;
+  }
+
   inline TAccumulation TAccumulationBuilder::build(const TComponents& components,
                                                    const TComponentBuilder& componentBuilder) const
   {
@@ -697,7 +736,7 @@ namespace rexsapi
       TAttributes loadAttributes;
 
       for (const auto& attribute : component.m_Attributes) {
-        loadAttributes.emplace_back(createAttribute(attribute));
+        loadAttributes.emplace_back(attribute.createAttribute());
       }
       loadComponents.emplace_back(
         TLoadComponent{componentBuilder.getComponentForId(components, component.m_Id), std::move(loadAttributes)});
@@ -781,6 +820,12 @@ namespace rexsapi
   inline TModelBuilder& TModelBuilder::value(T val) &
   {
     m_ComponentBuilder.value(std::move(val));
+    return *this;
+  }
+
+  inline TModelBuilder& TModelBuilder::coded(TCodeType type) &
+  {
+    m_ComponentBuilder.coded(type);
     return *this;
   }
 

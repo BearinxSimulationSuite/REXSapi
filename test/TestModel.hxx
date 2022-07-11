@@ -81,9 +81,10 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TArrayOfIntArraysType{{1, 2, 3}, {4, 5}, {6}}}});
   // INTEGER_ARRAY
+  rexsapi::TValue value{rexsapi::TIntArrayType{{1, 2, 3}}};
+  value.coded();
   attributes.emplace_back(rexsapi::TAttribute{elementListComponent.findAttributeById("element_ids"),
-                                              rexsapi::TUnit{dbModel.findUnitByName("none")},
-                                              rexsapi::TValue{rexsapi::TIntArrayType{{1, 2, 3}}}});
+                                              rexsapi::TUnit{dbModel.findUnitByName("none")}, value});
   components.emplace_back(
     rexsapi::TComponent{componentId++, elementListComponent.getComponentId(), "Element Typ", std::move(attributes)});
 
