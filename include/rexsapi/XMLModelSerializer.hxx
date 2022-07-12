@@ -133,6 +133,10 @@ namespace rexsapi
   {
     pugi::xml_node componentsNode = modelNode.append_child("components");
     for (const auto& component : components) {
+      auto id = getNextComponentId();
+      m_ComponentMapping.emplace(component.getInternalId(), id);
+    }
+    for (const auto& component : components) {
       auto compNode = serialize(componentsNode, component);
       serialize(compNode, component.getAttributes());
     }
@@ -141,9 +145,7 @@ namespace rexsapi
   inline pugi::xml_node XMLModelSerializer::serialize(pugi::xml_node& componentsNode, const TComponent& component)
   {
     pugi::xml_node compNode = componentsNode.append_child("component");
-    auto id = getNextComponentId();
-    m_ComponentMapping.emplace(component.getInternalId(), id);
-    compNode.append_attribute("id").set_value(id.c_str());
+    compNode.append_attribute("id").set_value(getComponentId(component.getInternalId()).c_str());
     compNode.append_attribute("name").set_value(component.getName().c_str());
     compNode.append_attribute("type").set_value(component.getType().c_str());
     return compNode;

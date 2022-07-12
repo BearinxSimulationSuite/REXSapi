@@ -36,7 +36,7 @@ namespace rexsapi
     {
     }
 
-    bool checkCustom(TResult& result, const std::string& context, const std::string& attributeId, uint64_t componentId,
+    bool checkCustom(TResult& result, std::string_view context, const std::string& attributeId, uint64_t componentId,
                      const database::TComponent& componentType) const
     {
       bool isCustom{false};
@@ -54,8 +54,8 @@ namespace rexsapi
     }
 
     template<typename NodeType>
-    TValue getValue(TResult& result, const database::TAttribute& dbAttribute, const std::string& context,
-                    const std::string& attributeId, uint64_t componentId, const NodeType& attribute) const
+    TValue getValue(TResult& result, std::string_view context, std::string_view attributeId, uint64_t componentId,
+                    const database::TAttribute& dbAttribute, const NodeType& attribute) const
     {
       auto value = m_Decoder.decode(dbAttribute.getValueType(), dbAttribute.getEnums(), attribute);
       if (!value.second) {
@@ -75,7 +75,7 @@ namespace rexsapi
     }
 
     template<typename NodeType>
-    TValue getValue(TResult& result, TValueType valueType, const std::string& context, const std::string& attributeId,
+    TValue getValue(TResult& result, TValueType valueType, std::string_view context, std::string_view attributeId,
                     uint64_t componentId, const NodeType& attribute) const
     {
       auto value = m_Decoder.decode(valueType, {}, attribute);
@@ -126,6 +126,50 @@ namespace rexsapi
   private:
     uint64_t m_InternalComponentId{0};
     std::unordered_map<uint64_t, uint64_t> m_ComponentsMapping;
+  };
+
+
+  class ComponentPostProcessor
+  {
+  public:
+    ComponentPostProcessor(TResult& result, const TModeAdapter& mode, const TComponents& components,
+                           const ComponentMapping& componentMapping)
+    {
+      process(result, mode, components, componentMapping);
+    }
+
+    TComponents&& release()
+    {
+      return std::move(m_Components);
+    }
+
+  private:
+    void process(TResult& result, const TModeAdapter& mode, const TComponents& components,
+                 const ComponentMapping& componentMapping)
+    {
+      for (const auto& component : components) {
+        TAttributes attributes;
+        for (const auto& attribute : component.getAttributes()) {
+          if (attribute.getValueType() == TValueType::REFERENCE_COMPONENT && attribute.hasValue()) {
+            auto id = attribute.getValue<TReferenceComponentType>();
+            const auto* comp = componentMapping.getComponent(static_cast<uint64_t>(id), components);
+            if (!comp) {
+              result.addError(
+                TError{mode.adapt(TErrorLevel::ERR), fmt::format("referenced component id={} does not exist", id)});
+              continue;
+            }
+            attributes.emplace_back(TAttribute{attribute, TValue{static_cast<int64_t>(comp->getInternalId())}});
+          } else {
+            attributes.emplace_back(attribute);
+          }
+        }
+
+        m_Components.emplace_back(
+          TComponent{component.getInternalId(), component.getType(), component.getName(), std::move(attributes)});
+      }
+    }
+
+    TComponents m_Components;
   };
 }
 

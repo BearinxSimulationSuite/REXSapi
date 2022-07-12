@@ -97,6 +97,8 @@ namespace rexsapi
           TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("component id={}: {}", componentId, ex.what())});
       }
     }
+    ComponentPostProcessor postProcessor{result, m_Mode, components, componentsMapping};
+    components = postProcessor.release();
 
     TRelations relations;
     for (const auto& relation : doc.select_nodes("/model/relations/relation")) {
@@ -225,7 +227,7 @@ namespace rexsapi
           }
         }
 
-        auto value = m_LoaderHelper.getValue(result, att, context, id, convertToUint64(componentId), attribute.node());
+        auto value = m_LoaderHelper.getValue(result, context, id, convertToUint64(componentId), att, attribute.node());
         attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value});
       } else {
         auto [value, type] = m_LoaderHelper.getDecoder().decodeUnknown(attribute.node());

@@ -48,6 +48,15 @@ namespace rexsapi
       }
     }
 
+    TAttribute(const TAttribute& attribute, TValue value)
+    : m_AttributeWrapper{attribute.m_AttributeWrapper}
+    , m_CustomAttributeId{attribute.m_CustomAttributeId}
+    , m_CustomValueType{attribute.m_CustomValueType}
+    , m_Unit{attribute.m_Unit}
+    , m_Value{std::move(value)}
+    {
+    }
+
     [[nodiscard]] bool isCustomAttribute() const
     {
       return !m_AttributeWrapper.has_value();
@@ -79,7 +88,7 @@ namespace rexsapi
       if (m_AttributeWrapper) {
         return m_AttributeWrapper->m_Attribute.getValueType();
       }
-      return m_CustomValueType;
+      return *m_CustomValueType;
     }
 
     [[nodiscard]] bool hasValue() const
@@ -110,7 +119,7 @@ namespace rexsapi
     std::optional<AttributeWrapper> m_AttributeWrapper;
 
     std::string m_CustomAttributeId{};
-    TValueType m_CustomValueType{TValueType::STRING};
+    std::optional<TValueType> m_CustomValueType{};
 
     TUnit m_Unit;
     TValue m_Value;

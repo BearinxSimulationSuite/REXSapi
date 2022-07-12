@@ -26,7 +26,7 @@ TEST_CASE("Attribute test")
 
   SUBCASE("Copy")
   {
-    rexsapi::TAttribute attribute{dbModel.findAttributetById("viscosity_at_100_degree_celsius"),
+    rexsapi::TAttribute attribute{dbModel.findAttributeById("viscosity_at_100_degree_celsius"),
                                   rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")}, rexsapi::TValue{5.5}};
     CHECK_FALSE(attribute.isCustomAttribute());
     auto copiedAttribute = attribute;
