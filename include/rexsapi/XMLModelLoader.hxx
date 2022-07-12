@@ -97,6 +97,8 @@ namespace rexsapi
           TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("component id={}: {}", componentId, ex.what())});
       }
     }
+    ComponentPostProcessor postProcessor{result, m_Mode, components, componentsMapping};
+    components = postProcessor.release();
 
     TRelations relations;
     for (const auto& relation : doc.select_nodes("/model/relations/relation")) {

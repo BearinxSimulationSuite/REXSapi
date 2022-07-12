@@ -139,7 +139,7 @@ namespace rexsapi
       {
         checkDuplicateAttribute(lastComponent(), attribute);
         lastComponent().m_Attributes.emplace_back(
-          detail::TAttributeEntry{&m_DatabaseModel.findAttributetById(attribute)});
+          detail::TAttributeEntry{&m_DatabaseModel.findAttributeById(attribute)});
       }
 
       void addCustomAttribute(const std::string& attribute, TValueType type)

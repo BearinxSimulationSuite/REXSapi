@@ -31,21 +31,21 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("double with interval")
   {
-    const auto& attribute = dbModel.findAttributetById("temperature_lubricant");
+    const auto& attribute = dbModel.findAttributeById("temperature_lubricant");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{73.2}));
     CHECK_FALSE(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{-300.0}));
   }
 
   SUBCASE("double without interval")
   {
-    const auto& attribute = dbModel.findAttributetById("actual_tangential_load_agma_925_a03");
+    const auto& attribute = dbModel.findAttributeById("actual_tangential_load_agma_925_a03");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{73.2}));
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{-300.0}));
   }
 
   SUBCASE("double array")
   {
-    const auto& attribute = dbModel.findAttributetById("central_film_thickness_at_calculation_points_agma_925_a03");
+    const auto& attribute = dbModel.findAttributeById("central_film_thickness_at_calculation_points_agma_925_a03");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{std::vector<double>{47.11, 0.815, 57.4}}));
     CHECK_FALSE(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{std::vector<double>{47.11, 0.815, -57.4}}));
   }
@@ -69,7 +69,7 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("integer with interval")
   {
-    const auto& attribute = dbModel.findAttributetById("gear_shift_index");
+    const auto& attribute = dbModel.findAttributeById("gear_shift_index");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{15}));
     CHECK_FALSE(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{0}));
   }
@@ -104,14 +104,14 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("enum")
   {
-    const auto& attribute = dbModel.findAttributetById("axial_clearance_class");
+    const auto& attribute = dbModel.findAttributeById("axial_clearance_class");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{"C1"}));
     CHECK_FALSE(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{"C4711"}));
   }
 
   SUBCASE("enum array")
   {
-    const auto& attribute = dbModel.findAttributetById("element_types");
+    const auto& attribute = dbModel.findAttributeById("element_types");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{std::vector<std::string>{"line2", "pyramid12"}}));
     CHECK_FALSE(rexsapi::TValidityChecker::check(
       attribute, rexsapi::TValue{std::vector<std::string>{"line2", "PUSCHEL", "pyramid12"}}));
@@ -119,7 +119,7 @@ TEST_CASE("Validity checker test")
 
   SUBCASE("bool")
   {
-    const auto& attribute = dbModel.findAttributetById("account_for_gravity");
+    const auto& attribute = dbModel.findAttributeById("account_for_gravity");
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{true}));
     CHECK(rexsapi::TValidityChecker::check(attribute, rexsapi::TValue{false}));
   }

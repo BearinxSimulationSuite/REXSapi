@@ -27,35 +27,6 @@
 
 namespace rexsapi
 {
-  class ComponentMapping
-  {
-  public:
-    uint64_t addComponent(uint64_t componentId)
-    {
-      auto res = ++m_InternalComponentId;
-      // TODO(lcf): check for duplicates
-      m_ComponentsMapping[componentId] = res;
-      return res;
-    }
-
-    inline const TComponent* getComponent(uint64_t referenceId, const TComponents& components) const&
-    {
-      const auto it = m_ComponentsMapping.find(referenceId);
-      if (it == m_ComponentsMapping.end()) {
-        return nullptr;
-      }
-      const auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
-        return comp.getInternalId() == it->second;
-      });
-      return it_comp.operator->();
-    }
-
-  private:
-    uint64_t m_InternalComponentId{0};
-    std::unordered_map<uint64_t, uint64_t> m_ComponentsMapping;
-  };
-
-
   template<typename ValueDecoderType>
   class TModelHelper
   {
@@ -126,6 +97,79 @@ namespace rexsapi
   private:
     TModeAdapter m_Mode;
     ValueDecoderType m_Decoder;
+  };
+
+
+  class ComponentMapping
+  {
+  public:
+    uint64_t addComponent(uint64_t componentId)
+    {
+      auto res = ++m_InternalComponentId;
+      // TODO(lcf): check for duplicates
+      m_ComponentsMapping[componentId] = res;
+      return res;
+    }
+
+    inline const TComponent* getComponent(uint64_t referenceId, const TComponents& components) const&
+    {
+      const auto it = m_ComponentsMapping.find(referenceId);
+      if (it == m_ComponentsMapping.end()) {
+        return nullptr;
+      }
+      const auto it_comp = std::find_if(components.begin(), components.end(), [&it](const auto& comp) {
+        return comp.getInternalId() == it->second;
+      });
+      return it_comp.operator->();
+    }
+
+  private:
+    uint64_t m_InternalComponentId{0};
+    std::unordered_map<uint64_t, uint64_t> m_ComponentsMapping;
+  };
+
+
+  class ComponentPostProcessor
+  {
+  public:
+    ComponentPostProcessor(TResult& result, const TModeAdapter& mode, const TComponents& components,
+                           const ComponentMapping& componentMapping)
+    {
+      process(result, mode, components, componentMapping);
+    }
+
+    TComponents&& release()
+    {
+      return std::move(m_Components);
+    }
+
+  private:
+    void process(TResult& result, const TModeAdapter& mode, const TComponents& components,
+                 const ComponentMapping& componentMapping)
+    {
+      for (const auto& component : components) {
+        TAttributes attributes;
+        for (const auto& attribute : component.getAttributes()) {
+          if (attribute.getValueType() == TValueType::REFERENCE_COMPONENT && attribute.hasValue()) {
+            auto id = attribute.getValue<TReferenceComponentType>();
+            const auto* comp = componentMapping.getComponent(static_cast<uint64_t>(id), components);
+            if (!comp) {
+              result.addError(
+                TError{mode.adapt(TErrorLevel::ERR), fmt::format("referenced component id={} does not exist", id)});
+              continue;
+            }
+            attributes.emplace_back(TAttribute{attribute, TValue{static_cast<int64_t>(comp->getInternalId())}});
+          } else {
+            attributes.emplace_back(attribute);
+          }
+        }
+
+        m_Components.emplace_back(
+          TComponent{component.getInternalId(), component.getType(), component.getName(), std::move(attributes)});
+      }
+    }
+
+    TComponents m_Components;
   };
 }
 

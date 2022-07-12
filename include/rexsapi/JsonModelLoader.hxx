@@ -128,8 +128,8 @@ namespace rexsapi
           TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("component id={}: {}", componentId, ex.what())});
       }
     }
-
-    return components;
+    ComponentPostProcessor postProcessor{result, m_Mode, components, componentMapping};
+    return postProcessor.release();
   }
 
   inline TAttributes TJsonModelLoader::getAttributes(std::string_view context, TResult& result, uint64_t componentId,

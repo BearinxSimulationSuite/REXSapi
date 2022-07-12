@@ -50,7 +50,7 @@ TEST_CASE("Model helper test")
       "id": "account_for_gravity", "unit": "none", "boolean": true
 })");
     auto ret = helper.getValue(result, context, "account_for_gravity", 42,
-                               dbModel.findAttributetById("account_for_gravity"), node);
+                               dbModel.findAttributeById("account_for_gravity"), node);
     CHECK(ret.getValue<bool>());
     CHECK(result);
   }
@@ -61,7 +61,7 @@ TEST_CASE("Model helper test")
       "id": "account_for_gravity", "unit": "none", "integer": 42
 })");
     auto ret = helper.getValue(result, context, "account_for_gravity", 42,
-                               dbModel.findAttributetById("account_for_gravity"), node);
+                               dbModel.findAttributeById("account_for_gravity"), node);
     CHECK(ret.isEmpty());
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
@@ -74,7 +74,7 @@ TEST_CASE("Model helper test")
     rexsapi::json node = rexsapi::json::parse(R"({
       "id": "shear_modulus", "unit": "N / mm^2", "floating_point": -42.0
 })");
-    auto ret = helper.getValue(result, context, "shear_modulus", 42, dbModel.findAttributetById("shear_modulus"), node);
+    auto ret = helper.getValue(result, context, "shear_modulus", 42, dbModel.findAttributeById("shear_modulus"), node);
     CHECK(ret.getValue<double>() == doctest::Approx{-42.0});
     CHECK(result);
     REQUIRE(result.getErrors().size() == 1);
@@ -133,5 +133,76 @@ TEST_CASE("Component mapping test")
     CHECK(component->getInternalId() == component3Id);
 
     CHECK_FALSE(mapping.getComponent(45, components));
+  }
+}
+
+TEST_CASE("Component post processor test")
+{
+  const auto dbModel = loadModel("1.4");
+  rexsapi::TResult result;
+  rexsapi::TModeAdapter mode{rexsapi::TMode::STRICT_MODE};
+  rexsapi::ComponentMapping mapping;
+  auto component1Id = mapping.addComponent(42);
+  auto component2Id = mapping.addComponent(43);
+
+  rexsapi::TComponents components;
+
+  rexsapi::TAttributes attributes{
+    rexsapi::TAttribute{dbModel.findAttributeById("temperature_lubricant"), rexsapi::TUnit{dbModel.findUnitByName("C")},
+                        rexsapi::TValue{73.2}},
+    rexsapi::TAttribute{dbModel.findAttributeById("type_of_gear_casing_construction_vdi_2736_2014"),
+                        rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{"closed"}}};
+  components.emplace_back(rexsapi::TComponent{component1Id, "gear_casing", "", attributes});
+
+  attributes.clear();
+  attributes.emplace_back(rexsapi::TAttribute{dbModel.findAttributeById("density_at_15_degree_celsius"),
+                                              rexsapi::TUnit{dbModel.findUnitByName("kg / dm^3")},
+                                              rexsapi::TValue{1.02}});
+  attributes.emplace_back(rexsapi::TAttribute{dbModel.findAttributeById("lubricant_type_iso_6336_2006"),
+                                              rexsapi::TUnit{dbModel.findUnitByName("none")},
+                                              rexsapi::TValue{"non_water_soluble_polyglycol"}});
+  attributes.emplace_back(rexsapi::TAttribute{dbModel.findAttributeById("viscosity_at_100_degree_celsius"),
+                                              rexsapi::TUnit{dbModel.findUnitByName("mm^2 / s")},
+                                              rexsapi::TValue{37.0}});
+
+  SUBCASE("Without reference components")
+  {
+    components.emplace_back(rexsapi::TComponent{component2Id, "lubricant", "", attributes});
+    rexsapi::ComponentPostProcessor postProcessor{result, mode, components, mapping};
+    auto processedComponents = postProcessor.release();
+
+    CHECK(result);
+    REQUIRE(processedComponents.size() == 2);
+    CHECK(processedComponents[0].getAttributes().size() == 2);
+    CHECK(processedComponents[1].getAttributes().size() == 3);
+  }
+
+  SUBCASE("With reference component")
+  {
+    attributes.emplace_back(rexsapi::TAttribute{dbModel.findAttributeById("reference_component_for_position"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{42}});
+    components.emplace_back(rexsapi::TComponent{component2Id, "lubricant", "", attributes});
+    rexsapi::ComponentPostProcessor postProcessor{result, mode, components, mapping};
+    auto processedComponents = postProcessor.release();
+
+    CHECK(result);
+    REQUIRE(processedComponents.size() == 2);
+    CHECK(processedComponents[0].getAttributes().size() == 2);
+    REQUIRE(processedComponents[1].getAttributes().size() == 4);
+    CHECK(processedComponents[1].getAttributes()[3].getValue<rexsapi::TReferenceComponentType>() == component1Id);
+  }
+
+  SUBCASE("With non exisiting reference component")
+  {
+    attributes.emplace_back(rexsapi::TAttribute{dbModel.findAttributeById("reference_component_for_position"),
+                                                rexsapi::TUnit{dbModel.findUnitByName("none")}, rexsapi::TValue{815}});
+    components.emplace_back(rexsapi::TComponent{component2Id, "lubricant", "", attributes});
+    rexsapi::ComponentPostProcessor postProcessor{result, mode, components, mapping};
+    auto processedComponents = postProcessor.release();
+
+    CHECK_FALSE(result);
+    REQUIRE(processedComponents.size() == 2);
+    CHECK(processedComponents[0].getAttributes().size() == 2);
+    CHECK(processedComponents[1].getAttributes().size() == 3);
   }
 }

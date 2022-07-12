@@ -80,7 +80,7 @@ TEST_CASE("XML model loader test")
     });
     REQUIRE(it != models.end());
 
-    const auto& attribute = it->findAttributetById("bulk_temperature");
+    const auto& attribute = it->findAttributeById("bulk_temperature");
     REQUIRE(attribute.getInterval().has_value());
     CHECK_FALSE(attribute.getInterval()->check(-273.16));
     CHECK(attribute.getInterval()->check(0));

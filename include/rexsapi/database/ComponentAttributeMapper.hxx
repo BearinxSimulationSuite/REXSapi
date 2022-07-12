@@ -53,7 +53,7 @@ namespace rexsapi::database
       m_AttributeMappings.begin(), m_AttributeMappings.end(), [this, &id, &attributes](const auto& element) {
         if (id == element.first) {
           try {
-            attributes.emplace_back(m_Model.findAttributetById(element.second));
+            attributes.emplace_back(m_Model.findAttributeById(element.second));
           } catch (const TException&) {
             throw TException{fmt::format("attribute id={} not found for component id={}", element.second, id)};
           }
