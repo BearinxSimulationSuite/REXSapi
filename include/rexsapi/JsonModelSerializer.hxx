@@ -97,10 +97,13 @@ namespace rexsapi
     auto& componentsNode = model["components"];
 
     for (const auto& component : components) {
-      ordered_json componentNode;
       auto id = getNextComponentId();
       m_ComponentMapping.emplace(component.getInternalId(), id);
-      componentNode["id"] = id;
+    }
+
+    for (const auto& component : components) {
+      ordered_json componentNode;
+      componentNode["id"] = getComponentId(component.getInternalId());
       componentNode["type"] = component.getType();
       componentNode["name"] = component.getName();
 
@@ -218,8 +221,8 @@ namespace rexsapi
                                  j.emplace_back(element);
                                }
                              },
-                             [&j](rexsapi::ReferenceComponentTag, const auto& n) -> void {
-                               j = n;
+                             [&j, this](rexsapi::ReferenceComponentTag, const auto& n) -> void {
+                               j = getComponentId(static_cast<uint64_t>(n));
                              },
                              [&j, &attribute](rexsapi::FloatMatrixTag, const auto& m) -> void {
                                encodeCodedMatrix(j, attribute.getValue().coded(), m);
