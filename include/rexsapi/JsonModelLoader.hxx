@@ -44,7 +44,7 @@ namespace rexsapi
     TComponents getComponents(TResult& result, ComponentMapping& componentMapping, const database::TModel& dbModel,
                               const json& j) const;
 
-    TAttributes getAttributes(const std::string& context, TResult& result, uint64_t componentId,
+    TAttributes getAttributes(std::string_view context, TResult& result, uint64_t componentId,
                               const database::TComponent& componentType, const json& component) const;
 
     TRelations getRelations(TResult& result, const ComponentMapping& componentMapping, const TComponents& components,
@@ -132,7 +132,7 @@ namespace rexsapi
     return components;
   }
 
-  inline TAttributes TJsonModelLoader::getAttributes(const std::string& context, TResult& result, uint64_t componentId,
+  inline TAttributes TJsonModelLoader::getAttributes(std::string_view context, TResult& result, uint64_t componentId,
                                                      const database::TComponent& componentType,
                                                      const json& component) const
   {
@@ -146,7 +146,7 @@ namespace rexsapi
 
       if (!isCustom) {
         const auto& att = componentType.findAttributeById(id);
-        auto value = m_LoaderHelper.getValue(result, att, context, id, componentId, attribute);
+        auto value = m_LoaderHelper.getValue(result, context, id, componentId, att, attribute);
         attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value});
       } else {
         auto type = getValueType(attribute);

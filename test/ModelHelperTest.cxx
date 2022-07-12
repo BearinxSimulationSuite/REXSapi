@@ -49,8 +49,8 @@ TEST_CASE("Model helper test")
     rexsapi::json node = rexsapi::json::parse(R"({
       "id": "account_for_gravity", "unit": "none", "boolean": true
 })");
-    auto ret = helper.getValue(result, dbModel.findAttributetById("account_for_gravity"), context,
-                               "account_for_gravity", 42, node);
+    auto ret = helper.getValue(result, context, "account_for_gravity", 42,
+                               dbModel.findAttributetById("account_for_gravity"), node);
     CHECK(ret.getValue<bool>());
     CHECK(result);
   }
@@ -60,8 +60,8 @@ TEST_CASE("Model helper test")
     rexsapi::json node = rexsapi::json::parse(R"({
       "id": "account_for_gravity", "unit": "none", "integer": 42
 })");
-    auto ret = helper.getValue(result, dbModel.findAttributetById("account_for_gravity"), context,
-                               "account_for_gravity", 42, node);
+    auto ret = helper.getValue(result, context, "account_for_gravity", 42,
+                               dbModel.findAttributetById("account_for_gravity"), node);
     CHECK(ret.isEmpty());
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
@@ -74,7 +74,7 @@ TEST_CASE("Model helper test")
     rexsapi::json node = rexsapi::json::parse(R"({
       "id": "shear_modulus", "unit": "N / mm^2", "floating_point": -42.0
 })");
-    auto ret = helper.getValue(result, dbModel.findAttributetById("shear_modulus"), context, "shear_modulus", 42, node);
+    auto ret = helper.getValue(result, context, "shear_modulus", 42, dbModel.findAttributetById("shear_modulus"), node);
     CHECK(ret.getValue<double>() == doctest::Approx{-42.0});
     CHECK(result);
     REQUIRE(result.getErrors().size() == 1);
