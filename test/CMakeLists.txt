@@ -33,6 +33,7 @@ add_executable(rexsapi_test
   XMLUtilsTest.cxx
   XMLValueDecoderTest.cxx
   XSDSchemaValidatorTest.cxx
+  ZipArchiveTest.cxx
 
   database/AttributeTest.cxx
   database/ComponentAttributeMapperTest.cxx

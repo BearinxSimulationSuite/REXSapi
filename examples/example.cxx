@@ -1,4 +1,5 @@
 
+#define REXSAPI_MINIZ_IMPL
 #include <rexsapi/Rexsapi.hxx>
 
 #include <iostream>

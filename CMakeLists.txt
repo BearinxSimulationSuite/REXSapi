@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(rexsapi VERSION 0.1.29 LANGUAGES CXX)
 
-if(POLICY CMP0110)
-  cmake_policy(SET CMP0110 OLD)
-endif()
-
 include(FetchContent)
 
 if(NOT DEFINED REXSAPI_MASTER_PROJECT)
@@ -20,18 +16,21 @@ option(BUILD_WITH_EXAMPLES "Build with examples" ${REXSAPI_MASTER_PROJECT})
 option(BUILD_WIHT_TESTS "Build with tests" ${REXSAPI_MASTER_PROJECT})
 option(BUILD_WITH_TOOLS "Build with tools" ON)
 
-if(NOT CMAKE_BUILD_TYPE AND REXSAPI_MASTER_PROJECT)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-
 include(cmake/fetch_fmt.cmake)
 include(cmake/fetch_json.cmake)
+include(cmake/fetch_miniz.cmake)
 include(cmake/fetch_pugixml.cmake)
 include(cmake/fetch_valijson.cmake)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
+if(CMAKE_CXX_STANDARD LESS 17)
+  message(FATAL_ERROR "CMAKE_CXX_STANDARD is less than 17, REXSapi only works with C++17 and above.")
+endif()
 
 if(NOT APPLE AND UNIX)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
