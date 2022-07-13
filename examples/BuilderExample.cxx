@@ -1,9 +1,11 @@
 
+#define REXSAPI_MINIZ_IMPL
 #include <rexsapi/Rexsapi.hxx>
 
 #include <test/TestHelper.hxx>
 
 #include <iostream>
+
 
 static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& registry)
 {

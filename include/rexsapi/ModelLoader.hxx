@@ -22,6 +22,7 @@
 #include <rexsapi/Model.hxx>
 #include <rexsapi/Result.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
+#include <rexsapi/ZipArchive.hxx>
 #include <rexsapi/database/FileResourceLoader.hxx>
 #include <rexsapi/database/ModelRegistry.hxx>
 #include <rexsapi/database/XMLModelLoader.hxx>
@@ -32,16 +33,6 @@
 
 namespace rexsapi
 {
-  enum class TFileType { UNKOWN, XML, JSON, COMPRESSED_XML };
-  TFileType fileTypeFromString(const std::string& type);
-
-  class TExtensionChecker
-  {
-  public:
-    static TFileType getFileType(const std::filesystem::path& path);
-  };
-
-
   class TModelLoader
   {
   public:
@@ -116,45 +107,6 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
-  inline TFileType fileTypeFromString(const std::string& type)
-  {
-    if (rexsapi::toupper(type) == "XML") {
-      return TFileType::XML;
-    }
-    if (rexsapi::toupper(type) == "JSON") {
-      return TFileType::JSON;
-    }
-    if (rexsapi::toupper(type) == "COMPRESSED_XML") {
-      return TFileType::COMPRESSED_XML;
-    }
-
-    throw TException{fmt::format("unknown file type {}", type)};
-  }
-
-
-  inline TFileType TExtensionChecker::getFileType(const std::filesystem::path& path)
-  {
-    auto extension = path.extension();
-    if (path.stem().has_extension()) {
-      auto stem_extention = path.stem().extension();
-      extension = stem_extention.replace_extension(extension);
-    }
-
-    // Attention: deliberately using path.extension() here and *not* extension
-    if (path.extension() == ".rexs" || extension == ".rexs.xml") {
-      return TFileType::XML;
-    }
-    if (path.extension() == ".rexsz" || extension == ".rexs.zip") {
-      return TFileType::COMPRESSED_XML;
-    }
-    if (path.extension() == ".rexsj" || extension == ".rexs.json") {
-      return TFileType::JSON;
-    }
-
-    throw TException{fmt::format("extension {} is not a known rexs extension", extension.string())};
-  }
-
-
   inline std::optional<TModel> TModelLoader::load(const std::filesystem::path& path, TResult& result, TMode mode) const
   {
     std::optional<TModel> model;
@@ -162,7 +114,7 @@ namespace rexsapi
 
     switch (TExtensionChecker::getFileType(path)) {
       case TFileType::XML: {
-        rexsapi::TFileModelLoader<xml::TXSDSchemaValidator, TXMLModelLoader> loader{m_XMLSchemaValidator, path};
+        TFileModelLoader<xml::TXSDSchemaValidator, TXMLModelLoader> loader{m_XMLSchemaValidator, path};
         model = loader.load(mode, result, m_Registry);
         break;
       }
@@ -171,8 +123,21 @@ namespace rexsapi
         model = loader.load(mode, result, m_Registry);
         break;
       }
+      case TFileType::COMPRESSED: {
+        ZipArchive archive{path};
+        auto [buffer, type] = archive.load();
+        if (type == TFileType::XML) {
+          TBufferModelLoader<xml::TXSDSchemaValidator, TXMLModelLoader> loader{m_XMLSchemaValidator, std::move(buffer)};
+          model = loader.load(mode, result, m_Registry);
+        } else if (type == TFileType::JSON) {
+          TBufferModelLoader<TJsonSchemaValidator, TJsonModelLoader> loader{m_JsonValidator, std::move(buffer)};
+          model = loader.load(mode, result, m_Registry);
+        }
+        break;
+      }
       default:
-        throw TException{fmt::format("extension {} currently not supported", path.extension().string())};
+        result.addError(
+          TError{TErrorLevel::CRIT, fmt::format("extension {} currently not supported", path.extension().string())});
     }
 
     return model;

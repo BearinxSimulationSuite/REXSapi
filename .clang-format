@@ -62,16 +62,18 @@ DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: false
 IncludeBlocks:   Regroup
-IncludeCategories: 
+IncludeCategories:
   - Regex:           '^(<rexsapi/)'
     Priority:        2
   - Regex:           '^(<test/)'
     Priority:        5
-  - Regex:           '^(<doctest/.*)'
+  - Regex:           '^(<doctest/)'
     Priority:        9
-  - Regex:           '^(<[:alpha:_/]*)'
+  - Regex:           '^(<[:alpha:_]+)'
     Priority:        7
-  - Regex:           '^(".*)'
+  - Regex:           '^(<[:alpha:_/]+)'
+    Priority:        6
+  - Regex:           '^(".+)'
     Priority:        8
 IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true

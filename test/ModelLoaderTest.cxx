@@ -31,8 +31,8 @@ TEST_CASE("File type test")
     CHECK(rexsapi::fileTypeFromString("XML") == rexsapi::TFileType::XML);
     CHECK(rexsapi::fileTypeFromString("json") == rexsapi::TFileType::JSON);
     CHECK(rexsapi::fileTypeFromString("JSON") == rexsapi::TFileType::JSON);
-    CHECK(rexsapi::fileTypeFromString("compressed_xml") == rexsapi::TFileType::COMPRESSED_XML);
 
+    CHECK_THROWS(rexsapi::fileTypeFromString("COMPRESSED"));
     CHECK_THROWS(rexsapi::fileTypeFromString("puschel"));
   }
 }
@@ -46,8 +46,8 @@ TEST_CASE("Extension checker test")
     CHECK(checker.getFileType("model_file.rexs") == rexsapi::TFileType::XML);
     CHECK(checker.getFileType("model_file.some_other_text.rexs") == rexsapi::TFileType::XML);
     CHECK(checker.getFileType("model_file.rexs.xml") == rexsapi::TFileType::XML);
-    CHECK(checker.getFileType("model_file.rexsz") == rexsapi::TFileType::COMPRESSED_XML);
-    CHECK(checker.getFileType("model_file.rexs.zip") == rexsapi::TFileType::COMPRESSED_XML);
+    CHECK(checker.getFileType("model_file.rexsz") == rexsapi::TFileType::COMPRESSED);
+    CHECK(checker.getFileType("model_file.rexs.zip") == rexsapi::TFileType::COMPRESSED);
     CHECK(checker.getFileType("model_file.rexsj") == rexsapi::TFileType::JSON);
     CHECK(checker.getFileType("model_file.rexs.json") == rexsapi::TFileType::JSON);
     CHECK(checker.getFileType("model_file.some_other_text.rexs.json") == rexsapi::TFileType::JSON);
@@ -56,10 +56,9 @@ TEST_CASE("Extension checker test")
   SUBCASE("Test bad extensions")
   {
     rexsapi::TExtensionChecker checker;
-    CHECK_THROWS_WITH(checker.getFileType("model_file.rexsx"), "extension .rexsx is not a known rexs extension");
-    CHECK_THROWS_WITH(checker.getFileType("model_file.rexs.puschel"),
-                      "extension .rexs.puschel is not a known rexs extension");
-    CHECK_THROWS_WITH(checker.getFileType("model_file.rexsx"), "extension .rexsx is not a known rexs extension");
+    CHECK(checker.getFileType("model_file.rexsx") == rexsapi::TFileType::UNKOWN);
+    CHECK(checker.getFileType("model_file.rexs.puschel") == rexsapi::TFileType::UNKOWN);
+    CHECK(checker.getFileType("model_file.rexsx") == rexsapi::TFileType::UNKOWN);
   }
 }
 
@@ -101,9 +100,33 @@ TEST_CASE("Model loader test")
     CHECK(model);
   }
 
+  SUBCASE("Load json zip model strict")
+  {
+    const auto model = loader.load(projectDir() / "test" / "example_models" / "example_json.rexs.zip", result,
+                                   rexsapi::TMode::STRICT_MODE);
+    CHECK(result);
+    CHECK(model);
+  }
+
+  SUBCASE("Load xml zip model strict")
+  {
+    const auto model = loader.load(projectDir() / "test" / "example_models" / "example_xml.rexs.zip", result,
+                                   rexsapi::TMode::STRICT_MODE);
+    CHECK(result);
+    CHECK(model);
+  }
+
   SUBCASE("Load non-existent model")
   {
     const auto model = loader.load(projectDir() / "test" / "example_models" / "non-existent-model.rexsj", result,
+                                   rexsapi::TMode::RELAXED_MODE);
+    CHECK_FALSE(result);
+    CHECK_FALSE(model);
+  }
+
+  SUBCASE("Load not supported extension")
+  {
+    const auto model = loader.load(projectDir() / "test" / "example_models" / "non-existent-model.hutzli", result,
                                    rexsapi::TMode::RELAXED_MODE);
     CHECK_FALSE(result);
     CHECK_FALSE(model);

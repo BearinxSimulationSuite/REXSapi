@@ -14,9 +14,29 @@
  * limitations under the License.
  */
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
-#define REXSAPI_MINIZ_IMPL
 #include <rexsapi/ZipArchive.hxx>
 
+#include <test/TestHelper.hxx>
+
 #include <doctest.h>
+
+TEST_CASE("Zip archive test")
+{
+  SUBCASE("Load existing zip")
+  {
+    rexsapi::ZipArchive archive{projectDir() / "test" / "example_models" / "example_json.rexs.zip"};
+    auto result = archive.load();
+    CHECK(result.second == rexsapi::TFileType::JSON);
+    CHECK(result.first.size());
+  }
+
+  SUBCASE("Load zip with no rexs file")
+  {
+    CHECK_THROWS(rexsapi::ZipArchive{projectDir() / "test" / "example_models" / "no_rexs_file.rexsz"});
+  }
+
+  SUBCASE("Load non-existing zip")
+  {
+    CHECK_THROWS(rexsapi::ZipArchive{projectDir() / "test" / "example_models" / "does_not_exist.rexsz"});
+  }
+}

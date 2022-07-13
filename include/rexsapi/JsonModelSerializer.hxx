@@ -168,11 +168,11 @@ namespace rexsapi
 
   inline void JsonModelSerializer::serialize(ordered_json& attributeNode, const TAttribute& attribute)
   {
-    attributeNode[toTypeString(attribute.getValueType())] = nullptr;
     auto typeName = toTypeString(attribute.getValueType());
     if (attribute.getValue().coded() != TCodeType::None) {
       typeName += "_coded";
     }
+    attributeNode[typeName] = nullptr;
     auto& j = attributeNode[typeName];
     if (attribute.getValue().isEmpty()) {
       return;
