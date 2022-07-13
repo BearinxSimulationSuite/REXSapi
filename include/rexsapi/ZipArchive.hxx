@@ -63,7 +63,7 @@ namespace rexsapi
   : m_Archive{std::move(archive)}
   {
     ::memset(&m_ZipArchive, 0, sizeof(m_ZipArchive));
-    if (!mz_zip_reader_init_file(&m_ZipArchive, m_Archive.c_str(), 0)) {
+    if (!mz_zip_reader_init_file(&m_ZipArchive, m_Archive.string().c_str(), 0)) {
       throw TException{fmt::format("Cannot open zip archive '{}'", m_Archive.string())};
     }
     for (mz_uint i = 0; i < mz_zip_reader_get_num_files(&m_ZipArchive); ++i) {
