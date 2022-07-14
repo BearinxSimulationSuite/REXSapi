@@ -27,10 +27,12 @@
 
 #if defined(__clang__)
   #pragma clang diagnostic ignored "-Wfloat-equal"
+  #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
 #endif
 
 #if defined(__GNUC__)
   #pragma GCC diagnostic ignored "-Wfloat-equal"
+  #pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
 #include <CLI/App.hpp>

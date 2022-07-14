@@ -38,7 +38,6 @@ static std::optional<Options> getOptions(int argc, char** argv)
   std::filesystem::path modelsPath;
 
   CLI::App app{getVersion()};
-  app.add_flag("-v,--version", "Display program version information and exit");
   auto* strictFlag = app.add_flag(
     "--mode-strict",
     [&options](auto) {
@@ -64,10 +63,6 @@ static std::optional<Options> getOptions(int argc, char** argv)
 
   try {
     app.parse(argc, argv);
-    if (app.count("--version") > 0) {
-      std::cout << getVersion() << std::endl;
-      return {};
-    }
   } catch (const CLI::Success& e) {
     app.exit(e);
     return {};

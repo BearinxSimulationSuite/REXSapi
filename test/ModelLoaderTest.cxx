@@ -116,6 +116,14 @@ TEST_CASE("Model loader test")
     CHECK(model);
   }
 
+  SUBCASE("Load empty zip")
+  {
+    const auto model =
+      loader.load(projectDir() / "test" / "example_models" / "no_rexs_file.rexsz", result, rexsapi::TMode::STRICT_MODE);
+    CHECK_FALSE(result);
+    CHECK_FALSE(model);
+  }
+
   SUBCASE("Load non-existent model")
   {
     const auto model = loader.load(projectDir() / "test" / "example_models" / "non-existent-model.rexsj", result,
