@@ -581,22 +581,6 @@ private:
 };
 
 
-static inline rexsapi::database::TModelRegistry createModelRegistry(const std::filesystem::path& databaseSchemaPath,
-                                                                    const std::filesystem::path& databasePath)
-{
-  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{databaseSchemaPath};
-  rexsapi::database::TFileResourceLoader resourceLoader{databasePath};
-  rexsapi::database::TXmlModelLoader modelLoader{resourceLoader, schemaLoader};
-  return rexsapi::database::TModelRegistry::createModelRegistry(modelLoader).first;
-}
-
-
-static inline rexsapi::xml::TXSDSchemaValidator createSchemaValidator(const std::filesystem::path& modelSchemaPath)
-{
-  rexsapi::xml::TFileXsdSchemaLoader schemaLoader{modelSchemaPath};
-  return rexsapi::xml::TXSDSchemaValidator{schemaLoader};
-}
-
 template<typename T>
 static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& layerAttribute,
                               const TAttributeRule& attributeRule, const std::vector<T>& values)
@@ -677,18 +661,18 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
 class TREXSTransmissionModelXmlInterface
 {
 public:
-  static TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& basePath,
-                                                       const std::filesystem::path& modelFile)
+  TREXSTransmissionModelXmlInterface(const std::filesystem::path& basePath)
+  : m_Loader{basePath}
+  {
+  }
+
+  TREXSTransmissionModelIntermediateLayer* load(const std::filesystem::path& modelFile)
   {
     std::unique_ptr<TREXSTransmissionModelIntermediateLayer> intermediateLayer{
       new TREXSTransmissionModelIntermediateLayer};
     Data data{intermediateLayer.get()};
 
-    TREXSTransmissionModelXmlInterface transmissionInterface{
-      createModelRegistry(basePath / "models" / "rexs-dbmodel.xsd", basePath / "models"),
-      createSchemaValidator(basePath / "models" / "rexs-schema.xsd")};
-
-    if (!transmissionInterface.load(data, modelFile)) {
+    if (!load(data, modelFile)) {
       // add some message
       return nullptr;
     }
@@ -697,19 +681,10 @@ public:
   }
 
 private:
-  TREXSTransmissionModelXmlInterface(rexsapi::database::TModelRegistry registry,
-                                     rexsapi::xml::TXSDSchemaValidator validator)
-  : m_Registry{std::move(registry)}
-  , m_Validator{std::move(validator)}
-  {
-  }
-
   bool load(Data& data, const std::filesystem::path& modelFile) const
   {
-    rexsapi::TFileModelLoader<rexsapi::xml::TXSDSchemaValidator, rexsapi::TXMLModelLoader> loader{m_Validator,
-                                                                                                  modelFile};
     rexsapi::TResult result;
-    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, m_Registry);
+    auto model = m_Loader.load(modelFile, result, rexsapi::TMode::RELAXED_MODE);
 
     if (!result) {
       // add some message
@@ -877,8 +852,7 @@ private:
     return relation.getType() == rexsapi::TRelationType::MANUFACTURING_STEP;
   }
 
-  rexsapi::database::TModelRegistry m_Registry;
-  rexsapi::xml::TXSDSchemaValidator m_Validator;
+  const rexsapi::TModelLoader m_Loader;
 };
 
 
@@ -889,8 +863,9 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  auto* intermediateLayer =
-    TREXSTransmissionModelXmlInterface::load(std::filesystem::path{argv[1]}, std::filesystem::path{argv[2]});
+  TREXSTransmissionModelXmlInterface modelInterface{std::filesystem::path{argv[1]}};
+
+  auto* intermediateLayer = modelInterface.load(std::filesystem::path{argv[2]});
 
   if (intermediateLayer) {
     std::cerr << "Successfully imported" << std::endl;
