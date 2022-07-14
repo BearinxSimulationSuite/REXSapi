@@ -16,7 +16,7 @@ The project is still in an early phase and the API may still change in the near 
 
 The library uses REXS database model files in order to validate REXS model files. Database model files can be downloaded from the [REXS database page](https://database.rexs.info/). Currently, the implementation supports versions 1.0 to 1.4, but newer database files should also work. Version 1.0 to 1.4 database model files in english and german can also be found in the models directory of this project.
 
-The library supports REXS model files in xml and json format.
+The library supports REXS model files in xml and json format. Compressed REXS zip archives can also be loaded.
 
 # Supported Platforms
 
@@ -105,10 +105,12 @@ The library is header only. A build is only necessary if you want to run the tes
 
 ## External Dependencies
 
-RESTapi uses the following thirdparty open source software
+REXSapi uses the following thirdparty open source software
 
+- [cli11 2.2.0](https://github.com/CLIUtils/CLI11)
 - [fmt 8.1.1](https://github.com/fmtlib/fmt)
 - [nlohmann json 3.10.5](https://github.com/nlohmann/json)
+- [miniz 2.2.0](https://github.com/richgel999/miniz)
 - [pugixml 1.12.1](https://github.com/zeux/pugixml)
 - [valijson 0.6](https://github.com/tristanpenman/valijson)
 - [doctest 2.4.8](https://github.com/doctest/doctest)
