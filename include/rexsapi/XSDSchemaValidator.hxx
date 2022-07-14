@@ -23,7 +23,6 @@
 #include <rexsapi/Xml.hxx>
 
 #include <filesystem>
-#include <iostream>
 #include <limits>
 #include <optional>
 #include <sstream>

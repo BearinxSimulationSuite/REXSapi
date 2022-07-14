@@ -17,8 +17,9 @@
 #include <rexsapi/Types.hxx>
 #include <rexsapi/Value.hxx>
 
-#include <doctest.h>
 #include <sstream>
+
+#include <doctest.h>
 
 namespace
 {

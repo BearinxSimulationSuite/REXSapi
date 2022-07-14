@@ -16,11 +16,12 @@
 
 #include <rexsapi/ConversionHelper.hxx>
 
-#include <doctest.h>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <regex>
+
+#include <doctest.h>
 
 
 TEST_CASE("Conversion unsigned integer test")

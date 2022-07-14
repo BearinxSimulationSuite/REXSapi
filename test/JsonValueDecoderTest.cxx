@@ -16,8 +16,9 @@
 
 #include <rexsapi/JsonValueDecoder.hxx>
 
-#include <doctest.h>
 #include <vector>
+
+#include <doctest.h>
 
 namespace
 {
