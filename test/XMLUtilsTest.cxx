@@ -99,3 +99,26 @@ TEST_CASE("Xml utils test")
     CHECK(result.getErrors()[0].getMessage() == "Start-end tags mismatch: offset 200");
   }
 }
+
+TEST_CASE("Check xml")
+{
+  SUBCASE("Check xml control characters in xml child pcdata")
+  {
+    pugi::xml_document doc;
+    auto decl = doc.append_child(pugi::node_declaration);
+    decl.append_attribute("version") = "1.0";
+    decl.append_attribute("encoding") = "UTF-8";
+    decl.append_attribute("standalone") = "no";
+
+    auto childNode = doc.append_child("child");
+    childNode.append_child(pugi::node_pcdata).set_value("<this is dump>");
+
+    std::stringstream stream;
+    doc.save(stream, "  ");
+
+    auto result = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<child>&lt;this is dump&gt;</child>
+)";
+    CHECK(stream.str() == result);
+  }
+}
