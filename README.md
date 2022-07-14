@@ -29,7 +29,47 @@ You need a C++17 compatible compiler to use the library.
 
 # Tools
 
-The library comes packaged with two tools: `model_converter` and `model_checker`. The `model_converter` can convert REXS model files between xml and json format. The `model_checker` checks files for compatibility with the REXSapi library. The library expects REXS model files to be conformant to the REXS specification. However, the library supports a so called _relaxed_ mode where most errors to the specfication are turned into warnings in order to process files even if they are not 100% compliant to the specifcation.
+The library comes packaged with two tools: `model_converter` and `model_checker`. The tools can come handy with working with rexs model files and can also serve as examples how to use the library.
+
+## model_checker
+
+The `model_checker` checks files for compatibility with the REXSapi library. You can check complete directories with one go. The library expects REXS model files to be conformant to the REXS specification. However, the library supports a so called _relaxed_ mode where most errors to the specfication are turned into warnings in order to process files even if they are not 100% compliant to the specifcation. The tool will print the found issues to the console. You can use the tools output to fix problems in the files.
+
+### Options
+
+| Option | Description |
+|:--|:--|
+| help | Show usage and options |
+| mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
+| mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
+| warnings | This will enables the printing of warnings to the console. Otherwise, only errors will be printed. |
+| database | The path to the model database files including the schemas (json and xml). |
+| models | The path to a directory to look for model files to check. |
+
+Additionally, you can specify single files to process.
+
+  	> ./model_checker --mode-relaxed -d ../models FVA-Industriegetriebe_2stufig_1-4.rexs
+    File ".FVA-Industriegetriebe_2stufig_1-4.rexs" processed with warnings
+
+## model_converter
+
+The `model_converter` can convert REXS model files between xml and json format. Files can be converted in any direction, even into the same format. You can convert complete directories with one go. As with the `model_checker`, the tool supports a relaxed mode for loading non-standard complying model files.
+
+### Options
+| Option | Description |
+|:--|:--|
+| help | Show usage and options |
+| mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
+| mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
+| format | The output format of the tool. Either json or xml. |
+| output | The output path to write converted file to. |
+| database | The path to the model database files including the schemas (json and xml). |
+| models | The path to a directory to look for model files to check. |
+
+Additionally, you can specify single files to process.
+
+  	> ./model_converter --mode-relaxed -f json -d ../models --output /out FVA-Industriegetriebe_2stufig_1-4.rexs
+    Converted FVA-Industriegetriebe_2stufig_1-4.rexs to /out/FVA-Industriegetriebe_2stufig_1-4.rexsj
 
 # Integration
 
