@@ -8,7 +8,7 @@ if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 target_link_libraries(model_checker PRIVATE
-  rexsapi
+  rexsapi CLI11::CLI11
 )
 
 add_executable(model_converter
@@ -20,5 +20,5 @@ if(MSVC AND CMAKE_BUILD_TYPE MATCHES "Debug")
 endif()
 
 target_link_libraries(model_converter PRIVATE
-  rexsapi
+  rexsapi CLI11::CLI11
 )

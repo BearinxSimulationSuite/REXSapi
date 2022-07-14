@@ -124,14 +124,20 @@ namespace rexsapi
         break;
       }
       case TFileType::COMPRESSED: {
-        ZipArchive archive{path};
-        auto [buffer, type] = archive.load();
-        if (type == TFileType::XML) {
-          TBufferModelLoader<xml::TXSDSchemaValidator, TXMLModelLoader> loader{m_XMLSchemaValidator, std::move(buffer)};
-          model = loader.load(mode, result, m_Registry);
-        } else if (type == TFileType::JSON) {
-          TBufferModelLoader<TJsonSchemaValidator, TJsonModelLoader> loader{m_JsonValidator, std::move(buffer)};
-          model = loader.load(mode, result, m_Registry);
+        try {
+          ZipArchive archive{path};
+          auto [buffer, type] = archive.load();
+          if (type == TFileType::XML) {
+            TBufferModelLoader<xml::TXSDSchemaValidator, TXMLModelLoader> loader{m_XMLSchemaValidator,
+                                                                                 std::move(buffer)};
+            model = loader.load(mode, result, m_Registry);
+          } else if (type == TFileType::JSON) {
+            TBufferModelLoader<TJsonSchemaValidator, TJsonModelLoader> loader{m_JsonValidator, std::move(buffer)};
+            model = loader.load(mode, result, m_Registry);
+          }
+        } catch (const std::exception& ex) {
+          result.addError(TError{TErrorLevel::CRIT,
+                                 fmt::format("compressed file {} cannot be loaded: {}", path.string(), ex.what())});
         }
         break;
       }

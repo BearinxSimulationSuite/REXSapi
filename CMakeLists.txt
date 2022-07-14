@@ -16,6 +16,7 @@ option(BUILD_WITH_EXAMPLES "Build with examples" ${REXSAPI_MASTER_PROJECT})
 option(BUILD_WIHT_TESTS "Build with tests" ${REXSAPI_MASTER_PROJECT})
 option(BUILD_WITH_TOOLS "Build with tools" ON)
 
+include(cmake/fetch_cli11.cmake)
 include(cmake/fetch_fmt.cmake)
 include(cmake/fetch_json.cmake)
 include(cmake/fetch_miniz.cmake)
