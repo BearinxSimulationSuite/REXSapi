@@ -19,8 +19,9 @@
 
 #include <test/TestHelper.hxx>
 
-#include <doctest.h>
 #include <set>
+
+#include <doctest.h>
 
 
 namespace

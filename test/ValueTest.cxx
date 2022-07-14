@@ -16,8 +16,9 @@
 
 #include <rexsapi/Value.hxx>
 
-#include <doctest.h>
 #include <vector>
+
+#include <doctest.h>
 
 TEST_CASE("Value test")
 {

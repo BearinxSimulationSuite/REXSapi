@@ -16,8 +16,9 @@
 
 #include <rexsapi/XMLValueDecoder.hxx>
 
-#include <doctest.h>
 #include <vector>
+
+#include <doctest.h>
 
 
 namespace
