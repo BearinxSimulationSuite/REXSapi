@@ -600,8 +600,8 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
                               const TAttributeRule& attributeRule, const rexsapi::TMatrix<T>& values)
 {
   int i = 0;
-  int j = 0;
   for (const auto& row : values.m_Values) {
+    int j = 0;
     for (const auto& col : row) {
       layerAttribute.setAttributeValue(
         data.IntermediateLayer->convert_value(rexsapi::TValue{col}.asString(), attributeRule.Attribute_Type,
@@ -624,6 +624,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
     case rexsapi::TValueType::ENUM:
     case rexsapi::TValueType::STRING:
     case rexsapi::TValueType::FILE_REFERENCE:
+    case rexsapi::TValueType::REFERENCE_COMPONENT:
       layerAttribute.setAttributeValue(data.IntermediateLayer->convert_value(
         value.asString(), attributeRule.Attribute_Type, REXS_component, attributeRule.Attribute_Unit_side_1,
         intermediate_layer_object, attributeRule.Attribute_Unit_side_2));
@@ -644,7 +645,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TStringArrayType>());
       break;
     case rexsapi::TValueType::REFERENCE_COMPONENT:
-      // TODO (lcf)
+      layerAttribute.setAttributeValue(value.asString());
       break;
     case rexsapi::TValueType::FLOATING_POINT_MATRIX:
       setAttributeValue(data, layerAttribute, attributeRule, value.getValue<rexsapi::TFloatMatrixType>());
@@ -717,7 +718,7 @@ private:
     TAttributeRules attributeRules{data.IntermediateLayer->getREXSVersion(), data.IntermediateLayer->getRules()};
 
     for (const auto& component : components) {
-      if (const auto* componentRule = componentRules.getRule(component); componentRule) {
+      if (const auto* componentRule = componentRules.getRule(component); componentRule != nullptr) {
         auto* new_layer_object = new TIntermediateLayerObject;
         new_layer_object->Id = component.getInternalId();
         new_layer_object->LayerObjectType = componentRule->Name_Side_2;
@@ -741,16 +742,8 @@ private:
             new_layer_attribute->setAttributeDimension(attributeRule->Attribute_Dimension);
             new_layer_attribute->setAttributeUnit(attributeRule->Attribute_Unit_side_2);
 
-            switch (attributeRule->Attribute_Dimension) {
-              case scalar_dimension:
-              case vector_dimension:
-              case matrix_2D_dimension:
-                setAttributeValue(data, *new_layer_attribute, *attributeRule, attribute.getValueType(),
-                                  attribute.getValue());
-                break;
-              default:
-                ASSERT_OTHERWISE_THROW(attributeRule->Attribute_Dimension == matrix_2D_dimension, "REXS import error");
-            }
+            setAttributeValue(data, *new_layer_attribute, *attributeRule, attribute.getValueType(),
+                              attribute.getValue());
 
             new_layer_object->register_attribute(new_layer_attribute);
           }
