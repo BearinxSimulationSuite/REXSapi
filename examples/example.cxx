@@ -624,7 +624,6 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
     case rexsapi::TValueType::ENUM:
     case rexsapi::TValueType::STRING:
     case rexsapi::TValueType::FILE_REFERENCE:
-    case rexsapi::TValueType::REFERENCE_COMPONENT:
       layerAttribute.setAttributeValue(data.IntermediateLayer->convert_value(
         value.asString(), attributeRule.Attribute_Type, REXS_component, attributeRule.Attribute_Unit_side_1,
         intermediate_layer_object, attributeRule.Attribute_Unit_side_2));
@@ -662,7 +661,7 @@ static void setAttributeValue(const Data& data, TIntermediateLayerAttribute& lay
 class TREXSTransmissionModelXmlInterface
 {
 public:
-  TREXSTransmissionModelXmlInterface(const std::filesystem::path& basePath)
+  explicit TREXSTransmissionModelXmlInterface(const std::filesystem::path& basePath)
   : m_Loader{basePath}
   {
   }
