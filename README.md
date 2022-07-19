@@ -51,6 +51,11 @@ const std::optional<rexsapi::TModel> model =
         loader.load("/path/to/your/rexs/model/file", result, rexsapi::TMode::STRICT_MODE);
 if (result) {
   std::cout << "sucessfully loaded REXS model\n";
+} else {
+  std::cerr << "failed to load REXS model\n";
+  for (const auto& issue : result.getErrors()) {
+    std::cerr << issue.getMessage() << "\n";
+  }
 }
 ```
 
@@ -58,7 +63,7 @@ The `TModelLoader` class can load json and xml REXS model files. If successful, 
 
 # Tools
 
-The library comes packaged with two tools: `model_converter` and `model_checker`. The tools can come handy with working with rexs model files and can also serve as examples how to use the library.
+The library comes packaged with two tools: `model_converter` and `model_checker`. The tools can come in handy with working with rexs model files and can also serve as examples how to use the library.
 
 ## model_checker
 
@@ -68,12 +73,12 @@ The `model_checker` checks files for compatibility with the REXSapi library. You
 
 | Option | Description |
 |:--|:--|
-| help | Show usage and options |
-| mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
-| mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
-| warnings | This will enables the printing of warnings to the console. Otherwise, only errors will be printed. |
-| database | The path to the model database files including the schemas (json and xml). |
-| models | The path to a directory to look for model files to check. |
+| --help, -h | Show usage and options |
+| --mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
+| --mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
+| --warnings, -w | This will enables the printing of warnings to the console. Otherwise, only errors will be printed. |
+| --database, -d | The path to the model database files including the schemas (json and xml). |
+| --models | The path to a directory to look for model files to check. |
 
 Additionally, you can specify single files to process.
 
@@ -89,13 +94,13 @@ The `model_converter` can convert REXS model files between xml and json format. 
 ### Options
 | Option | Description |
 |:--|:--|
-| help | Show usage and options |
-| mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
-| mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
-| format | The output format of the tool. Either json or xml. |
-| output | The output path to write converted file to. |
-| database | The path to the model database files including the schemas (json and xml). |
-| models | The path to a directory to look for model files to check. |
+| --help, -h | Show usage and options |
+| --mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
+| --mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
+| --format, -f | The output format of the tool. Either json or xml. |
+| --output, -o | The output path to write converted file to. |
+| --database, -d | The path to the model database files including the schemas (json and xml). |
+| --models | The path to a directory to look for model files to check. |
 
 Additionally, you can specify single files to process.
 
