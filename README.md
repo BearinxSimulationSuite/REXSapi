@@ -27,6 +27,35 @@ The library can be used on
 
 You need a C++17 compatible compiler to use the library.
 
+# Getting Started
+
+In order to use REXSapi it is most convinient to just include the `Rexsapi.hxx` header. Mind that you have to include this header along the `REXSAPI_MINIZ_IMPL` define right before the include in *exactly* one compilation unit (cpp file) in order to add the miniz implementation to the project.
+
+```c++
+#define REXSAPI_MINIZ_IMPL
+#include <rexsapi/Rexsapi.hxx>
+```
+
+## Load a REXS Model File
+
+Loading a REXS model file is straight forward. You need the REXS database model files for the API to validate the model.
+
+```c++
+#define REXSAPI_MINIZ_IMPL
+#include <rexsapi/Rexsapi.hxx>
+
+
+const rexsapi::TModelLoader loader{"/path/to/rexs/database/models"};
+rexsapi::TResult result;
+const std::optional<rexsapi::TModel> model = 
+        loader.load("/path/to/your/rexs/model/file", result, rexsapi::TMode::STRICT_MODE);
+if (result) {
+  std::cout << "sucessfully loaded REXS model\n";
+}
+```
+
+The `TModelLoader` class can load json and xml REXS model files. If successful, the result will convert to true and the model optional will contain a model. In case of a failure, the result will contain a collection of messages, describing the issues. The issues can either be errors or warnings. It is perfectly possible, that the result converts to false, a failure, but the model optional contains a model. This means that the model could be loaded in general, but that there are issues with the model like incorrect value types, missing references, etc.
+
 # Tools
 
 The library comes packaged with two tools: `model_converter` and `model_checker`. The tools can come handy with working with rexs model files and can also serve as examples how to use the library.
@@ -48,8 +77,10 @@ The `model_checker` checks files for compatibility with the REXSapi library. You
 
 Additionally, you can specify single files to process.
 
-  	> ./model_checker --mode-relaxed -d ../models FVA-Industriegetriebe_2stufig_1-4.rexs
-    File ".FVA-Industriegetriebe_2stufig_1-4.rexs" processed with warnings
+```bash
+> ./model_checker --mode-relaxed -d ../models FVA-Industriegetriebe_2stufig_1-4.rexs
+File ".FVA-Industriegetriebe_2stufig_1-4.rexs" processed with warnings
+```
 
 ## model_converter
 
@@ -68,8 +99,10 @@ The `model_converter` can convert REXS model files between xml and json format. 
 
 Additionally, you can specify single files to process.
 
-  	> ./model_converter --mode-relaxed -f json -d ../models --output /out FVA-Industriegetriebe_2stufig_1-4.rexs
-    Converted FVA-Industriegetriebe_2stufig_1-4.rexs to /out/FVA-Industriegetriebe_2stufig_1-4.rexsj
+```bash
+> ./model_converter --mode-relaxed -f json -d ../models --output /out FVA-Industriegetriebe_2stufig_1-4.rexs
+Converted FVA-Industriegetriebe_2stufig_1-4.rexs to /out/FVA-Industriegetriebe_2stufig_1-4.rexsj
+```
 
 # Integration
 
@@ -81,19 +114,19 @@ The library has dependencies to other open source software. This dependencies wi
 
 Just clone the git repository and add REXSapi as a sub directory in an appropriate CMakeLists.txt file. Then use the provided rexsapi interface as library. If you want to build with the examples, tools or the tests, you can set `BUILD_WITH_EXAMPLES`, `BUILD_WITH_TESTS`, and/or `BUILD_WITH_TOOLS` to `ON`.
 
-```
-  set(CMAKE_CXX_STANDARD 17)
-  add_executable(test
-    main.cxx
-  )
-  set(BUILD_WITH_EXAMPLES ON)
-  add_subdirectory(REXSapi)
-  target_link_libraries(test PRIVATE rexsapi)
+```cmake
+set(CMAKE_CXX_STANDARD 17)
+add_executable(test
+  main.cxx
+)
+set(BUILD_WITH_EXAMPLES ON)
+add_subdirectory(REXSapi)
+target_link_libraries(test PRIVATE rexsapi)
 ```
 
 Alternatively, you can use CMakes FetchContent module to download REXSapi and make the projects interface available.
 
-```
+```cmake
 include(FetchContent)
 FetchContent_Declare(
   rexsapi
