@@ -73,7 +73,9 @@ Additionally, you can specify single files to process.
 
 # Integration
 
-The library is header only and can be easily integrated into existing projects. Using CMake is the recommended way to use the library. However, the library also comes as a zip package which can be used without CMake. You have to set the C++ standard of your project to C++17 in order to build with the library. The library has dependencies to other open source software. This dependencies will be either automatically downloaded by CMake or are prepackaged in the zip package.
+The library is header only and can be easily integrated into existing projects. Using CMake is the recommended way to use the library. However, the library also comes as a zip package which can be used without CMake. You have to set the C++ standard of your project to C++17 in order to build with the library. 
+
+The library has dependencies to other open source software. This dependencies will be either automatically downloaded by CMake or are prepackaged in the zip package. You can also use your own versions of the thirdparty libraries, but make sure the version are compatible to the versions used by the REXSapi.
 
 ## CMake
 
