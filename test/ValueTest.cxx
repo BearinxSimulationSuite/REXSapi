@@ -187,4 +187,46 @@ TEST_CASE("Value test")
     arrayVal.coded(rexsapi::TCodeType::Optimized);
     CHECK(arrayVal.coded() == rexsapi::TCodeType::Optimized);
   }
+
+  SUBCASE("Matches value type")
+  {
+    rexsapi::TValue val{};
+    CHECK_FALSE(val.matchesValueType(rexsapi::TValueType::INTEGER));
+
+    val = true;
+    CHECK(val.matchesValueType(rexsapi::TValueType::BOOLEAN));
+
+    val = 47.11;
+    CHECK(val.matchesValueType(rexsapi::TValueType::FLOATING_POINT));
+
+    val = 4711;
+    CHECK(val.matchesValueType(rexsapi::TValueType::INTEGER));
+
+    val = "My String!";
+    CHECK(val.matchesValueType(rexsapi::TValueType::STRING));
+
+    val = std::string("My String!");
+    CHECK(val.matchesValueType(rexsapi::TValueType::STRING));
+
+    val = std::vector<int64_t>{42, 815, 4711};
+    CHECK(val.matchesValueType(rexsapi::TValueType::INTEGER_ARRAY));
+
+    val = std::vector<rexsapi::Bool>{true, true, false, true};
+    CHECK(val.matchesValueType(rexsapi::TValueType::BOOLEAN_ARRAY));
+
+    val = std::vector<double>{42.0, 8.15, 47.11};
+    CHECK(val.matchesValueType(rexsapi::TValueType::FLOATING_POINT_ARRAY));
+
+    val = std::vector<std::string>{"puschel", "hutzli", "putzli"};
+    CHECK(val.matchesValueType(rexsapi::TValueType::STRING_ARRAY));
+
+    val = rexsapi::TMatrix<double>{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}};
+    CHECK(val.matchesValueType(rexsapi::TValueType::FLOATING_POINT_MATRIX));
+
+    val = rexsapi::TMatrix<std::string>{{{"a", "b", "c"}, {"d", "e", "f"}, {"g", "h", "i"}}};
+    CHECK(val.matchesValueType(rexsapi::TValueType::STRING_MATRIX));
+
+    val = rexsapi::TArrayOfIntArraysType{{1, 2, 3}, {4, 5}, {6}};
+    CHECK(val.matchesValueType(rexsapi::TValueType::ARRAY_OF_INTEGER_ARRAYS));
+  }
 }

@@ -57,7 +57,7 @@ namespace rexsapi
                                                  const TComponents& components, const database::TModel& dbModel,
                                                  const json& j) const;
 
-    TValueType getValueType(const json& attribute) const;
+    static TValueType getValueType(const json& attribute);
 
     TModeAdapter m_Mode;
     TModelHelper<TJsonValueDecoder> m_LoaderHelper;
@@ -146,6 +146,10 @@ namespace rexsapi
 
       if (!isCustom) {
         const auto& att = componentType.findAttributeById(id);
+        if (!unit.empty() && TUnit{unit} != att.getUnit()) {
+          result.addError(TError{m_Mode.adapt(TErrorLevel::WARN),
+                                 fmt::format("specified incorrect unit ({}) for attribute id={}", unit, id)});
+        }
         auto value = m_LoaderHelper.getValue(result, context, id, componentId, att, attribute);
         attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value});
       } else {
@@ -164,36 +168,45 @@ namespace rexsapi
     TRelations relations;
     std::set<uint64_t> usedComponents;
     for (const auto& relation : j["/model/relations"_json_pointer]) {
-      // TODO(lcf): add try..catch
       auto relationId = relation["id"].get<uint64_t>();
-      auto relationType = relationTypeFromString(relation["type"].get<std::string>());
-      std::optional<uint32_t> order;
-      if (relation.contains("order")) {
-        order = relation["order"].get<uint32_t>();
-        if (order.value() < 1) {
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
+      try {
+        auto relationType = relationTypeFromString(relation["type"].get<std::string>());
+        std::optional<uint32_t> order;
+        if (relation.contains("order")) {
+          order = relation["order"].get<uint32_t>();
+          if (order.value() < 1) {
+            result.addError(
+              TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
+          }
         }
-      }
 
-      TRelationReferences references;
-      for (const auto& reference : relation["/refs"_json_pointer]) {
-        auto referenceId = reference["id"].get<uint64_t>();
-        auto hint = reference.value("hint", "");
-        auto role = relationRoleFromString(reference["role"]);
+        TRelationReferences references;
+        for (const auto& reference : relation["/refs"_json_pointer]) {
+          auto referenceId = reference["id"].get<uint64_t>();
+          try {
+            auto hint = reference.value("hint", "");
+            auto role = relationRoleFromString(reference["role"]);
 
-        const auto* component = componentMapping.getComponent(referenceId, components);
-        if (component == nullptr) {
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR),
-                   fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
-        } else {
-          usedComponents.emplace(component->getInternalId());
-          references.emplace_back(TRelationReference{role, hint, *component});
+            const auto* component = componentMapping.getComponent(referenceId, components);
+            if (component == nullptr) {
+              result.addError(TError{
+                m_Mode.adapt(TErrorLevel::ERR),
+                fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
+            } else {
+              usedComponents.emplace(component->getInternalId());
+              references.emplace_back(TRelationReference{role, hint, *component});
+            }
+          } catch (const std::exception& ex) {
+            result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                   fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
+          }
         }
-      }
 
-      relations.emplace_back(TRelation{relationType, order, std::move(references)});
+        relations.emplace_back(TRelation{relationType, order, std::move(references)});
+      } catch (const std::exception& ex) {
+        result.addError(
+          TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("realtion id={}: {}", relationId, ex.what())});
+      }
     }
     if (usedComponents.size() != components.size()) {
       result.addError(TError{TErrorLevel::WARN, fmt::format("{} components are not used in a relation",
@@ -218,17 +231,22 @@ namespace rexsapi
 
       for (const auto& componentRef : loadCase["/components"_json_pointer]) {
         auto componentId = componentRef["id"].get<uint64_t>();
-        const auto* component = componentMapping.getComponent(componentId, components);
-        if (component == nullptr) {
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR),
-                   fmt::format("load_case id={} referenced component id={} does not exist", loadCaseId, componentId)});
-          continue;
+        try {
+          const auto* component = componentMapping.getComponent(componentId, components);
+          if (component == nullptr) {
+            result.addError(
+              TError{m_Mode.adapt(TErrorLevel::ERR),
+                     fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
+            continue;
+          }
+          const auto context = fmt::format("load_case id={}", loadCaseId);
+          TAttributes attributes =
+            getAttributes(context, result, componentId, dbModel.findComponentById(component->getType()), componentRef);
+          loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
+        } catch (const std::exception& ex) {
+          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("load_case id={} component id={}: {}",
+                                                                             loadCaseId, componentId, ex.what())});
         }
-        const auto context = fmt::format("load_case id={}", loadCaseId);
-        TAttributes attributes =
-          getAttributes(context, result, componentId, dbModel.findComponentById(component->getType()), componentRef);
-        loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
       }
       loadCases.emplace_back(std::move(loadComponents));
     }
@@ -247,21 +265,26 @@ namespace rexsapi
     TLoadComponents loadComponents;
     for (const auto& componentRef : j["/model/load_spectrum/accumulation/components"_json_pointer]) {
       auto componentId = componentRef["id"].get<uint64_t>();
-      const auto* component = componentMapping.getComponent(componentId, components);
-      if (component == nullptr) {
+      try {
+        const auto* component = componentMapping.getComponent(componentId, components);
+        if (component == nullptr) {
+          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                 fmt::format("accumulation component id={} does not exist", componentId)});
+          continue;
+        }
+        TAttributes attributes = getAttributes("accumulation", result, componentId,
+                                               dbModel.findComponentById(component->getType()), componentRef);
+        loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
+      } catch (const std::exception& ex) {
         result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                               fmt::format("accumulation referenced component id={} does not exist", componentId)});
-        continue;
+                               fmt::format("accumulation component id={}: {}", componentId, ex.what())});
       }
-      TAttributes attributes = getAttributes("accumulation", result, componentId,
-                                             dbModel.findComponentById(component->getType()), componentRef);
-      loadComponents.emplace_back(TLoadComponent(*component, std::move(attributes)));
     }
 
     return TAccumulation{std::move(loadComponents)};
   }
 
-  inline TValueType TJsonModelLoader::getValueType(const json& attribute) const
+  inline TValueType TJsonModelLoader::getValueType(const json& attribute)
   {
     for (const auto& [key, _] : attribute.items()) {
       if (key == "id" || key == "unit") {

@@ -54,9 +54,19 @@ namespace rexsapi
       return rhs.compare(lhs.m_Unit);
     }
 
+    friend bool operator!=(const TUnit& lhs, const database::TUnit& rhs)
+    {
+      return !(lhs == rhs);
+    }
+
     friend bool operator==(const TUnit& lhs, const TUnit& rhs)
     {
       return lhs.m_Unit == rhs.m_Unit;
+    }
+
+    friend bool operator!=(const TUnit& lhs, const TUnit& rhs)
+    {
+      return !(lhs == rhs);
     }
 
   private:

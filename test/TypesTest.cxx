@@ -90,26 +90,26 @@ TEST_CASE("Relation role test")
 
   SUBCASE("To string")
   {
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::ASSEMBLY) == "assembly");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::GEAR) == "gear");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::GEAR_1) == "gear_1");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::GEAR_2) == "gear_2");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::INNER_PART) == "inner_part");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::LEFT) == "left");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::MANUFACTURING_SETTINGS) == "manufacturing_settings");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::ORIGIN) == "origin");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::OUTER_PART) == "outer_part");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::PART) == "part");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::PLANETARY_STAGE) == "planetary_stage");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::REFERENCED) == "referenced");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::RIGHT) == "right");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::SHAFT) == "shaft");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::SIDE_1) == "side_1");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::SIDE_2) == "side_2");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::STAGE) == "stage");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::STAGE_GEAR_DATA) == "stage_gear_data");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::TOOL) == "tool");
-    CHECK(rexsapi::toRealtionRoleString(rexsapi::TRelationRole::WORKPIECE) == "workpiece");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::ASSEMBLY) == "assembly");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::GEAR) == "gear");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::GEAR_1) == "gear_1");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::GEAR_2) == "gear_2");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::INNER_PART) == "inner_part");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::LEFT) == "left");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::MANUFACTURING_SETTINGS) == "manufacturing_settings");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::ORIGIN) == "origin");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::OUTER_PART) == "outer_part");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::PART) == "part");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::PLANETARY_STAGE) == "planetary_stage");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::REFERENCED) == "referenced");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::RIGHT) == "right");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::SHAFT) == "shaft");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::SIDE_1) == "side_1");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::SIDE_2) == "side_2");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::STAGE) == "stage");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::STAGE_GEAR_DATA) == "stage_gear_data");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::TOOL) == "tool");
+    CHECK(rexsapi::toRelationRoleString(rexsapi::TRelationRole::WORKPIECE) == "workpiece");
   }
 }
 

@@ -83,6 +83,11 @@ namespace rexsapi
       TValue m_Value{};
       TCodeType m_CodeType{TCodeType::None};
 
+      bool isCustom() const
+      {
+        return m_Attribute == nullptr;
+      }
+
       bool operator==(const std::string& attribute) const
       {
         if (m_Attribute) {
@@ -152,7 +157,21 @@ namespace rexsapi
 
       void value(TValue val)
       {
-        // TODO (lcf): check value type valid for attribute
+        TValueType type;
+        std::string attributeId;
+        if (lastAttribute().isCustom()) {
+          type = *lastAttribute().m_ValueType;
+          attributeId = lastAttribute().m_AttributeId;
+        } else {
+          type = lastAttribute().m_Attribute->getValueType();
+          attributeId = lastAttribute().m_Attribute->getAttributeId();
+        }
+
+        if (!val.matchesValueType(type)) {
+          throw TException{
+            fmt::format("value of attribute id={} of component id={} does not have the correct value type", attributeId,
+                        lastComponent().m_Id.asString())};
+        }
         lastAttribute().m_Value = std::move(val);
       }
 
@@ -853,8 +872,6 @@ namespace rexsapi
                                    getTimeStringISO8601(std::chrono::system_clock::now()),
                                    m_ComponentBuilder.m_Components.databaseModel().getVersion(), std::move(language)};
     auto components = m_ComponentBuilder.build();
-
-    // TODO (lcf): add model validation. check no components and/or no relations
 
     for (const auto& relation : m_Relations) {
       TRelationReferences references;

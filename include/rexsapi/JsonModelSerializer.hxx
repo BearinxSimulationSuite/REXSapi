@@ -267,7 +267,7 @@ namespace rexsapi
         ordered_json referenceNode;
         auto id = getComponentId(reference.getComponent().getInternalId());
         referenceNode["id"] = id;
-        referenceNode["role"] = toRealtionRoleString(reference.getRole());
+        referenceNode["role"] = toRelationRoleString(reference.getRole());
         if (!reference.getHint().empty()) {
           referenceNode["hint"] = reference.getHint();
         }

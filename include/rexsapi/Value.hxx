@@ -55,6 +55,13 @@ namespace rexsapi
     {
     }
 
+    template<typename T>
+    TValue& operator=(const T& val)
+    {
+      m_Value = val;
+      return *this;
+    }
+
     bool isEmpty() const
     {
       return m_Value.index() == 0;
@@ -91,6 +98,43 @@ namespace rexsapi
     TCodeType coded() const
     {
       return m_CodeType;
+    }
+
+    bool matchesValueType(TValueType type) const
+    {
+      switch (type) {
+        case TValueType::FLOATING_POINT:
+          return std::holds_alternative<TFloatType>(m_Value);
+        case TValueType::INTEGER:
+          return std::holds_alternative<TIntType>(m_Value);
+        case TValueType::BOOLEAN:
+          return std::holds_alternative<TBoolType>(m_Value);
+        case TValueType::ENUM:
+          return std::holds_alternative<TEnumType>(m_Value);
+        case TValueType::STRING:
+          return std::holds_alternative<TStringType>(m_Value);
+        case TValueType::FILE_REFERENCE:
+          return std::holds_alternative<TFileReferenceType>(m_Value);
+        case TValueType::FLOATING_POINT_ARRAY:
+          return std::holds_alternative<TFloatArrayType>(m_Value);
+        case TValueType::BOOLEAN_ARRAY:
+          return std::holds_alternative<TBoolArrayType>(m_Value);
+        case TValueType::INTEGER_ARRAY:
+          return std::holds_alternative<TIntArrayType>(m_Value);
+        case TValueType::ENUM_ARRAY:
+          return std::holds_alternative<TEnumArrayType>(m_Value);
+        case TValueType::STRING_ARRAY:
+          return std::holds_alternative<TStringArrayType>(m_Value);
+        case TValueType::REFERENCE_COMPONENT:
+          return std::holds_alternative<TReferenceComponentType>(m_Value);
+        case TValueType::FLOATING_POINT_MATRIX:
+          return std::holds_alternative<TFloatMatrixType>(m_Value);
+        case TValueType::STRING_MATRIX:
+          return std::holds_alternative<TStringMatrixType>(m_Value);
+        case TValueType::ARRAY_OF_INTEGER_ARRAYS:
+          return std::holds_alternative<TArrayOfIntArraysType>(m_Value);
+      }
+      return false;
     }
 
   private:

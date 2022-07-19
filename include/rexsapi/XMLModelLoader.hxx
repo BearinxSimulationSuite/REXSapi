@@ -103,40 +103,45 @@ namespace rexsapi
     TRelations relations;
     for (const auto& relation : doc.select_nodes("/model/relations/relation")) {
       std::string relationId = xml::getStringAttribute(relation, "id");
-      auto relationType = relationTypeFromString(xml::getStringAttribute(relation, "type"));
-      std::optional<uint32_t> order;
-      if (const auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
-        order = orderAtt.as_uint();
-        if (order.value() < 1) {
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
-        }
-      }
-
-      TRelationReferences references;
-      for (const auto& reference :
-           doc.select_nodes(fmt::format("/model/relations/relation[@id = '{}']/ref", relationId).c_str())) {
-        std::string referenceId = xml::getStringAttribute(reference, "id");
-        try {
-          auto role = relationRoleFromString(xml::getStringAttribute(reference, "role"));
-          std::string hint = xml::getStringAttribute(reference, "hint", "");
-
-          const auto* component = componentsMapping.getComponent(convertToUint64(referenceId), components);
-          if (component == nullptr) {
+      try {
+        auto relationType = relationTypeFromString(xml::getStringAttribute(relation, "type"));
+        std::optional<uint32_t> order;
+        if (const auto orderAtt = relation.node().attribute("order"); !orderAtt.empty()) {
+          order = orderAtt.as_uint();
+          if (order.value() < 1) {
             result.addError(
-              TError{m_Mode.adapt(TErrorLevel::ERR),
-                     fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
-          } else {
+              TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
+          }
+        }
+
+        TRelationReferences references;
+        for (const auto& reference :
+             doc.select_nodes(fmt::format("/model/relations/relation[@id = '{}']/ref", relationId).c_str())) {
+          std::string referenceId = xml::getStringAttribute(reference, "id");
+          try {
+            auto role = relationRoleFromString(xml::getStringAttribute(reference, "role"));
+            std::string hint = xml::getStringAttribute(reference, "hint", "");
+
+            const auto* component = componentsMapping.getComponent(convertToUint64(referenceId), components);
+            if (component == nullptr) {
+              result.addError(TError{
+                m_Mode.adapt(TErrorLevel::ERR),
+                fmt::format("relation id={} referenced component id={} does not exist", relationId, referenceId)});
+              continue;
+            }
             usedComponents.emplace(component->getInternalId());
             references.emplace_back(TRelationReference{role, hint, *component});
+          } catch (const std::exception& ex) {
+            result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                   fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
           }
-        } catch (const std::exception& ex) {
-          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                                 fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
         }
-      }
 
-      relations.emplace_back(TRelation{relationType, order, std::move(references)});
+        relations.emplace_back(TRelation{relationType, order, std::move(references)});
+      } catch (const std::exception& ex) {
+        result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                               fmt::format("cannot process relation id={}: {}", relation, ex.what())});
+      }
     }
     if (usedComponents.size() != components.size()) {
       result.addError(TError{TErrorLevel::WARN, fmt::format("{} components are not used in a relation",
@@ -151,24 +156,28 @@ namespace rexsapi
 
         for (const auto& component : doc.select_nodes(
                fmt::format("/model/load_spectrum/load_case[@id = '{}']/component", loadCaseId).c_str())) {
-          std::string componentId = xml::getStringAttribute(component, "id");
+          auto componentId = xml::getStringAttribute(component, "id");
+          try {
+            const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
+            if (refComponent == nullptr) {
+              result.addError(
+                TError{m_Mode.adapt(TErrorLevel::ERR),
+                       fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
+              continue;
+            }
 
-          const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
-          if (refComponent == nullptr) {
-            result.addError(
-              TError{m_Mode.adapt(TErrorLevel::ERR),
-                     fmt::format("load_case id={} component id={} does not exist", loadCaseId, componentId)});
-            continue;
+            const auto attributeNodes =
+              doc.select_nodes(fmt::format("/model/load_spectrum/load_case[@id = '{}']/component[@id = '{}']/attribute",
+                                           loadCaseId, componentId)
+                                 .c_str());
+            const auto context = fmt::format("load_case id={}", loadCaseId);
+            TAttributes attributes = getAttributes(context, result, componentId,
+                                                   dbModel.findComponentById(refComponent->getType()), attributeNodes);
+            loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
+          } catch (const std::exception& ex) {
+            result.addError(TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("load_case id={} component id={}: {}",
+                                                                               loadCaseId, componentId, ex.what())});
           }
-
-          const auto attributeNodes =
-            doc.select_nodes(fmt::format("/model/load_spectrum/load_case[@id = '{}']/component[@id = '{}']/attribute",
-                                         loadCaseId, componentId)
-                               .c_str());
-          const auto context = fmt::format("load_case id={}", loadCaseId);
-          TAttributes attributes = getAttributes(context, result, componentId,
-                                                 dbModel.findComponentById(refComponent->getType()), attributeNodes);
-          loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
         }
         loadCases.emplace_back(std::move(loadComponents));
       }
@@ -177,20 +186,24 @@ namespace rexsapi
     {
       TLoadComponents loadComponents;
       for (const auto& component : doc.select_nodes("/model/load_spectrum/accumulation/component")) {
-        std::string componentId = xml::getStringAttribute(component, "id");
+        auto componentId = xml::getStringAttribute(component, "id");
+        try {
+          const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
+          if (refComponent == nullptr) {
+            result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                   fmt::format("accumulation component id={} does not exist", componentId)});
+            continue;
+          }
 
-        const auto* refComponent = componentsMapping.getComponent(convertToUint64(componentId), components);
-        if (refComponent == nullptr) {
+          const auto attributeNodes = doc.select_nodes(
+            fmt::format("/model/load_spectrum/accumulation/component[@id = '{}']/attribute", componentId).c_str());
+          TAttributes attributes = getAttributes("accumulation", result, componentId,
+                                                 dbModel.findComponentById(refComponent->getType()), attributeNodes);
+          loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
+        } catch (const std::exception& ex) {
           result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                                 fmt::format("accumulation component id={} does not exist", componentId)});
-          continue;
+                                 fmt::format("accumulation component id={}: {}", componentId, ex.what())});
         }
-
-        const auto attributeNodes = doc.select_nodes(
-          fmt::format("/model/load_spectrum/accumulation/component[@id = '{}']/attribute", componentId).c_str());
-        TAttributes attributes = getAttributes("accumulation", result, componentId,
-                                               dbModel.findComponentById(refComponent->getType()), attributeNodes);
-        loadComponents.emplace_back(TLoadComponent(*refComponent, std::move(attributes)));
       }
       if (!loadComponents.empty()) {
         accumulation = TAccumulation{std::move(loadComponents)};
