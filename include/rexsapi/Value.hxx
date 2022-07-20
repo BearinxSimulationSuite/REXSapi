@@ -68,6 +68,12 @@ namespace rexsapi
       return *this;
     }
 
+    TValue& operator=(const char* val)
+    {
+      m_Value = std::string(val);
+      return *this;
+    }
+
     bool isEmpty() const
     {
       return m_Value.index() == 0;
