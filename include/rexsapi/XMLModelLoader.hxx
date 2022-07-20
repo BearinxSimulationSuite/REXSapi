@@ -140,7 +140,7 @@ namespace rexsapi
         relations.emplace_back(TRelation{relationType, order, std::move(references)});
       } catch (const std::exception& ex) {
         result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                               fmt::format("cannot process relation id={}: {}", relation, ex.what())});
+                               fmt::format("cannot process relation id={}: {}", relationId, ex.what())});
       }
     }
     if (usedComponents.size() != components.size()) {

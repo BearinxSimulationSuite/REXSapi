@@ -56,9 +56,15 @@ namespace rexsapi
     }
 
     template<typename T>
-    TValue& operator=(const T& val)
+    TValue& operator=(T&& val)
     {
-      m_Value = val;
+      m_Value = std::forward<T>(val);
+      return *this;
+    }
+
+    TValue& operator=(int val)
+    {
+      m_Value = static_cast<int64_t>(val);
       return *this;
     }
 
