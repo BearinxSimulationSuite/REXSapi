@@ -52,6 +52,7 @@
               },
               "refs": {
                 "type": "array",
+                "minItems": 1,
                 "items": {
                   "type": "object",
                   "required": ["id", "role"],
@@ -76,7 +77,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "type"],
+            "required": ["id", "type", "attributes"],
             "properties": {
               "id": {
                 "type": "integer",

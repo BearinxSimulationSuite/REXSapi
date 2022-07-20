@@ -151,7 +151,7 @@ TEST_CASE("Json model loader test")
           {
             "id":"u_axis_vector",
             "unit":"mm",
-            "floating_point_array":[1.0,0.0,0.0]
+            "floating_point_array_coded":{"code": "float32", "value": "AADgQAAAAEEAABBB"}
           }
         ]
       }
@@ -208,25 +208,6 @@ TEST_CASE("Json model loader test")
     CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getAttributes().size() == 8);
     CHECK(model->getLoadSpectrum().getLoadCases()[0].getLoadComponents()[0].getLoadAttributes().size() == 1);
     REQUIRE(model->getLoadSpectrum().hasAccumulation());
-  }
-
-  SUBCASE("Load invalid json document")
-  {
-    std::string buffer = R"({
-  "model":{
-    "applicationId":"Bearinx",
-    "applicationVersion":"12.0.8823",
-    "date":"2021-07-01T12:18:38+01:00",
-    "version":"1.4",
-    "relations":[
-    ]}
-  })";
-
-    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
-    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
-    CHECK_FALSE(result);
-    CHECK(result.isCritical());
-    CHECK_FALSE(model);
   }
 
   SUBCASE("Load complex model from file in strict mode")
@@ -326,5 +307,171 @@ TEST_CASE("Json model loader test")
     CHECK_FALSE(result);
     CHECK(result.isCritical());
     REQUIRE(result.getErrors().size() == 1);
+  }
+
+
+  SUBCASE("Load incorrect json document")
+  {
+    std::string buffer = R"({
+  "model":{
+    "applicationId":"Bearinx",
+    "applicationVersion":"12.0.8823",
+    "date":"2021-07-01T12:18:38+01:00",
+    "version":"1.4",
+    "relations":[
+      {
+        "id":48,
+        "type":"assembly",
+        "refs":[
+          {
+            "hint":"gear_unit",
+            "id":1,
+            "role":"assembly"
+          },
+          {
+            "hint":"gear_casing",
+            "id":2,
+            "role":"part"
+          }
+        ]
+      },
+      {
+        "id":49,
+        "type":"hutzli",
+        "refs":[
+          {
+            "hint":"gear_unit",
+            "id":1,
+            "role":"assembly"
+          }
+        ]
+      },
+      {
+        "id":50,
+        "type":"assembly",
+        "refs":[
+          {
+            "hint":"gear_unit",
+            "id":1,
+            "role":"puschel"
+          }
+        ]
+      }
+    ],
+    "components": [
+      {
+        "id":1,
+        "name":"Transmission unit",
+        "type":"gear_unit",
+        "attributes":[
+          {
+            "id":"reference_temperature",
+            "unit":"kg",
+            "floating_point":17.0
+          },
+          {
+            "id":"gear_shift_index",
+            "unit":"none",
+            "boolean":true
+          }
+        ]
+      },
+      {
+        "id":2,
+        "name":"Welle 1",
+        "type":"shaft",
+        "attributes":[
+          {
+            "id":"display_color",
+            "unit":"%",
+            "floating_point_array":[0.90, 0.80, 0.70]
+          },
+          {
+            "id":"u_axis_vector",
+            "unit":"mm",
+            "floating_point_array":[1.0,0.0,0.0]
+          }
+        ]
+      },
+      {
+        "id":3,
+        "name":"Welle 2",
+        "type":"shaft",
+        "attributes":[]
+      }
+    ],
+    "load_spectrum": {
+      "id": 1,
+      "load_cases": [
+        {
+          "id": 1,
+          "components": [
+            {
+              "id": 10,
+              "type": "gear_unit",
+              "name":"Transmission unit",
+              "attributes": [
+                { "id": "load_duration_fraction", "unit": "%", "floating_point": 15 }
+              ]
+            }
+          ]
+        }
+      ],
+      "accumulation": {
+        "components": [
+            {
+              "id": 11,
+              "type": "gear_unit",
+              "attributes": [
+                { "id": "operating_time", "floating_point": 35.8 }
+              ]
+            }
+        ]
+      }
+    }
+  }
+})";
+
+    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    CHECK(result);
+    CHECK(result.getErrors().size() == 7);
+    CHECK_FALSE(result.isCritical());
+    CHECK(model);
+  }
+
+  SUBCASE("Load invalid json document")
+  {
+    std::string buffer = R"({
+  "model":{
+    "applicationId":"Bearinx",
+    "applicationVersion":"12.0.8823",
+    "date":"2021-07-01T12:18:38+01:00",
+    "version":"1.4",
+    "relations":[
+    ]}
+  })";
+
+    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    CHECK_FALSE(model);
+  }
+
+  SUBCASE("Load broken json document")
+  {
+    std::string buffer = R"({
+  "model":{
+    "applicationId":"Bearinx",
+    "applicationVersion":"12.0.8823",
+    "date":"2021-07-01T12:18:38+01:00",
+  })";
+
+    rexsapi::TBufferModelLoader<rexsapi::TJsonSchemaValidator, rexsapi::TJsonModelLoader> loader{validator, buffer};
+    auto model = loader.load(rexsapi::TMode::RELAXED_MODE, result, registry);
+    CHECK_FALSE(result);
+    CHECK(result.isCritical());
+    CHECK_FALSE(model);
   }
 }

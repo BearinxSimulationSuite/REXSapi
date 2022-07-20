@@ -21,6 +21,7 @@
 #include <rexsapi/Model.hxx>
 #include <rexsapi/database/Model.hxx>
 
+#include <set>
 
 namespace rexsapi
 {
@@ -185,7 +186,7 @@ namespace rexsapi
 
       void checkDuplicateComponent(const TComponentId& component) const;
 
-      void checkDuplicateComponent(const std::string& component, const std::string& id = "") const;
+      void checkDuplicateComponent(const std::string& id = "") const;
 
       void checkDuplicateAttribute(const detail::TComponentEntry& component, const std::string& attribute) const;
 
@@ -435,6 +436,11 @@ namespace rexsapi
 
   inline TAttribute detail::TAttributeEntry::createAttribute() const
   {
+    if (m_Value.isEmpty()) {
+      throw TException{fmt::format("attribute id={} has an empty value",
+                                   m_Attribute != nullptr ? m_Attribute->getAttributeId() : m_AttributeId)};
+    }
+
     TValue val = m_Value;
     val.coded(m_CodeType);
 
@@ -469,7 +475,7 @@ namespace rexsapi
 
   inline void detail::TComponents::addComponent(const std::string& component, std::string id)
   {
-    checkDuplicateComponent(component, id);
+    checkDuplicateComponent(id);
     m_Components.emplace_back(
       detail::TComponentEntry{TComponentId{std::move(id)}, &m_DatabaseModel.findComponentById(component)});
   }
@@ -489,15 +495,13 @@ namespace rexsapi
     }
   }
 
-  inline void detail::TComponents::checkDuplicateComponent(const std::string& component, const std::string& id) const
+  inline void detail::TComponents::checkDuplicateComponent(const std::string& id) const
   {
-    const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&component, &id](const auto& comp) {
-      bool res = comp.m_component->getComponentId() == component;
-      res |= comp.m_Id == TComponentId{id};
-      return res;
+    const auto it = std::find_if(m_Components.begin(), m_Components.end(), [&id](const auto& comp) {
+      return comp.m_Id == TComponentId{id};
     });
     if (it != m_Components.end()) {
-      throw TException{fmt::format("component id={} already added", component)};
+      throw TException{fmt::format("component id={} already added", id)};
     }
   }
 
@@ -873,13 +877,31 @@ namespace rexsapi
                                    m_ComponentBuilder.m_Components.databaseModel().getVersion(), std::move(language)};
     auto components = m_ComponentBuilder.build();
 
+    if (components.empty()) {
+      throw TException{"no components specified for model"};
+    }
+
+    if (m_Relations.empty()) {
+      throw TException{"no relations specified for model"};
+    }
+
+    std::set<uint64_t> usedComponents;
     for (const auto& relation : m_Relations) {
       TRelationReferences references;
       for (const auto& reference : relation.m_References) {
         const auto& component = m_ComponentBuilder.getComponentForId(components, reference.m_Id);
+        usedComponents.emplace(component.getInternalId());
         references.emplace_back(TRelationReference{reference.m_Role, reference.m_Hint, component});
       }
+      if (references.empty()) {
+        throw TException{"no references specified for relation"};
+      }
       relations.emplace_back(rexsapi::TRelation{relation.m_Type, relation.m_Order, std::move(references)});
+    }
+
+    if (usedComponents.size() != components.size()) {
+      throw TException{
+        fmt::format("{} components are not used in a relation", components.size() - usedComponents.size())};
     }
 
     TLoadCases loadCases;

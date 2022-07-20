@@ -143,19 +143,27 @@ namespace rexsapi
       auto unit = attribute.value("unit", "");
 
       bool isCustom = m_LoaderHelper.checkCustom(result, context, id, componentId, componentType);
+      auto type = getValueType(attribute);
 
       if (!isCustom) {
         const auto& att = componentType.findAttributeById(id);
         if (!unit.empty() && TUnit{unit} != att.getUnit()) {
-          result.addError(TError{m_Mode.adapt(TErrorLevel::WARN),
-                                 fmt::format("specified incorrect unit ({}) for attribute id={}", unit, id)});
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::WARN),
+                   fmt::format("{}: specified incorrect unit ({}) for attribute id={}", context, unit, id)});
         }
-        auto value = m_LoaderHelper.getValue(result, context, id, componentId, att, attribute);
+        TValue value;
+        if (type != att.getValueType()) {
+          result.addError(
+            TError{m_Mode.adapt(TErrorLevel::WARN), fmt::format("{}: specified incorrect type ({}) for attribute id={}",
+                                                                context, toTypeString(type), id)});
+        } else {
+          value = m_LoaderHelper.getValue(result, context, id, componentId, att, attribute);
+        }
         attributes.emplace_back(TAttribute{att, TUnit{att.getUnit()}, value});
       } else {
-        auto type = getValueType(attribute);
         auto value = m_LoaderHelper.getValue(result, type, context, id, componentId, attribute);
-        attributes.emplace_back(TAttribute{id, TUnit{unit}, type, TValue{}});
+        attributes.emplace_back(TAttribute{id, TUnit{unit}, type, value});
       }
     }
 
@@ -174,10 +182,6 @@ namespace rexsapi
         std::optional<uint32_t> order;
         if (relation.contains("order")) {
           order = relation["order"].get<uint32_t>();
-          if (order.value() < 1) {
-            result.addError(
-              TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} order is <1", relationId)});
-          }
         }
 
         TRelationReferences references;
@@ -198,7 +202,7 @@ namespace rexsapi
             }
           } catch (const std::exception& ex) {
             result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                                   fmt::format("cannot process reference id={}: {}", referenceId, ex.what())});
+                                   fmt::format("relation id={} cannot process reference id={}: {}", relationId, referenceId, ex.what())});
           }
         }
 

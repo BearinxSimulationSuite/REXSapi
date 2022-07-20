@@ -204,14 +204,20 @@ TEST_CASE("Model builder test")
   {
     CHECK_THROWS(builder.addAttribute("display_color"));
     CHECK_THROWS(builder.name("Puschel"));
-    auto gearId = builder.addComponent("cylindrical_gear").id();
-    auto casingId = builder.addComponent("gear_casing").id();
+    auto casingId = builder.addComponent("cylindrical_gear").id();
+    auto gearId = builder.addComponent("gear_casing").id();
     CHECK_THROWS(builder.value(47.11));
     CHECK_THROWS(builder.unit("%"));
-    CHECK_THROWS_WITH(builder.addComponent("gear_casing"), "component id=gear_casing already added");
+    CHECK_THROWS_WITH(
+      builder.addAttribute("temperature_lubricant").value("puschel"),
+      "value of attribute id=temperature_lubricant of component id=2 does not have the correct value type");
+    builder.value(128.0);
+    builder.addComponent("gear_casing", "da casing");
+    CHECK_THROWS_WITH(builder.addComponent("gear_casing", "da casing"), "component id=da casing already added");
     builder.addAttribute("operating_viscosity").value(0.11);
+    CHECK_THROWS_WITH(builder.unit("kg"), "unit kg does not match attribute id=operating_viscosity unit");
     CHECK_THROWS_WITH(builder.addAttribute("operating_viscosity"),
-                      "attribute id=operating_viscosity already added to component id=2");
+                      "attribute id=operating_viscosity already added to component id=da casing");
 
     CHECK_THROWS_WITH(builder.order(5), "no relations added yet");
     CHECK_THROWS_WITH(builder.addRef(rexsapi::TRelationRole::PART, "4711"), "no relations added yet");
@@ -220,5 +226,21 @@ TEST_CASE("Model builder test")
     builder.addRef(rexsapi::TRelationRole::GEAR, gearId);
     builder.addRef(rexsapi::TRelationRole::PART, "my-id");
     CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no component found for id=my-id");
+  }
+
+  SUBCASE("Model builder creation errors")
+  {
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no components specified for model");
+    auto casingId = builder.addComponent("cylindrical_gear").id();
+    builder.addAttribute("torque_acting_on_shaft_u").value(4.77);
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no relations specified for model");
+    builder.addRelation(rexsapi::TRelationType::ASSEMBLY);
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "no references specified for relation");
+    builder.addRef(rexsapi::TRelationRole::GEAR, casingId);
+    builder.addComponent("cylindrical_gear").name("Zylinder").addAttribute("conversion_factor").value(2.11);
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}), "1 components are not used in a relation");
+    builder.addAttribute("temperature_lubricant");
+    CHECK_THROWS_WITH((void)builder.build("Test Appl", "1.35", {}),
+                      "attribute id=temperature_lubricant has an empty value");
   }
 }
