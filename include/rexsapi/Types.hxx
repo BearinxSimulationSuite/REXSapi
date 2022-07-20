@@ -172,7 +172,7 @@ namespace rexsapi
   };
 
   static TRelationRole relationRoleFromString(const std::string& role);
-  static std::string toRealtionRoleString(TRelationRole type);
+  static std::string toRelationRoleString(TRelationRole type);
 
 
   enum class TRelationRoleType { TOP_LEVEL, SUB_LEVEL };
@@ -359,7 +359,7 @@ namespace rexsapi
   }
 
 
-  static inline std::string toRealtionRoleString(TRelationRole role)
+  static inline std::string toRelationRoleString(TRelationRole role)
   {
     switch (role) {
       case TRelationRole::ASSEMBLY:

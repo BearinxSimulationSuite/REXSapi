@@ -124,7 +124,7 @@ namespace rexsapi
         }
         auto id = getComponentId(reference.getComponent().getInternalId());
         refNode.append_attribute("id").set_value(id.c_str());
-        refNode.append_attribute("role").set_value(toRealtionRoleString(reference.getRole()).c_str());
+        refNode.append_attribute("role").set_value(toRelationRoleString(reference.getRole()).c_str());
       }
     }
   }

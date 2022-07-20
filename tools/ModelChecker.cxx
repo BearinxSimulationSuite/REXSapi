@@ -108,13 +108,13 @@ int main(int argc, char** argv)
       if (!result) {
         std::cout << std::endl << fmt::format("  Found {} issues", result.getErrors().size()) << std::endl;
       } else {
-        std::cout << " processed ";
+        std::cout << " processed";
         if (result.hasIssues() && options->showWarnings) {
-          std::cout << fmt::format("  But has the following {} warnings", result.getErrors().size());
+          std::cout << fmt::format(", but has the following {} warnings", result.getErrors().size());
         } else if (result.hasIssues() && !options->showWarnings) {
-          std::cout << "with warnings";
+          std::cout << " with warnings";
         } else {
-          std::cout << "successfully";
+          std::cout << " successfully";
         }
         std::cout << std::endl;
       }

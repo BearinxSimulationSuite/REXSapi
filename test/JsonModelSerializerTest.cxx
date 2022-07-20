@@ -68,7 +68,7 @@ TEST_CASE("Json serialize new model")
     CHECK(roundtripModel.getInfo().getVersion() == rexsapi::TRexsVersion{1, 4});
     REQUIRE(roundtripModel.getInfo().getApplicationLanguage().has_value());
     CHECK(*roundtripModel.getInfo().getApplicationLanguage() == "en");
-    CHECK(roundtripModel.getComponents().size() == 6);
+    CHECK(roundtripModel.getComponents().size() == 7);
     CHECK(roundtripModel.getRelations().size() == 3);
     CHECK(roundtripModel.getLoadSpectrum().hasLoadCases());
     REQUIRE(roundtripModel.getLoadSpectrum().getLoadCases().size() == 1);

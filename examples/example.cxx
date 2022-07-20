@@ -781,7 +781,7 @@ private:
             rexsapi::getRoleType(role) == rexsapi::TRelationRoleType::TOP_LEVEL ? top_level : sub_level;
 
           ASSERT_OTHERWISE_THROW(rel_type == relationRule->getRelationType(component_idx), "check failed");
-          ASSERT_OTHERWISE_THROW(rexsapi::toRealtionRoleString(role) == relationRule->getParameter(component_idx),
+          ASSERT_OTHERWISE_THROW(rexsapi::toRelationRoleString(role) == relationRule->getParameter(component_idx),
                                  "check failed");
           new_relation_component->REXSRelation_Type = rel_type;
           std::string rel_rule_name_j = relationRule->getName(component_idx);
@@ -813,7 +813,7 @@ private:
   static uint32_t getComponentIndex(const TRelationRule& rel_rule, rexsapi::TRelationRole role, size_t nr_of_comps)
   {
     uint32_t component_idx = 0;
-    std::string role_string = rexsapi::toRealtionRoleString(role);
+    std::string role_string = rexsapi::toRelationRoleString(role);
     for (; component_idx < nr_of_comps; ++component_idx) {
       std::string parameter_string_i = rel_rule.getParameter(component_idx);
       if (role_string == parameter_string_i) {
