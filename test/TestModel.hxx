@@ -45,6 +45,13 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
   attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("display_color"),
                                               rexsapi::TUnit{dbModel.findUnitByName("%")},
                                               rexsapi::TValue{rexsapi::TFloatArrayType{30.0, 10.0, 55.0}}});
+
+  // FLOATING_POINT_ARRAY_CODED
+  auto value = rexsapi::TValue{rexsapi::TFloatArrayType{2.0, 3.0, 4.0}};
+  value.coded(rexsapi::TCodeType::Default);
+  attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("u_axis_vector"),
+                                              rexsapi::TUnit{dbModel.findUnitByName("mm")}, value});
+
   // REFERENCE_COMPONENT
   attributes.emplace_back(rexsapi::TAttribute{couplingComponent.findAttributeById("reference_component_for_position"),
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
@@ -81,10 +88,9 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
                                               rexsapi::TUnit{dbModel.findUnitByName("none")},
                                               rexsapi::TValue{rexsapi::TArrayOfIntArraysType{{1, 2, 3}, {4, 5}, {6}}}});
   // INTEGER_ARRAY
-  rexsapi::TValue value{rexsapi::TIntArrayType{{1, 2, 3}}};
-  value.coded();
   attributes.emplace_back(rexsapi::TAttribute{elementListComponent.findAttributeById("element_ids"),
-                                              rexsapi::TUnit{dbModel.findUnitByName("none")}, value});
+                                              rexsapi::TUnit{dbModel.findUnitByName("none")},
+                                              rexsapi::TValue{rexsapi::TIntArrayType{{1, 2, 3}}}});
   components.emplace_back(
     rexsapi::TComponent{componentId++, elementListComponent.getComponentId(), "Element Typ", std::move(attributes)});
 
@@ -106,11 +112,21 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
   components.emplace_back(
     rexsapi::TComponent{componentId++, assemblyGroupComponent.getComponentId(), "Assembly", std::move(attributes)});
 
+  attributes = rexsapi::TAttributes{};
+  const auto& assemblyGroupComponent2 = dbModel.findComponentById("assembly_group");
+  // FLOATING_POINT_MATRIX_CODED
+  value = rexsapi::TValue{rexsapi::TFloatMatrixType{{{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}, {7.0, 8.0, 9.0}}}};
+  value.coded(rexsapi::TCodeType::Optimized);
+  attributes.emplace_back(
+    rexsapi::TAttribute{assemblyGroupComponent2.findAttributeById("reduced_static_stiffness_matrix"),
+                        rexsapi::TUnit{dbModel.findUnitByName("none")}, value});
+  components.emplace_back(
+    rexsapi::TComponent{componentId++, assemblyGroupComponent2.getComponentId(), "Assembly", std::move(attributes)});
+
   // Relations
   rexsapi::TRelations relations;
   relations.emplace_back(
-    rexsapi::TRelation{rexsapi::TRelationType::ASSEMBLY,
-                       {},
+    rexsapi::TRelation{rexsapi::TRelationType::ASSEMBLY, 1,
                        rexsapi::TRelationReferences{
                          rexsapi::TRelationReference{rexsapi::TRelationRole::GEAR, "hint0", components[0]},
                          rexsapi::TRelationReference{rexsapi::TRelationRole::OUTER_PART, "hint1", components[1]}}});
@@ -123,7 +139,8 @@ static inline rexsapi::TModel createModel(const rexsapi::database::TModel& dbMod
     rexsapi::TRelationType::MANUFACTURING_STEP,
     {},
     rexsapi::TRelationReferences{rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint4", components[4]},
-                                 rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint5", components[5]}}});
+                                 rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint5", components[5]},
+                                 rexsapi::TRelationReference{rexsapi::TRelationRole::PART, "hint6", components[6]}}});
 
   // Load Spectrum
   rexsapi::TAttributes loadAttributes;
