@@ -118,8 +118,8 @@ namespace rexsapi
       std::string componentName = component.value("name", "");
       try {
         const auto& componentType = dbModel.findComponentById(component["type"].get<std::string>());
-
-        TAttributes attributes = getAttributes(componentName, result, componentId, componentType, component);
+        std::string context = componentName.empty() ? componentType.getName() : componentName;
+        TAttributes attributes = getAttributes(context, result, componentId, componentType, component);
 
         components.emplace_back(TComponent{componentMapping.addComponent(componentId), componentType.getComponentId(),
                                            componentName, std::move(attributes)});
@@ -201,8 +201,9 @@ namespace rexsapi
               references.emplace_back(TRelationReference{role, hint, *component});
             }
           } catch (const std::exception& ex) {
-            result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
-                                   fmt::format("relation id={} cannot process reference id={}: {}", relationId, referenceId, ex.what())});
+            result.addError(
+              TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("relation id={} cannot process reference id={}: {}",
+                                                                 relationId, referenceId, ex.what())});
           }
         }
 

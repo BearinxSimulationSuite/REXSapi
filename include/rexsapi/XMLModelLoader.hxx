@@ -88,7 +88,8 @@ namespace rexsapi
 
         const auto attributeNodes =
           doc.select_nodes(fmt::format("/model/components/component[@id = '{}']/attribute", componentId).c_str());
-        TAttributes attributes = getAttributes(componentName, result, componentId, componentType, attributeNodes);
+        std::string context = componentName.empty() ? componentType.getName() : componentName;
+        TAttributes attributes = getAttributes(context, result, componentId, componentType, attributeNodes);
 
         components.emplace_back(TComponent{componentsMapping.addComponent(convertToUint64(componentId)),
                                            componentType.getComponentId(), componentName, std::move(attributes)});
