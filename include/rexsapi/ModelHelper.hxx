@@ -45,9 +45,9 @@ namespace rexsapi
       } else {
         if (!componentType.hasAttribute(attributeId)) {
           isCustom = true;
-          result.addError(
-            TError{m_Mode.adapt(TErrorLevel::ERR), fmt::format("{}: attribute id={} is not part of component id={}",
-                                                               context, attributeId, componentId)});
+          result.addError(TError{m_Mode.adapt(TErrorLevel::ERR),
+                                 fmt::format("{}: attribute id={} is not part of component {} id={}", context,
+                                             attributeId, componentType.getComponentId(), componentId)});
         }
       }
       return isCustom;
