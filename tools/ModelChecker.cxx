@@ -18,6 +18,7 @@
 #include <rexsapi/Rexsapi.hxx>
 
 #include "Cli11.hxx"
+#include "ToolsHelper.hxx"
 
 
 struct Options {
@@ -35,7 +36,7 @@ static std::string getVersion()
 static std::optional<Options> getOptions(int argc, char** argv)
 {
   Options options;
-  std::filesystem::path modelsPath;
+  bool recurse{false};
 
   CLI::App app{getVersion()};
   auto* strictFlag = app.add_flag(
@@ -53,13 +54,12 @@ static std::optional<Options> getOptions(int argc, char** argv)
       "Relaxed standard handling")
     ->excludes(strictFlag);
   app.add_flag("-w,--warnings", options.showWarnings, "Show all warnings");
+  app.add_flag("-r", recurse, "Recurse into sub-directories");
   app.add_option("-d,--database", options.modelDatabasePath, "The model database path")
     ->check(CLI::ExistingDirectory)
     ->required();
-
-  auto* group = app.add_option_group("models", "Specify the models to check")->required();
-  group->add_option("models", options.models, "The model files to check")->check(CLI::ExistingFile);
-  group->add_option("--models", modelsPath, "Models directory to check")->check(CLI::ExistingDirectory);
+  app.add_option("models", options.models, "The model files or directories to check")
+    ->check(CLI::ExistingFile | CLI::ExistingDirectory)->required();
 
   try {
     app.parse(argc, argv);
@@ -72,13 +72,7 @@ static std::optional<Options> getOptions(int argc, char** argv)
     return {};
   }
 
-  if (!modelsPath.empty()) {
-    for (auto const& entry : std::filesystem::directory_iterator{modelsPath}) {
-      if (rexsapi::TExtensionChecker::getFileType(entry.path()) != rexsapi::TFileType::UNKOWN) {
-        options.models.emplace_back(entry.path());
-      }
-    }
-  }
+  options.models = getModels(recurse, options.models);
 
   return options;
 }
@@ -112,7 +106,7 @@ int main(int argc, char** argv)
         if (result.hasIssues() && options->showWarnings) {
           std::cout << fmt::format(", but has the following {} warnings", result.getErrors().size());
         } else if (result.hasIssues() && !options->showWarnings) {
-          std::cout << " with warnings";
+          std::cout << fmt::format(" with {} warnings", result.getErrors().size());
         } else {
           std::cout << " successfully";
         }

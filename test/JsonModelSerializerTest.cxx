@@ -96,4 +96,24 @@ TEST_CASE("Json serialize new model")
     CHECK(result);
     CHECK(loadedModel);
   }
+
+  SUBCASE("Serialize to non existent directory")
+  {
+    CHECK_THROWS(rexsapi::JsonFileSerializer{std::filesystem::path{"puschel"} / "test_model.rexsj"});
+  }
+
+  SUBCASE("Serialize stream error")
+  {
+    TemporaryDirectory guard;
+    auto path = guard.getTempDirectoryPath() / "test";
+    std::filesystem::create_directories(path);
+
+    std::filesystem::permissions(
+      path, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+      std::filesystem::perm_options::remove);
+
+    rexsapi::JsonFileSerializer fileSerializer{path / "test_model.rexsj"};
+    std::filesystem::remove(path);
+    CHECK_THROWS(modelSerializer.serialize(createModel(dbModel), fileSerializer));
+  }
 }

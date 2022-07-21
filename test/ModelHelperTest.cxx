@@ -38,7 +38,7 @@ TEST_CASE("Model helper test")
     CHECK_FALSE(result);
     REQUIRE(result.getErrors().size() == 1);
     CHECK(result.getErrors()[0].getMessage() ==
-          "test: attribute id=diameter_of_helix_modification is not part of component id=42");
+          "test: attribute id=diameter_of_helix_modification is not part of component gear_unit id=42");
 
     result.reset();
     CHECK(helper.checkCustom(result, context, "custom_my_attribute", 42, dbModel.findComponentById("gear_unit")));

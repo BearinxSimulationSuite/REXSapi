@@ -18,6 +18,7 @@
 #include <rexsapi/Rexsapi.hxx>
 
 #include "Cli11.hxx"
+#include "ToolsHelper.hxx"
 
 
 struct Options {
@@ -36,7 +37,7 @@ static std::string getVersion()
 static std::optional<Options> getOptions(int argc, char** argv)
 {
   Options options;
-  std::filesystem::path modelsPath;
+  bool recurse{false};
 
   CLI::App app{getVersion()};
   auto* strictFlag = app.add_flag(
@@ -53,6 +54,7 @@ static std::optional<Options> getOptions(int argc, char** argv)
       },
       "Relaxed standard handling")
     ->excludes(strictFlag);
+  app.add_flag("-r", recurse, "Recurse into sub-directories");
   app
     .add_option_function<std::string>(
       "-f,--format",
@@ -65,13 +67,10 @@ static std::optional<Options> getOptions(int argc, char** argv)
   app.add_option("-d,--database", options.modelDatabasePath, "The model database path")
     ->check(CLI::ExistingDirectory)
     ->required();
-  app.add_option("-o,--output", options.outputPath, "Output directory for converted models")
-    ->required()
-    ->check(CLI::ExistingDirectory);
-
-  auto* group = app.add_option_group("models", "Specify the models to convert")->required();
-  group->add_option("models", options.models, "The model files to convert")->check(CLI::ExistingFile);
-  group->add_option("--models", modelsPath, "Models directory to convert")->check(CLI::ExistingDirectory);
+  app.add_option("-o,--output", options.outputPath, "Output directory for converted models")->required();
+  app.add_option("models", options.models, "The model files to convert")
+    ->check(CLI::ExistingFile | CLI::ExistingDirectory)
+    ->required();
 
   try {
     app.parse(argc, argv);
@@ -84,13 +83,20 @@ static std::optional<Options> getOptions(int argc, char** argv)
     return {};
   }
 
-  if (!modelsPath.empty()) {
-    for (auto const& entry : std::filesystem::directory_iterator{modelsPath}) {
-      if (rexsapi::TExtensionChecker::getFileType(entry.path()) != rexsapi::TFileType::UNKOWN) {
-        options.models.emplace_back(entry.path());
-      }
+  if (!std::filesystem::exists(options.outputPath)) {
+    std::cout << "Output directory does not exist, creating\n";
+    std::error_code ec;
+    if (!std::filesystem::create_directories(options.outputPath, ec) || ec) {
+      std::cerr << "Cannot create output directory\n";
+      return {};
     }
   }
+  if (!std::filesystem::is_directory(options.outputPath)) {
+    std::cerr << "Output is not a directory\n";
+    return {};
+  }
+
+  options.models = getModels(recurse, options.models);
 
   return options;
 }

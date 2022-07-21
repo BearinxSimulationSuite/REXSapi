@@ -187,7 +187,7 @@ TEST_CASE("XML Model loader test")
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
     CHECK(result.getErrors()[0].getMessage() ==
-          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component gear_unit id=1");
     CHECK(result.getErrors()[1].getMessage() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
                                                 "id=u_coordinate_on_shaft_outer_side of component id=33");
     CHECK(result.getErrors()[2].getMessage() ==
@@ -200,13 +200,13 @@ TEST_CASE("XML Model loader test")
     CHECK(result.getErrors()[5].getMessage() ==
           "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
     CHECK(result.getErrors()[6].getMessage() ==
-          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=1: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[7].getMessage() ==
-          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=2: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[8].getMessage() ==
-          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=3: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[9].getMessage() ==
-          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=4: attribute id=load_duration_fraction is not part of component gear_unit id=1");
 
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
@@ -222,7 +222,7 @@ TEST_CASE("XML Model loader test")
     CHECK_FALSE(result.isCritical());
     REQUIRE(result.getErrors().size() == 10);
     CHECK(result.getErrors()[0].getMessage() ==
-          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component id=1");
+          "Gear unit [1]: attribute id=EIGENGEWICHT is not part of component gear_unit id=1");
     CHECK(result.getErrors()[1].getMessage() == "6210-2Z (Rolling bearing [33]): value is out of range for attribute "
                                                 "id=u_coordinate_on_shaft_outer_side of component id=33");
     CHECK(result.getErrors()[2].getMessage() ==
@@ -235,13 +235,13 @@ TEST_CASE("XML Model loader test")
     CHECK(result.getErrors()[5].getMessage() ==
           "Material 3: value is out of range for attribute id=thermal_expansion_coefficient_minus of component id=59");
     CHECK(result.getErrors()[6].getMessage() ==
-          "load_case id=1: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=1: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[7].getMessage() ==
-          "load_case id=2: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=2: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[8].getMessage() ==
-          "load_case id=3: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=3: attribute id=load_duration_fraction is not part of component gear_unit id=1");
     CHECK(result.getErrors()[9].getMessage() ==
-          "load_case id=4: attribute id=load_duration_fraction is not part of component id=1");
+          "load_case id=4: attribute id=load_duration_fraction is not part of component gear_unit id=1");
 
     const auto& attributes =
       AttributeFinder(ComponentFinder(*model).findComponent("Gear unit [1]")).findCustomAttributes();
