@@ -76,15 +76,14 @@ The `model_checker` checks files for compatibility with the REXSapi library. You
 | --help, -h | Show usage and options |
 | --mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
 | --mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
-| --warnings, -w | This will enables the printing of warnings to the console. Otherwise, only errors will be printed. |
+| --warnings, -w | Enables the printing of warnings to the console. Otherwise, only errors will be printed. |
+| -r | If directories are specified as arguments, recurse into sub-directories. |
 | --database, -d | The path to the model database files including the schemas (json and xml). |
-| --models | The path to a directory to look for model files to check. |
-
-Additionally, you can specify single files to process.
+| | Files and directories to look for model files to process. |
 
 ```bash
 > ./model_checker --mode-relaxed -d ../models FVA-Industriegetriebe_2stufig_1-4.rexs
-File ".FVA-Industriegetriebe_2stufig_1-4.rexs" processed with warnings
+File ".FVA-Industriegetriebe_2stufig_1-4.rexs" processed with 10 warnings
 ```
 
 ## model_converter
@@ -98,11 +97,10 @@ The `model_converter` can convert REXS model files between xml and json format. 
 | --mode-strict | This is the default mode. Files will be checked to comply strictly to the standard. |
 | --mode-relaxed | This mode will relax the checking and produce warnings instead of errors for non-standard constructs. |
 | --format, -f | The output format of the tool. Either json or xml. |
+| -r | If directories are specified as arguments, recurse into sub-directories. |
 | --output, -o | The output path to write converted file to. |
 | --database, -d | The path to the model database files including the schemas (json and xml). |
-| --models | The path to a directory to look for model files to check. |
-
-Additionally, you can specify single files to process.
+| | Files and directories to look for model files to process. |
 
 ```bash
 > ./model_converter --mode-relaxed -f json -d ../models --output /out FVA-Industriegetriebe_2stufig_1-4.rexs
