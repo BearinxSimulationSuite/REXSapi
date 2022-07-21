@@ -18,6 +18,7 @@
 #include <rexsapi/Rexsapi.hxx>
 
 #include "Cli11.hxx"
+#include "ToolsHelper.hxx"
 
 
 struct Options {
@@ -30,34 +31,6 @@ struct Options {
 static std::string getVersion()
 {
   return fmt::format("model_checker version {}\n", REXSAPI_VERSION_STRING);
-}
-
-static void processDirectory(bool recurse, const std::filesystem::path& path, std::set<std::filesystem::path>& models)
-{
-  if (std::filesystem::is_directory(path)) {
-    for (const auto& entry : std::filesystem::directory_iterator{path}) {
-      if (std::filesystem::is_regular_file(entry.path()) &&
-          rexsapi::TExtensionChecker::getFileType(entry.path()) != rexsapi::TFileType::UNKOWN) {
-        models.emplace(entry.path());
-      } else if (recurse && std::filesystem::is_directory(entry.path())) {
-        processDirectory(true, entry.path(), models);
-      }
-    }
-  }
-}
-
-static std::vector<std::filesystem::path> getModels(bool recurse, const std::vector<std::filesystem::path>& paths)
-{
-  std::set<std::filesystem::path> models;
-
-  for (const auto& path : paths) {
-    if (std::filesystem::is_regular_file(path) &&
-        rexsapi::TExtensionChecker::getFileType(path) != rexsapi::TFileType::UNKOWN) {
-      models.emplace(path);
-    }
-    processDirectory(recurse, path, models);
-  }
-  return std::vector<std::filesystem::path>{models.begin(), models.end()};
 }
 
 static std::optional<Options> getOptions(int argc, char** argv)
@@ -86,7 +59,7 @@ static std::optional<Options> getOptions(int argc, char** argv)
     ->check(CLI::ExistingDirectory)
     ->required();
   app.add_option("models", options.models, "The model files or directories to check")
-    ->check(CLI::ExistingFile | CLI::ExistingDirectory);
+    ->check(CLI::ExistingFile | CLI::ExistingDirectory)->required();
 
   try {
     app.parse(argc, argv);

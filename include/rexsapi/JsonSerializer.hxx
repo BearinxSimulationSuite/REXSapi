@@ -48,14 +48,20 @@ namespace rexsapi
     explicit JsonFileSerializer(std::filesystem::path file)
     : m_File{std::move(file)}
     {
-      // TODO (lcf): check if the path exists and can be written
+      auto directory = m_File.parent_path();
+      if (!std::filesystem::is_directory(directory)) {
+        throw TException{fmt::format("{} is not a directory or does not exist", directory.string())};
+      }
     }
 
     void serialize(const ordered_json& doc)
     {
-      // TODO (lcf): error handling
       std::ofstream stream{m_File};
       stream << doc.dump(2);
+      stream.flush();
+      if (!stream) {
+        throw TException{fmt::format("Could not serialize model to {}", m_File.string())};
+      }
     }
 
   private:
