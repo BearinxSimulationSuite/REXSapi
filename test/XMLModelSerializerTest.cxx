@@ -16,6 +16,7 @@
 
 #include <rexsapi/ModelLoader.hxx>
 #include <rexsapi/XMLModelLoader.hxx>
+#include <rexsapi/ModelSaver.hxx>
 #include <rexsapi/XMLModelSerializer.hxx>
 #include <rexsapi/XMLSerializer.hxx>
 
@@ -117,5 +118,15 @@ TEST_CASE("XML serialize new model")
     REQUIRE(roundtripModel.getLoadSpectrum().hasAccumulation());
     REQUIRE(roundtripModel.getLoadSpectrum().getAccumulation().getLoadComponents().size() == 1);
     CHECK(roundtripModel.getLoadSpectrum().getAccumulation().getLoadComponents()[0].getLoadAttributes().size() == 2);
+  }
+
+  SUBCASE("Serialze model to file with model saver")
+  {
+    TemporaryDirectory guard;
+    rexsapi::TResult result;
+    rexsapi::TModelSaver{}.store(result, createModel(dbModel), guard.getTempDirectoryPath() / "test_model.rexs",
+                                 rexsapi::TSaveType::XML);
+    CHECK(result);
+    REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexs"));
   }
 }

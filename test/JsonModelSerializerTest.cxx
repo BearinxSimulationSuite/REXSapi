@@ -18,6 +18,7 @@
 #include <rexsapi/JsonModelSerializer.hxx>
 #include <rexsapi/JsonSerializer.hxx>
 #include <rexsapi/ModelLoader.hxx>
+#include <rexsapi/ModelSaver.hxx>
 
 #include <test/TemporaryDirectory.hxx>
 #include <test/TestHelper.hxx>
@@ -95,6 +96,21 @@ TEST_CASE("Json serialize new model")
     auto loadedModel = loader.load(rexsapi::TMode::STRICT_MODE, result, registry);
     CHECK(result);
     CHECK(loadedModel);
+  }
+
+  SUBCASE("Serialze model to file with model saver")
+  {
+    TemporaryDirectory guard;
+    rexsapi::TResult result;
+    rexsapi::TModelSaver{}.store(result, createModel(dbModel), guard.getTempDirectoryPath() / "test_model.rexsj",
+                                 rexsapi::TSaveType::JSON);
+    CHECK(result);
+    REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexsj"));
+    std::filesystem::remove(guard.getTempDirectoryPath() / "test_model.rexsj");
+    rexsapi::TModelSaver{}.store(result, createModel(dbModel), guard.getTempDirectoryPath() / "test_model",
+                                 rexsapi::TSaveType::JSON);
+    CHECK(result);
+    REQUIRE(std::filesystem::exists(guard.getTempDirectoryPath() / "test_model.rexsj"));
   }
 
   SUBCASE("Serialize to non existent directory")
