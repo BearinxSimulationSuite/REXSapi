@@ -124,26 +124,29 @@ int main(int argc, char** argv)
       if (!model) {
         std::cerr << "Error: could not load model " << modelFile << std::endl;
       } else {
+        result.reset();
         auto file{modelFile.filename()};
         switch (options->type) {
-          case rexsapi::TFileType::JSON: {
-            rexsapi::JsonFileSerializer fileSerializer{options->outputPath / file.replace_extension(".rexsj")};
-            rexsapi::JsonModelSerializer modelSerializer;
-            modelSerializer.serialize(*model, fileSerializer);
+          case rexsapi::TFileType::JSON:
+            rexsapi::TModelSaver{}.store(result, *model, options->outputPath / file.replace_extension(".rexsj"),
+                                         rexsapi::TSaveType::JSON);
             break;
-          }
-          case rexsapi::TFileType::XML: {
-            rexsapi::XMLFileSerializer fileSerializer{options->outputPath / file.replace_extension(".rexs")};
-            rexsapi::XMLModelSerializer modelSerializer;
-            modelSerializer.serialize(*model, fileSerializer);
+          case rexsapi::TFileType::XML:
+            rexsapi::TModelSaver{}.store(result, *model, options->outputPath / file.replace_extension(".rexs"),
+                                         rexsapi::TSaveType::XML);
             break;
-          }
           default:
-            throw rexsapi::TException{"Format is not implemented"};
+            throw rexsapi::TException{fmt::format("Format is not implemented ({})", file.extension().string())};
         }
-        std::cout << fmt::format("Converted {} to {}", modelFile.string(),
-                                 std::filesystem::canonical(options->outputPath / file).string())
-                  << std::endl;
+        if (!result) {
+          std::cerr << fmt::format("Could not store {} to {}", modelFile.string(),
+                                   std::filesystem::canonical(options->outputPath / file).string())
+                    << std::endl;
+        } else {
+          std::cout << fmt::format("Converted {} to {}", modelFile.string(),
+                                   std::filesystem::canonical(options->outputPath / file).string())
+                    << std::endl;
+        }
       }
     }
   } catch (const std::exception& ex) {

@@ -22,6 +22,7 @@
 #include <rexsapi/JsonSerializer.hxx>
 #include <rexsapi/ModelBuilder.hxx>
 #include <rexsapi/ModelLoader.hxx>
+#include <rexsapi/ModelSaver.hxx>
 #include <rexsapi/Version.hxx>
 #include <rexsapi/XMLModelSerializer.hxx>
 #include <rexsapi/XMLSerializer.hxx>
