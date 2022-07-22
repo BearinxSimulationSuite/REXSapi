@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(rexsapi VERSION 0.1.37 LANGUAGES CXX)
+project(rexsapi VERSION 0.1.38 LANGUAGES CXX)
 
 include(FetchContent)
 
