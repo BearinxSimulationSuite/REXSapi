@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: sudo apt-get install ${{ matrix.cxx }} ninja-build lcov
+        run: sudo apt-get install ${{ matrix.cxx }} ninja-build lcov doxygen
       - name: Check Coverage
         run: |
           if [[ ${{ matrix.build_type }} == 'Debug' && ${{ matrix.cxx }} == 'g++' ]]; then
@@ -54,7 +54,7 @@ jobs:
           input_directory: "."
           exclude: '"*test/*" "*_deps/*" "*/usr/include/*"'
           output_file: "./coverage.info"
-      - name: generate coverage report
+      - name: Generate coverage report
         if: ${{ env.COVERAGE == 'ON' }}
         run: |
           cat coverage.info | c++filt >coverage_filtered.info
@@ -65,6 +65,9 @@ jobs:
         with:
           name: code-coverage-report
           path: html
+      - name: Build documentation
+        if: ${{ env.COVERAGE == 'ON' }}
+        run: cmake --build build --target docs
       - name: Create distribution zip
         if: ${{ env.COVERAGE == 'ON' }}
         run: cd build && cpack --config CPackConfig.cmake
