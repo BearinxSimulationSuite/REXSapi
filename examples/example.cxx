@@ -838,6 +838,7 @@ public:
         case string_type:
           return rexsapi::TValue{value};
       }
+      ASSERT_OTHERWISE_THROW(false, "unknown type");
     }
 
     const TREXSTransmissionModelIntermediateLayer& m_IntermediateLayer;
