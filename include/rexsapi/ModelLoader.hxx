@@ -33,6 +33,8 @@
 
 namespace rexsapi
 {
+  static database::TModelRegistry createModelRegistry(const std::filesystem::path& path);
+
   class TModelLoader
   {
   public:
@@ -47,8 +49,6 @@ namespace rexsapi
                                TMode mode = TMode::STRICT_MODE) const;
 
   private:
-    static database::TModelRegistry createModelRegistry(const std::filesystem::path& path);
-
     static xml::TXSDSchemaValidator createXMLSchemaValidator(const std::filesystem::path& path);
 
     static TJsonSchemaValidator createJsonSchemaValidator(const std::filesystem::path& path);
@@ -107,6 +107,14 @@ namespace rexsapi
   // Implementation
   /////////////////////////////////////////////////////////////////////////////
 
+  static inline database::TModelRegistry createModelRegistry(const std::filesystem::path& path)
+  {
+    xml::TFileXsdSchemaLoader schemaLoader{path / "rexs-dbmodel.xsd"};
+    database::TFileResourceLoader resourceLoader{path};
+    database::TXmlModelLoader modelLoader{resourceLoader, schemaLoader};
+    return database::TModelRegistry::createModelRegistry(modelLoader).first;
+  }
+
   inline std::optional<TModel> TModelLoader::load(const std::filesystem::path& path, TResult& result, TMode mode) const
   {
     std::optional<TModel> model;
@@ -147,14 +155,6 @@ namespace rexsapi
     }
 
     return model;
-  }
-
-  inline database::TModelRegistry TModelLoader::createModelRegistry(const std::filesystem::path& path)
-  {
-    xml::TFileXsdSchemaLoader schemaLoader{path / "rexs-dbmodel.xsd"};
-    database::TFileResourceLoader resourceLoader{path};
-    database::TXmlModelLoader modelLoader{resourceLoader, schemaLoader};
-    return database::TModelRegistry::createModelRegistry(modelLoader).first;
   }
 
   inline xml::TXSDSchemaValidator TModelLoader::createXMLSchemaValidator(const std::filesystem::path& path)
