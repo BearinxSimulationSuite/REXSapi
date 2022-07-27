@@ -83,6 +83,7 @@ namespace rexsapi
       std::optional<TUnit> m_Unit{};
       TValue m_Value{};
       TCodeType m_CodeType{TCodeType::None};
+      std::optional<TComponentId> m_Reference{};
 
       bool isCustom() const
       {
@@ -97,6 +98,7 @@ namespace rexsapi
         return m_AttributeId == attribute;
       }
 
+      TAttribute createAttribute(const std::unordered_map<TComponentId, uint64_t>& m_ComponentMapping) const;
       TAttribute createAttribute() const;
     };
 
@@ -152,6 +154,16 @@ namespace rexsapi
       {
         checkDuplicateAttribute(lastComponent(), attribute);
         lastComponent().m_Attributes.emplace_back(detail::TAttributeEntry{nullptr, attribute, type});
+      }
+
+      void reference(const TComponentId& id)
+      {
+        lastAttribute().m_Reference = id;
+      }
+
+      void reference(std::string id)
+      {
+        lastAttribute().m_Reference = TComponentId{std::move(id)};
       }
 
       void unit(const std::string& unit);
@@ -236,6 +248,10 @@ namespace rexsapi
     TComponentBuilder& addAttribute(const std::string& attributeId) &;
 
     TComponentBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
+
+    TComponentBuilder& reference(const TComponentId& id) &;
+
+    TComponentBuilder& reference(std::string id) &;
 
     TComponentBuilder& unit(const std::string& unit) &;
 
@@ -367,6 +383,10 @@ namespace rexsapi
 
     TModelBuilder& addCustomAttribute(const std::string& attribute, TValueType type) &;
 
+    TModelBuilder& reference(const TComponentId& id) &;
+
+    TModelBuilder& reference(std::string id) &;
+
     TModelBuilder& unit(const std::string& unit) &;
 
     template<typename T>
@@ -434,6 +454,43 @@ namespace rexsapi
   }
 
 
+  inline TAttribute
+  detail::TAttributeEntry::createAttribute(const std::unordered_map<TComponentId, uint64_t>& componentMapping) const
+  {
+    if (m_Value.isEmpty() && !m_Reference.has_value()) {
+      throw TException{fmt::format("attribute id={} has an empty value",
+                                   m_Attribute != nullptr ? m_Attribute->getAttributeId() : m_AttributeId)};
+    }
+
+    TValue val = m_Value;
+    val.coded(m_CodeType);
+
+    TUnit unit{};
+    if (m_Unit.has_value()) {
+      unit = *m_Unit;
+    }
+
+    if (m_Attribute != nullptr) {
+      if (!m_Unit.has_value()) {
+        unit = TUnit{m_Attribute->getUnit()};
+      }
+
+      if (m_Reference.has_value()) {
+        TReferenceComponentType id = static_cast<TReferenceComponentType>(componentMapping.at(*m_Reference));
+        return TAttribute{*m_Attribute, unit, TValue{id}};
+      }
+
+      return TAttribute{*m_Attribute, unit, std::move(val)};
+    }
+
+    if (m_Reference.has_value()) {
+      TReferenceComponentType id = static_cast<TReferenceComponentType>(componentMapping.at(*m_Reference));
+      return TAttribute{m_AttributeId, unit, *m_ValueType, TValue{id}};
+    }
+
+    return TAttribute{m_AttributeId, unit, *m_ValueType, std::move(val)};
+  }
+
   inline TAttribute detail::TAttributeEntry::createAttribute() const
   {
     if (m_Value.isEmpty()) {
@@ -456,6 +513,7 @@ namespace rexsapi
     if (m_Unit.has_value()) {
       unit = *m_Unit;
     }
+
     return TAttribute{m_AttributeId, unit, *m_ValueType, std::move(val)};
   }
 
@@ -535,8 +593,12 @@ namespace rexsapi
 
   inline void detail::TComponents::unit(const std::string& unit)
   {
+    if (unit.empty()) {
+      return;
+    }
     auto& attribute = lastAttribute();
     if (attribute.m_Attribute != nullptr) {
+      // TODO (lcf): exception handling
       const auto& tmp = m_DatabaseModel.findUnitByName(unit);
       if (attribute.m_Attribute->getUnit() != tmp) {
         throw TException{
@@ -579,6 +641,18 @@ namespace rexsapi
     return *this;
   }
 
+  inline TComponentBuilder& TComponentBuilder::reference(const TComponentId& id) &
+  {
+    m_Components.reference(id);
+    return *this;
+  }
+
+  inline TComponentBuilder& TComponentBuilder::reference(std::string id) &
+  {
+    m_Components.reference(std::move(id));
+    return *this;
+  }
+
   inline TComponentBuilder& TComponentBuilder::unit(const std::string& unit) &
   {
     m_Components.unit(unit);
@@ -610,13 +684,16 @@ namespace rexsapi
     TComponents components;
 
     for (const auto& component : m_Components.components()) {
+      m_ComponentMapping[component.m_Id] = ++internalComponentId;
+    }
+
+    for (const auto& component : m_Components.components()) {
       TAttributes attributes;
       for (const auto& attribute : component.m_Attributes) {
-        attributes.emplace_back(attribute.createAttribute());
+        attributes.emplace_back(attribute.createAttribute(m_ComponentMapping));
       }
-      components.emplace_back(TComponent{++internalComponentId, component.m_component->getComponentId(),
+      components.emplace_back(TComponent{m_ComponentMapping[component.m_Id], component.m_component->getComponentId(),
                                          component.m_Name, std::move(attributes)});
-      m_ComponentMapping[component.m_Id] = internalComponentId;
     }
 
     return components;
@@ -830,6 +907,18 @@ namespace rexsapi
   inline TModelBuilder& TModelBuilder::addCustomAttribute(const std::string& attribute, TValueType type) &
   {
     m_ComponentBuilder.addCustomAttribute(attribute, type);
+    return *this;
+  }
+
+  inline TModelBuilder& TModelBuilder::reference(const TComponentId& id) &
+  {
+    m_ComponentBuilder.reference(id);
+    return *this;
+  }
+
+  inline TModelBuilder& TModelBuilder::reference(std::string id) &
+  {
+    m_ComponentBuilder.reference(std::move(id));
     return *this;
   }
 

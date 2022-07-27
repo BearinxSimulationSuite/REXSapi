@@ -334,7 +334,7 @@ public:
 struct TIntermediateLayerAttribute {
   void setAttributeName(std::string name)
   {
-    Name = std::move(name);
+    AttributeName = std::move(name);
   }
 
   void setAttributeType(type_of_attribute type)
@@ -354,9 +354,11 @@ struct TIntermediateLayerAttribute {
 
   void setAttributeValue(const std::string attribute_value, const int attribute_index = -1)
   {
-    (void)attribute_value;
-    (void)attribute_index;
+    if (attribute_index == -1) {
+      AttributeValue = attribute_value;
+    }
   }
+
   void setAttributeValue(const std::string attribute_value, const int attribute_row_index,
                          const int attribute_column_index)
   {
@@ -372,7 +374,9 @@ struct TIntermediateLayerAttribute {
 
   std::string getAttributeValue(const int attribute_index = -1) const
   {
-    (void)attribute_index;
+    if (attribute_index == -1) {
+      return AttributeValue;
+    }
     return "";
   }
 
@@ -388,10 +392,11 @@ struct TIntermediateLayerAttribute {
     return 0;
   }
 
-  std::string Name;
+  std::string AttributeName;
   type_of_attribute Type;
   dimension_of_attribute Dimension;
   std::string AttributeUnit;
+  std::string AttributeValue;
 };
 
 struct TIntermediateLayerObject {
@@ -399,9 +404,34 @@ struct TIntermediateLayerObject {
   std::string Name;
   uint64_t Id{0};
 
+  TIntermediateLayerObject()
+  : UniqueId{"ID: " + std::to_string(++counter)}
+  {
+  }
+
   void register_attribute(TIntermediateLayerAttribute* new_attribute)
   {
     Attributes.emplace_back(new_attribute);
+  }
+
+  bool has_attribute_with_name(const std::string attribute_name) const
+  {
+    for (const auto* attribute : Attributes) {
+      if (attribute->AttributeName == attribute_name) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  TIntermediateLayerAttribute* get_attribute_by_name(const std::string attribute_name)
+  {
+    for (auto* attribute : Attributes) {
+      if (attribute->AttributeName == attribute_name) {
+        return attribute;
+      }
+    }
+    return nullptr;
   }
 
   const std::vector<TIntermediateLayerAttribute*> getAttributes() const
@@ -411,10 +441,12 @@ struct TIntermediateLayerObject {
 
   std::string getUniqueID() const
   {
-    return "";
+    return UniqueId;
   }
 
 private:
+  inline static uint64_t counter{0};
+  std::string UniqueId;
   std::vector<TIntermediateLayerAttribute*> Attributes;
 };
 
@@ -582,6 +614,36 @@ private:
   std::unordered_map<std::string, const TComponentRule*> m_ComponentRules;
 };
 
+class TComponentWriteRules
+{
+public:
+  TComponentWriteRules(const TREXSVersionNumber& rexs_version, const std::vector<TRule*>& rules)
+  {
+    for (const auto* rule : rules) {
+      if (const auto* componentRule = dynamic_cast<const TComponentRule*>(rule); componentRule) {
+        if (componentRule->Type_Side_1 == REXS_component &&
+            (componentRule->Direction == bidirectional || componentRule->Direction == Bearinx_to_REXS) &&
+            rexs_version.matches(componentRule->From_REXS_Version, componentRule->To_REXS_Version)) {
+          m_ComponentRules[componentRule->Name_Side_2] = componentRule;
+        }
+      }
+    }
+  }
+
+  const TComponentRule* getRule(const TIntermediateLayerObject* object) const
+  {
+    auto it = m_ComponentRules.find(object->LayerObjectType);
+    if (it == m_ComponentRules.end()) {
+      return nullptr;
+    }
+
+    return it->second;
+  }
+
+private:
+  std::unordered_map<std::string, const TComponentRule*> m_ComponentRules;
+};
+
 class TAttributeRules
 {
 public:
@@ -639,16 +701,16 @@ public:
     }
   }
 
-  const TAttributeRule* getRule(const TIntermediateLayerAttribute* attribute, const TIntermediateLayerObject* object,
+  const TAttributeRule* getRule(const TIntermediateLayerAttribute* attribute, const std::string& componentType,
                                 const TREXSTransmissionModelIntermediateLayer* pIntermediateLayer) const
   {
-    auto it = m_AttributeRules.find(attribute->Name);
+    auto it = m_AttributeRules.find(attribute->AttributeName);
     if (it == m_AttributeRules.end()) {
       return nullptr;
     }
 
     for (const auto* attributeRule : it->second) {
-      if (is_of_rexs_type(object->LayerObjectType, attributeRule->Object_Name_side_1, pIntermediateLayer)) {
+      if (is_of_rexs_type(componentType, attributeRule->Object_Name_side_1, pIntermediateLayer)) {
         return attributeRule;
       }
     }
@@ -845,34 +907,125 @@ public:
   };
 
 
+  rexsapi::TValueType getRexsType(type_of_attribute type, dimension_of_attribute dimension)
+  {
+    switch (type) {
+      case int_value_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::INTEGER;
+          case vector_dimension:
+            return rexsapi::TValueType::INTEGER_ARRAY;
+          case matrix_2D_dimension:
+            break;
+        }
+        break;
+      case reference_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::REFERENCE_COMPONENT;
+          case vector_dimension:
+          case matrix_2D_dimension:
+            break;
+        }
+        break;
+      case boolean_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::BOOLEAN;
+          case vector_dimension:
+            return rexsapi::TValueType::BOOLEAN_ARRAY;
+          case matrix_2D_dimension:
+            break;
+        }
+        break;
+      case double_value_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::FLOATING_POINT;
+          case vector_dimension:
+            return rexsapi::TValueType::FLOATING_POINT_ARRAY;
+          case matrix_2D_dimension:
+            return rexsapi::TValueType::FLOATING_POINT_MATRIX;
+        }
+        break;
+      case enum_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::ENUM;
+          case vector_dimension:
+            return rexsapi::TValueType::ENUM_ARRAY;
+          case matrix_2D_dimension:
+            break;
+        }
+        break;
+      case string_type:
+        switch (dimension) {
+          case scalar_dimension:
+            return rexsapi::TValueType::STRING;
+          case vector_dimension:
+            return rexsapi::TValueType::STRING_ARRAY;
+          case matrix_2D_dimension:
+            return rexsapi::TValueType::STRING_MATRIX;
+        }
+        break;
+    }
+    ASSERT_OTHERWISE_THROW(false, "unkown type");
+  }
+
   rexsapi::TModel createModel(const TREXSTransmissionModelIntermediateLayer& intermediateLayer)
   {
-    const auto& databaseModel{m_Registry.getModel(rexsapi::TRexsVersion{1, 4}, "en")};
+    const auto& databaseModel{
+      m_Registry.getModel(rexsapi::TRexsVersion{intermediateLayer.getREXSVersion().m_MajorVersionNr,
+                                                intermediateLayer.getREXSVersion().m_MinorVersionNr},
+                          "en")};
     rexsapi::TModelBuilder builder{databaseModel};
 
     TValueConverter valueConverter{intermediateLayer};
-    TAttributeWriteRules rules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
+    TComponentWriteRules componentRules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
+    TAttributeWriteRules attributeRules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
 
     for (const auto* intermediateLayerObject : intermediateLayer.IntermediateLayerObjects) {
-      builder.addComponent(intermediateLayerObject->LayerObjectType, intermediateLayerObject->getUniqueID());
-      builder.name(intermediateLayerObject->Name);
+      if (const auto* componentRule = componentRules.getRule(intermediateLayerObject); componentRule != nullptr) {
+        builder.addComponent(componentRule->Name_Side_1, intermediateLayerObject->getUniqueID());
+        builder.name(intermediateLayerObject->Name);
 
-      for (const auto* intermediateLayerAttribute : intermediateLayerObject->getAttributes()) {
-        if (const auto* attributeRule =
-              rules.getRule(intermediateLayerAttribute, intermediateLayerObject, &intermediateLayer);
-            attributeRule != nullptr) {
-          builder.addAttribute(attributeRule->Attribute_Name_side_1);
-          builder.unit(attributeRule->Attribute_Unit_side_1);
+        for (const auto* intermediateLayerAttribute : intermediateLayerObject->getAttributes()) {
+          if (const auto* attributeRule =
+                attributeRules.getRule(intermediateLayerAttribute, componentRule->Name_Side_1, &intermediateLayer);
+              attributeRule != nullptr) {
+            if (databaseModel.hasAttributeWithId(attributeRule->Attribute_Name_side_1)) {
+              builder.addAttribute(attributeRule->Attribute_Name_side_1);
+            } else {
+              builder.addCustomAttribute(
+                attributeRule->Attribute_Name_side_1,
+                getRexsType(attributeRule->Attribute_Type, attributeRule->Attribute_Dimension));
+            }
+            // HACK
+            if (attributeRule->Attribute_Unit_side_1 == "�") {
+              if (databaseModel.getVersion() >= rexsapi::TRexsVersion{1, 4}) {
+                builder.unit("deg");
+              } else {
+                builder.unit("°");
+              }
+            } else {
+              builder.unit(attributeRule->Attribute_Unit_side_1);
+            }
 
-          ASSERT_OTHERWISE_THROW(intermediateLayerAttribute->getAttributeDimension() ==
-                                   attributeRule->Attribute_Dimension,
-                                 "REXS Model Error");
+            ASSERT_OTHERWISE_THROW(intermediateLayerAttribute->getAttributeDimension() ==
+                                     attributeRule->Attribute_Dimension,
+                                   "REXS Model Error");
 
-          builder.value(valueConverter.convertToValue(*intermediateLayerAttribute, *attributeRule));
+            if (attributeRule->Attribute_Type == reference_type) {
+              // attribute value contains the objects UniqueID
+              builder.reference(intermediateLayerAttribute->getAttributeValue());
+            } else {
+              builder.value(valueConverter.convertToValue(*intermediateLayerAttribute, *attributeRule));
+            }
+          }
         }
       }
     }
-
 
     return builder.build("Bearinx", "4711", {});
   }
@@ -945,6 +1098,21 @@ private:
             new_layer_object->register_attribute(new_layer_attribute);
           }
         }
+      }
+    }
+
+    for (auto* layerObject : data.IntermediateLayer->IntermediateLayerObjects) {
+      if (auto* attribute = layerObject->get_attribute_by_name("Reference Component for Position");
+          attribute != nullptr) {
+        auto componentId = rexsapi::convertToUint64(attribute->getAttributeValue());
+
+        auto it =
+          std::find_if(data.IntermediateLayer->IntermediateLayerObjects.begin(),
+                       data.IntermediateLayer->IntermediateLayerObjects.end(), [&componentId](const auto* object) {
+                         return componentId == object->Id;
+                       });
+        ASSERT_OTHERWISE_THROW(it != data.IntermediateLayer->IntermediateLayerObjects.end(), "cannot find internal id");
+        attribute->setAttributeValue((*it)->getUniqueID());
       }
     }
 

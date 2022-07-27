@@ -94,6 +94,8 @@ namespace rexsapi::database
 
     [[nodiscard]] const TAttribute& findAttributeById(const std::string& id) const;
 
+    [[nodiscard]] bool hasAttributeWithId(const std::string& id) const;
+
     bool addComponent(TComponent&& component);
 
     [[nodiscard]] const TComponent& findComponentById(const std::string& id) const;
@@ -173,6 +175,11 @@ namespace rexsapi::database
     }
 
     return it->second;
+  }
+
+  inline bool TModel::hasAttributeWithId(const std::string& id) const
+  {
+    return m_Attributes.find(id) != m_Attributes.end();
   }
 
   inline bool TModel::addComponent(TComponent&& component)

@@ -42,7 +42,6 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("width").unit("mm").value(16.0);
   modelBuilder.addAttribute("misalignment_in_v_direction").unit("mum").value(0.0);
   modelBuilder.addAttribute("misalignment_in_w_direction").unit("mum").value(0.0);
-  modelBuilder.addAttribute("reference_component_for_position").value(1);
   modelBuilder.addAttribute("support_vector").unit("mm").value(rexsapi::TFloatArrayType{70.0, 0.0, 0.0}).coded();
   modelBuilder.addAttribute("u_axis_vector").unit("mm").value(rexsapi::TFloatArrayType{1.0, 0.0, 0.0});
   modelBuilder.addAttribute("u_coordinate_on_shaft_inner_side").unit("mm").value(70.0);
@@ -54,6 +53,7 @@ static rexsapi::TModel createModel(const rexsapi::database::TModelRegistry& regi
   modelBuilder.addAttribute("axial_stiffness").unit("N / m").value(1.0E20);
   modelBuilder.addAttribute("radial_stiffness").unit("N / m").value(1.0E20);
   modelBuilder.addAttribute("bending_stiffness").unit("N mm / rad").value(0.0);
+  modelBuilder.addAttribute("reference_component_for_position").reference("my-bearing-id");
 
   modelBuilder.addRelation(rexsapi::TRelationType::REFERENCE)
     .addRef(rexsapi::TRelationRole::ORIGIN, casingId)
