@@ -907,7 +907,7 @@ public:
   };
 
 
-  rexsapi::TValueType getRexsType(type_of_attribute type, dimension_of_attribute dimension)
+  rexsapi::TValueType getRexsValueType(type_of_attribute type, dimension_of_attribute dimension)
   {
     switch (type) {
       case int_value_type:
@@ -999,7 +999,7 @@ public:
             } else {
               builder.addCustomAttribute(
                 attributeRule->Attribute_Name_side_1,
-                getRexsType(attributeRule->Attribute_Type, attributeRule->Attribute_Dimension));
+                getRexsValueType(attributeRule->Attribute_Type, attributeRule->Attribute_Dimension));
             }
             // HACK
             if (attributeRule->Attribute_Unit_side_1 == "�") {
