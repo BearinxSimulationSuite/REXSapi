@@ -17,6 +17,8 @@
 #ifndef REXSAPI_DATABASE_INTERVAL_HXX
 #define REXSAPI_DATABASE_INTERVAL_HXX
 
+/** @file */
+
 namespace rexsapi::database
 {
   enum class TIntervalType {

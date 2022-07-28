@@ -19,11 +19,29 @@
 
 #include <string>
 
+/** @file */
+
 namespace rexsapi::database
 {
+  /**
+   * @brief Represents a unit of a specific REXS database model version.
+   *
+   * Units should not be created manually, but imported from the REXS database model using the
+   * TModelRegistry.
+   *
+   * Each unit corresponds to a unit loaded from a specific REXS database model version.
+   */
   class TUnit
   {
   public:
+    /**
+     * @brief Constructs a new TUnit object
+     *
+     * Units are immutable objects, once created they cannot be changed.
+     *
+     * @param id A unique id for the unit
+     * @param name A unique name for the unit
+     */
     TUnit(uint64_t id, std::string name)
     : m_Id{id}
     , m_Name{std::move(name)}
@@ -45,11 +63,27 @@ namespace rexsapi::database
       return m_Name == name;
     }
 
+    /**
+     * @brief Compares to units for equality
+     *
+     * @param lhs The left hand unit to compare
+     * @param rhs The right hand unit to compare
+     * @return true if both units have the same name
+     * @return false if the units have differing names
+     */
     friend bool operator==(const TUnit& lhs, const TUnit& rhs)
     {
       return lhs.compare(rhs.getName());
     }
 
+    /**
+     * @brief Compares to units for inequality
+     *
+     * @param lhs The left hand unit to compare
+     * @param rhs The right hand unit to compare
+     * @return true if the units have differing names
+     * @return false if both units have the same name
+     */
     friend bool operator!=(const TUnit& lhs, const TUnit& rhs)
     {
       return !lhs.compare(rhs.getName());

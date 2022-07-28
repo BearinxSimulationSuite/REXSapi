@@ -19,6 +19,8 @@
 
 #include <rexsapi/database/Attribute.hxx>
 
+/** @file */
+
 namespace rexsapi::database
 {
   /**
@@ -28,7 +30,9 @@ namespace rexsapi::database
    * TModelRegistry.
    *
    * Each component corresponds to a component loaded from a specific REXS database model version.
-   * Each component of a REXS model has some attributes associated with it.
+   *
+   * Each component of a REXS model has some attributes associated to it and a REXS model is only allowed to use these
+   * associated attributes in order to be standard compliant.
    */
   class TComponent
   {
@@ -74,6 +78,8 @@ namespace rexsapi::database
 
     /**
      * @brief Checks if the component contains an attribute with the given attributeId.
+     *
+     * Attributes not contained in this component are not allowed to be associated to a REXS model component.
      *
      * @param attributeId
      * @return true if the attribute with the attributeId is present

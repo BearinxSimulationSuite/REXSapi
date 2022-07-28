@@ -25,6 +25,8 @@
 
 #include <optional>
 
+/** @file */
+
 namespace rexsapi::database
 {
   /**
@@ -34,9 +36,9 @@ namespace rexsapi::database
    * TModelRegistry.
    *
    * Each attribute corresponds to an attribute loaded from a specific REXS database model version.
-   * Each component of a REXS model will have some attributes associated with it. An attribute will
-   * have a language dependant name (description) that will correspond to the REXS database model language.
-   * The language only influences the name of an attribute.
+   *
+   * An attribute will have a language dependant name (description) that will correspond to the REXS database model
+   * language. The language only has an effect on the name of an attribute.
    */
   class TAttribute
   {

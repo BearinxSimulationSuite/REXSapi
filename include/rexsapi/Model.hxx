@@ -21,6 +21,10 @@
 #include <rexsapi/Relation.hxx>
 #include <rexsapi/RexsVersion.hxx>
 
+/**
+ * @brief Namespace for REXS model related stuff
+ *
+ */
 namespace rexsapi
 {
   class TModelInfo

@@ -27,10 +27,30 @@
 
 #include <unordered_map>
 
+/** @file */
+
+/**
+ * @brief Namespace for all REXS model database related stuff
+ *
+ */
 namespace rexsapi::database
 {
-  enum class TStatus { RELEASED, IN_DEVELOPMENT };
+  /**
+   * @brief Represents the current status of an imported REXS model
+   *
+   */
+  enum class TStatus {
+    RELEASED,       //!< REXS model has been released
+    IN_DEVELOPMENT  //!< REXS model is still in development
+  };
 
+  /**
+   * @brief Converts a string into a TStatus
+   *
+   * @param status The status string to convert. Allowed values are: "RELEASED" and "IN_DEVELOPMENT"
+   * @return TStatus The converted status
+   * @throws TEXception if the status string is not an allowed value
+   */
   inline static TStatus statusFromString(const std::string& status)
   {
     if (status == "RELEASED") {
@@ -42,9 +62,32 @@ namespace rexsapi::database
     throw TException{fmt::format("status '{}' unkown", status)};
   }
 
+
+  /**
+   * @brief Represents a specific REXS database model version.
+   *
+   * Models should not be created manually, but imported from the REXS database using the
+   * TModelRegistry.
+   *
+   * Each model corresponds to a model loaded from a specific REXS database version. There will be one model for each
+   * language and version.
+   *
+   * The model is the main access point for querying the REXS database. It is used internally by the API for the REXS
+   * model import and creation and determines which elements, be it components, attributes, or other, a REXS model is
+   * allowed to use in order to be standard compliant.
+   */
   class TModel
   {
   public:
+    /**
+     * @brief Constructs a new TModel object
+     *
+     * @param version The REXS version of this model
+     * @param language The language of this model. All parts of the model like attributes and components will have names
+     * corresponding to the models language.
+     * @param date  The date this database model has been created
+     * @param status The status of the model
+     */
     TModel(TRexsVersion version, std::string language, std::string date, TStatus status)
     : m_Version{std::move(version)}
     , m_Language{std::move(language)}
@@ -75,6 +118,12 @@ namespace rexsapi::database
       return m_Date;
     }
 
+    /**
+     * @brief Checks if this model has been released
+     *
+     * @return true if the model has been released
+     * @return false if the model has not been released
+     */
     [[nodiscard]] bool isReleased() const
     {
       return m_Status == TStatus::RELEASED;
@@ -82,21 +131,59 @@ namespace rexsapi::database
 
     bool addUnit(TUnit&& unit);
 
-    [[nodiscard]] const TUnit& findUnitById(uint64_t id) const;
+    /**
+     * @brief Retrieves a unit by id
+     *
+     * @param unitId The unit id to retrieve. Corresponds to the _unit_ "id" attribute of the REXS database model.
+     * @return const TUnit& to the found unit
+     * @throws TExecption if the given unit id is not known to this model
+     */
+    [[nodiscard]] const TUnit& findUnitById(uint64_t unitId) const;
 
+    /**
+     * @brief Retrieves a unit by name
+     *
+     * @param name The unit name to retrieve. Corresponds to the _unit_ "name" attribute of the REXS database model.
+     * @return const TUnit& to the found unit
+     * @throws TExecption if the given unit name is not known to this model
+     */
     [[nodiscard]] const TUnit& findUnitByName(const std::string& name) const;
 
     bool addType(uint64_t id, TValueType type);
 
-    [[nodiscard]] const TValueType& findValueTypeById(uint64_t id) const;
+    /**
+     * @brief Retrievs a value type by id
+     *
+     * @param valueTypeId The value type id to retrieve. Corresponds to the _valueType_ "id" attribute of the REXS
+     * database model.
+     * @return const TValueType& to the found value type
+     * @throws TExceptrion if the given value type id is not known to this model
+     */
+    [[nodiscard]] const TValueType& findValueTypeById(uint64_t valueTypeId) const;
 
     bool addAttribute(TAttribute&& attribute);
 
-    [[nodiscard]] const TAttribute& findAttributeById(const std::string& id) const;
+    /**
+     * @brief Retrieve an attribute by id
+     *
+     * @param attributeId The attribute id to retrieve. Corresponds to the _attribute_ "attributeId" attribute of the
+     * REXS database model.
+     * @return const TAttribute& to the found attribute
+     * * @throws TExceptrion if the given attribute id is not known to this model
+     */
+    [[nodiscard]] const TAttribute& findAttributeById(const std::string& attributeId) const;
 
     bool addComponent(TComponent&& component);
 
-    [[nodiscard]] const TComponent& findComponentById(const std::string& id) const;
+    /**
+     * @brief Retrieve a component by id
+     *
+     * @param componentId The component id to retrieve. Corresponds to the _component_ "componentId" attribute of the
+     * REXS database model.
+     * @return const TComponent& to the found component
+     * * @throws TExceptrion if the given component id is not known to this model
+     */
+    [[nodiscard]] const TComponent& findComponentById(const std::string& componentId) const;
 
   private:
     TRexsVersion m_Version;

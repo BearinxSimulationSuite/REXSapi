@@ -24,8 +24,18 @@
 
 #include <cstring>
 
+/** @file */
+
 namespace rexsapi::database
 {
+  /**
+   * @brief Loads REXS database model xml files
+   *
+   * @tparam TResourceLoader Loader class for loading resources. Has to define the following method <br> ```TResult
+   * load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const```
+   *
+   * @tparam TSchemaLoader
+   */
   template<typename TResourceLoader, typename TSchemaLoader>
   class TXmlModelLoader
   {

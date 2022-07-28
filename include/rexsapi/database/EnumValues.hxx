@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+/** @file */
+
 namespace rexsapi::database
 {
   /**

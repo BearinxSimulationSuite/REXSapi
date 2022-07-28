@@ -22,6 +22,8 @@
 #include <rexsapi/Format.hxx>
 #include <rexsapi/Result.hxx>
 
+/** @file */
+
 namespace rexsapi::database
 {
   /**
