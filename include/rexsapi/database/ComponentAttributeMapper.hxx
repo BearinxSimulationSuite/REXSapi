@@ -19,7 +19,7 @@
 
 #include <rexsapi/database/Model.hxx>
 
-namespace rexsapi::database
+namespace rexsapi::database::detail
 {
   class TComponentAttributeMapper
   {

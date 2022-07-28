@@ -27,9 +27,33 @@
 
 namespace rexsapi::database
 {
+  /**
+   * @brief Represents an attribute of a specific REXS database model version.
+   *
+   * Attributes should not be created manually, but imported from the REXS database model using the
+   * TModelRegistry.
+   *
+   * Each attribute corresponds to an attribute loaded from a specific REXS database model version.
+   * Each component of a REXS model will have some attributes associated with it. An attribute will
+   * have a language dependant name (description) that will correspond to the REXS database model language.
+   * The language only influences the name of an attribute.
+   */
   class TAttribute
   {
   public:
+    /**
+     * @brief Constructs a new TAttribute object.
+     *
+     * Attributes are immutable objects, once created they cannot be changed.
+     *
+     * @param attributeId The attributeId is unique for all attributes of a specific REXS database model version
+     * @param name The name is specific to the REXS datbase model language
+     * @param type Corresponds to one of the REXS datatypes
+     * @param unit The unit has to be one of the REXS database model units
+     * @param symbol Will be empty if not set in the REXS database model
+     * @param interval Corresponds to the value_range of an attribute
+     * @param enumValues Contains all values of the enum. Only set if the attribute is of the TValueType::ENUM type.
+     */
     TAttribute(std::string attributeId, std::string name, TValueType type, TUnit unit, std::string symbol,
                std::optional<const TInterval> interval, std::optional<const TEnumValues> enumValues)
     : m_AttributeId{std::move(attributeId)}
@@ -52,37 +76,37 @@ namespace rexsapi::database
     TAttribute(TAttribute&&) = default;
     TAttribute& operator=(TAttribute&&) = delete;
 
-    [[nodiscard]] const std::string& getAttributeId() const
+    [[nodiscard]] const std::string& getAttributeId() const&
     {
       return m_AttributeId;
     }
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
 
-    [[nodiscard]] TValueType getValueType() const
+    [[nodiscard]] TValueType getValueType() const&
     {
       return m_Type;
     }
 
-    [[nodiscard]] const TUnit& getUnit() const
+    [[nodiscard]] const TUnit& getUnit() const&
     {
       return m_Unit;
     }
 
-    [[nodiscard]] const std::string& getSymbol() const
+    [[nodiscard]] const std::string& getSymbol() const&
     {
       return m_Symbol;
     }
 
-    [[nodiscard]] const std::optional<const TInterval>& getInterval() const
+    [[nodiscard]] const std::optional<const TInterval>& getInterval() const&
     {
       return m_Interval;
     }
 
-    [[nodiscard]] const std::optional<const TEnumValues>& getEnums() const
+    [[nodiscard]] const std::optional<const TEnumValues>& getEnums() const&
     {
       return m_EnumValues;
     }

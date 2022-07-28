@@ -21,11 +21,30 @@
 
 namespace rexsapi::database
 {
+  /**
+   * @brief Represents a component of a specific REXS database model version.
+   *
+   * Components should not be created manually, but imported from the REXS database model using the
+   * TModelRegistry.
+   *
+   * Each component corresponds to a component loaded from a specific REXS database model version.
+   * Each component of a REXS model has some attributes associated with it.
+   */
   class TComponent
   {
   public:
-    TComponent(std::string id, std::string name, std::vector<std::reference_wrapper<const TAttribute>>&& attributes)
-    : m_ComponentId{std::move(id)}
+    /**
+     * @brief Constructs a new TComponent object.
+     *
+     * Components are immutable objects, once created they cannot be changed.
+     *
+     * @param componentId The componentId is unique for all components of a specific REXS database model version
+     * @param name The name is specific to the REXS datbase model language
+     * @param attributes All attributes associated to this component
+     */
+    TComponent(std::string componentId, std::string name,
+               std::vector<std::reference_wrapper<const TAttribute>>&& attributes)
+    : m_ComponentId{std::move(componentId)}
     , m_Name{std::move(name)}
     , m_Attributes{std::move(attributes)}
     {
@@ -38,12 +57,12 @@ namespace rexsapi::database
     TComponent(TComponent&&) = default;
     TComponent& operator=(TComponent&&) = delete;
 
-    [[nodiscard]] const std::string& getComponentId() const
+    [[nodiscard]] const std::string& getComponentId() const&
     {
       return m_ComponentId;
     }
 
-    [[nodiscard]] const std::string& getName() const
+    [[nodiscard]] const std::string& getName() const&
     {
       return m_Name;
     }
@@ -53,24 +72,35 @@ namespace rexsapi::database
       return m_Attributes;
     }
 
-    [[nodiscard]] bool hasAttribute(const std::string& id) const
+    /**
+     * @brief Checks if the component contains an attribute with the given attributeId.
+     *
+     * @param attributeId
+     * @return true if the attribute with the attributeId is present
+     * @return false if no attribute with the attributeId is present
+     */
+    [[nodiscard]] bool hasAttribute(const std::string& attributeId) const&
     {
-      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&id](const TAttribute& attribute) {
-        return attribute.getAttributeId() == id;
+      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attributeId](const TAttribute& attribute) {
+        return attribute.getAttributeId() == attributeId;
       });
-      if (it == m_Attributes.end()) {
-        return false;
-      }
-      return true;
+      return it != m_Attributes.end();
     }
 
-    [[nodiscard]] const TAttribute& findAttributeById(const std::string& id) const
+    /**
+     * @brief Retrieves an attribute with the given attributeId
+     *
+     * @param attributeId The attributeId of the attribute to retrieve
+     * @return const TAttribute& to the found attribute
+     * @throws TException if no attribute with the given attributeId is found in the component
+     */
+    [[nodiscard]] const TAttribute& findAttributeById(const std::string& attributeId) const&
     {
-      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&id](const TAttribute& attribute) {
-        return attribute.getAttributeId() == id;
+      auto it = std::find_if(m_Attributes.begin(), m_Attributes.end(), [&attributeId](const TAttribute& attribute) {
+        return attribute.getAttributeId() == attributeId;
       });
       if (it == m_Attributes.end()) {
-        throw TException{fmt::format("component id={} does not contain attribute id={}", m_ComponentId, id)};
+        throw TException{fmt::format("component id={} does not contain attribute id={}", m_ComponentId, attributeId)};
       }
 
       return *it;

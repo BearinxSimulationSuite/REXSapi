@@ -24,14 +24,35 @@
 
 namespace rexsapi::database
 {
+  /**
+   * @brief Loads REXS model database xml files from a directory
+   *
+   * Can be used to parametrize the XMLModelLoader and gives it the ability to load resources from a directory.
+   */
   class TFileResourceLoader
   {
   public:
+    /**
+     * @brief Constructs a new TFileResourceLoader object
+     *
+     * @param path A directory containing REXS model database xml files
+     */
     explicit TFileResourceLoader(std::filesystem::path path)
     : m_Path{std::move(path)}
     {
     }
 
+    /**
+     * @brief Performs the actual loading of files
+     *
+     * Will iterate over all files in the configured directory and pass the contents of all xml files to the callback.
+     * Additionally, a TResult object is passed into the callback and can be updated by the callback to reflect
+     * issues processig the xml files content. The TResult object is finally returned to the caller.
+     *
+     * @param callback Callback for the processing of xml buffers
+     * @return TResult describing the result of loading files from the configured directory
+     * @throws TException if the configured directory does not exist, is not a directory, or has no permissions
+     */
     TResult load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const;
 
   private:

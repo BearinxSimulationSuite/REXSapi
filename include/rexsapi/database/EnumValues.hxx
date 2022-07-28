@@ -23,19 +23,48 @@
 
 namespace rexsapi::database
 {
+  /**
+   * @brief Represents a single enum value of an enum
+   *
+   */
   struct TEnumValue {
-    std::string m_Value;
-    std::string m_Name;
+    std::string m_Value;  //!< Represents the enums value
+    std::string m_Name;   //!< The name is specific to the REXS datbase model language
   };
 
+
+  /**
+   * @brief Represents the enum values of an attribute
+   *
+   * Enum values should not be created manually, but imported from the REXS database model using the
+   * TModelRegistry.
+   *
+   * Enum values correspond to enum values loaded alongside their attributes from a specific REXS database
+   * model version.
+   */
   class TEnumValues
   {
   public:
+    /**
+     * @brief Constructs a new TEnumValues object.
+     *
+     * Enum values are immutable objects, once created they cannot be changed.
+     *
+     * @param values All enum values defined for a specific attribute
+     */
+
     explicit TEnumValues(std::vector<TEnumValue>&& values)
     : m_Values{std::move(values)}
     {
     }
 
+    /**
+     * @brief Checks if a given value is contained in this enumeration
+     *
+     * @param value The value to check this enumeration for
+     * @return true if the value is contained
+     * @return false if the value is not contained
+     */
     [[nodiscard]] bool check(const std::string& value) const;
 
   private:

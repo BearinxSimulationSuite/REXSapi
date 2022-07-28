@@ -109,7 +109,7 @@ namespace rexsapi::database
         auto attributeId = xml::getStringAttribute(node, "attributeId");
         attributeMappings.emplace_back(componentId, attributeId);
       }
-      TComponentAttributeMapper attributeMapper{model, std::move(attributeMappings)};
+      detail::TComponentAttributeMapper attributeMapper{model, std::move(attributeMappings)};
 
       for (const auto& node : doc.select_nodes("/rexsModel/components/component")) {
         auto id = xml::getStringAttribute(node, "componentId");

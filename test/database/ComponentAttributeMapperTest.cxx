@@ -31,7 +31,7 @@ TEST_CASE("Component attribute mapper")
       {"planet_carrier", "strut_inner_diameter"},
       {"profile_crowning", "profile_crowning_at_tip"}};
 
-    rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
+    rexsapi::database::detail::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 
     CHECK(mapper.getAttributesForComponent("planet_carrier").size() == 2);
     CHECK(mapper.getAttributesForComponent("profile_crowning").size() == 1);
@@ -44,7 +44,7 @@ TEST_CASE("Component attribute mapper")
                                                                           {"planet_carrier", "load_duration"},
                                                                           {"profile_twist", "not existing attribute"}};
 
-    rexsapi::database::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
+    rexsapi::database::detail::TComponentAttributeMapper mapper{model, std::move(attributeMappings)};
 
     CHECK_THROWS_WITH((void)mapper.getAttributesForComponent("profile_twist"),
                       "attribute id=not existing attribute not found for component id=profile_twist");

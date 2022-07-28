@@ -19,47 +19,115 @@
 
 namespace rexsapi::database
 {
-  enum class TIntervalType { OPEN, CLOSED };
+  enum class TIntervalType {
+    OPEN,   //!< Represents an open interval
+    CLOSED  //!< Represents a closed interval
+  };
 
+
+  /**
+   * @brief Represents a specific endpoint of a TInterval
+   *
+   * Contains the limit and the nature of one interval endpoint, either open or closed
+   */
   class TIntervalEndpoint
   {
   public:
     TIntervalEndpoint() = default;
 
-    TIntervalEndpoint(double value, TIntervalType type)
+    TIntervalEndpoint(double limit, TIntervalType type)
     : m_Set{true}
     , m_Type{type}
-    , m_Value{value}
+    , m_Limit{limit}
     {
     }
 
+    /**
+     * @brief Checks if this interval endpoint has been set
+     *
+     * @return true if the endpoint has been set
+     * @return false if the endpoint has been default constructed
+     */
     [[nodiscard]] bool isSet() const
     {
       return m_Set;
     }
 
+    /**
+     * @brief Checks if the value is smaller or equal to the limit
+     *
+     * The result will depend on the nature of the endpoint: either open or closed.
+     * A closed endpoint will include the limit while an open will not.
+     *
+     * @param value The value to check
+     * @return true if the value is smaller or equal to the limit in case of a closed endpoint.
+     * @return true if the value is smaller than the limit in case of an open endpoint.
+     * @return false if the value is outside of the limit
+     */
     bool operator<=(double value) const;
 
+    /**
+     * @brief Checks if the value is greater or equal to the limit
+     *
+     * The result will depend on the nature of the endpoint: either open or closed.
+     * A closed endpoint will include the limit while an open will not.
+     *
+     * @param value The value to check
+     * @return true if the value is greater or equal to the limit in case of a closed endpoint.
+     * @return true if the value is greater than the limit in case of an open endpoint.
+     * @return false if the value is outside of the limit
+     */
     bool operator>=(double value) const;
 
   private:
     bool m_Set{false};
     TIntervalType m_Type{TIntervalType::OPEN};
-    double m_Value{0.0};
+    double m_Limit{0.0};
   };
 
 
+  /**
+   * @brief Represents a value range for an attributes value
+   *
+   * Intervals should not be created manually, but will be imported from the REXS database model using the
+   * TModelRegistry.
+   *
+   * TInterval objects correspond to value ranges loaded alongside their attributes from a specific REXS
+   * database model version.
+   */
   class TInterval
   {
   public:
+    /**
+     * @brief Constructs a new TInterval object with no interval set
+     *
+     * Intervals are immutable objects, once created they cannot be changed.
+     *
+     * All checks of a default TInterval will return true
+     */
     TInterval() = default;
 
+    /**
+     * @brief Constructs a new TInterval object
+     *
+     * Intervals are immutable objects, once created they cannot be changed.
+     *
+     * @param min The minimum limit for the interval
+     * @param max The maximum limit for the interval
+     */
     TInterval(TIntervalEndpoint min, TIntervalEndpoint max)
     : m_Min{min}
     , m_Max{max}
     {
     }
 
+    /**
+     * @brief Checks the value against the interval range
+     *
+     * @param value The value to check
+     * @return true if the value lies in the interval
+     * @return false if the value lies outside the interval
+     */
     [[nodiscard]] bool check(double value) const
     {
       return m_Min <= value && m_Max >= value;
@@ -83,9 +151,9 @@ namespace rexsapi::database
 
     switch (m_Type) {
       case TIntervalType::OPEN:
-        return m_Value < value;
+        return m_Limit < value;
       case TIntervalType::CLOSED:
-        return m_Value <= value;
+        return m_Limit <= value;
     }
 
     return false;
@@ -99,9 +167,9 @@ namespace rexsapi::database
 
     switch (m_Type) {
       case TIntervalType::OPEN:
-        return m_Value > value;
+        return m_Limit > value;
       case TIntervalType::CLOSED:
-        return m_Value >= value;
+        return m_Limit >= value;
     }
 
     return false;
