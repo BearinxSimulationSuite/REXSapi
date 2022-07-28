@@ -52,7 +52,7 @@ namespace rexsapi::database
      * issues processig the xml files content. The TResult object is finally returned to the caller.
      *
      * @param callback Callback for the processing of xml buffers
-     * @return TResult describing the result of loading files from the configured directory
+     * @return TResult describing the outcome of loading files from the configured directory
      * @throws TException if the configured directory does not exist, is not a directory, or has no permissions
      */
     TResult load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const;

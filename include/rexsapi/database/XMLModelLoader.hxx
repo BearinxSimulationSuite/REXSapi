@@ -29,29 +29,49 @@
 namespace rexsapi::database
 {
   /**
-   * @brief Loads REXS database model xml files
+   * @brief Loads REXS database models in XML format
    *
-   * @tparam TResourceLoader Loader class for loading resources. Has to define the following method <br> ```TResult
+   * Is used to populate the REXS database model registry.
+   *
+   * @tparam TResourceLoader Loader class for loading XML resources. The TFileResourceLoader class is
+   * provided as default implementation. The loader class has to define the following method <br> ```TResult
    * load(const std::function<void(TResult&, std::vector<uint8_t>&)>& callback) const```
-   *
-   * @tparam TSchemaLoader
+   * @tparam TSchemaLoader Loader class for loading XML schema resources. The TFileXsdSchemaLoader and
+   * TBufferXsdSchemaLoader classes are provided as default implementations. The loader class has to define the
+   * following method <br> ```pugi::xml_document load() const```
    */
   template<typename TResourceLoader, typename TSchemaLoader>
   class TXmlModelLoader
   {
   public:
-    explicit TXmlModelLoader(const TResourceLoader& loader, const TSchemaLoader& schemaLoader)
-    : m_Loader{loader}
+    /**
+     * @brief Constructs a new TXmlModelLoader object
+     *
+     * @param resourceLoader Resource loader instance to use for model loading
+     * @param schemaLoader Resource loader instance to use for schema loading
+     */
+    explicit TXmlModelLoader(const TResourceLoader& resourceLoader, const TSchemaLoader& schemaLoader)
+    : m_ResourceLoader{resourceLoader}
     , m_SchemaLoader{schemaLoader}
     {
     }
 
+    /**
+     * @brief Loads REXS database models
+     *
+     * Uses the resource loader to load XML database models into a buffer. Then uses the schema loader to load the REXS
+     * database model XSD schema and checks all loaded model buffers against the schema. Finally, creates a model from
+     * each buffer and hands it to the callback. Issues while loading and processing buffers will be added to the
+     * returned result.
+     * @param callback Will be called for each created model for further processing
+     * @return TResult describing the outcome of the loading
+     */
     TResult load(const std::function<void(TModel)>& callback) const;
 
   private:
     std::optional<TInterval> readInterval(const pugi::xpath_node& node) const;
 
-    const TResourceLoader& m_Loader;
+    const TResourceLoader& m_ResourceLoader;
     const TSchemaLoader& m_SchemaLoader;
   };
 
@@ -64,7 +84,7 @@ namespace rexsapi::database
   inline TResult
   TXmlModelLoader<TResourceLoader, TSchemaLoader>::load(const std::function<void(TModel)>& callback) const
   {
-    return m_Loader.load([this, &callback](TResult& result, std::vector<uint8_t>& buffer) {
+    return m_ResourceLoader.load([this, &callback](TResult& result, std::vector<uint8_t>& buffer) {
       pugi::xml_document doc = loadXMLDocument(result, buffer, rexsapi::xml::TXSDSchemaValidator{m_SchemaLoader});
       if (!result) {
         return;

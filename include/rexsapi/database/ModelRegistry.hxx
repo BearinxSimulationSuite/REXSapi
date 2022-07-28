@@ -54,7 +54,7 @@ namespace rexsapi::database
      * @brief Creates a model registry
      *
      * @tparam TModelLoader Loader class for loading the schema and database model files. The TXmlModelLoader class is
-     * provided as default implementation. Has to define the following method <br> ```TResult load(const
+     * provided as default implementation. The loader has to define the following method <br> ```TResult load(const
      * std::function<void(TModel)>& callback) const```
      * @param loader The loader instance to load the schema and database model files with
      * @return std::pair<TModelRegistry, TResult> containing the model registry filled with the loaded models and a
