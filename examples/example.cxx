@@ -584,6 +584,38 @@ private:
   std::vector<const TRelationRule*> m_RelationRules;
 };
 
+class TRelationWriteRules
+{
+public:
+  TRelationWriteRules(const TREXSVersionNumber& rexs_version, const std::vector<TRule*>& rules)
+  {
+    for (const auto* rule : rules) {
+      if (const auto* relationRule = dynamic_cast<const TRelationRule*>(rule); relationRule) {
+        if ((relationRule->Object_Type_1 == REXS_component || relationRule->Object_Type_1 == REXS_component_group) &&
+            (relationRule->Direction == bidirectional || relationRule->Direction == Bearinx_to_REXS) &&
+            rexs_version.matches(relationRule->From_REXS_Version, relationRule->To_REXS_Version)) {
+          ASSERT_OTHERWISE_THROW((relationRule->Object_Type_2 == REXS_component) ||
+                                   (relationRule->Object_Type_2 == REXS_component_group),
+                                 "bug");
+          m_RelationRules[relationRule->Name] = relationRule;
+        }
+      }
+    }
+  }
+
+  const TRelationRule* getRule(const TIntermediateLayerRelation* relation) const
+  {
+    auto it = m_RelationRules.find(relation->LayerRelationType);
+    if (it == m_RelationRules.end()) {
+      return nullptr;
+    }
+    return it->second;
+  }
+
+private:
+  std::unordered_map<std::string, const TRelationRule*> m_RelationRules;
+};
+
 class TComponentRules
 {
 public:
@@ -985,9 +1017,12 @@ public:
     TComponentWriteRules componentRules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
     TAttributeWriteRules attributeRules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
 
+    std::unordered_map<std::string, std::string> idToTypeMapping;
+
     for (const auto* intermediateLayerObject : intermediateLayer.IntermediateLayerObjects) {
       if (const auto* componentRule = componentRules.getRule(intermediateLayerObject); componentRule != nullptr) {
         builder.addComponent(componentRule->Name_Side_1, intermediateLayerObject->getUniqueID());
+        idToTypeMapping[intermediateLayerObject->getUniqueID()] = componentRule->Name_Side_1;
         builder.name(intermediateLayerObject->Name);
 
         for (const auto* intermediateLayerAttribute : intermediateLayerObject->getAttributes()) {
@@ -1023,6 +1058,36 @@ public:
               builder.value(valueConverter.convertToValue(*intermediateLayerAttribute, *attributeRule));
             }
           }
+        }
+      }
+    }
+
+    TRelationWriteRules relationRules{intermediateLayer.getREXSVersion(), intermediateLayer.getRules()};
+
+    for (const auto* intermediateLayerRelation : intermediateLayer.IntermediateLayerRelation) {
+      if (const auto* relationRule = relationRules.getRule(intermediateLayerRelation); relationRule != nullptr) {
+        // TODO: filter incomplete relations
+
+        auto relationType = rexsapi::relationTypeFromString(relationRule->Type);
+        builder.addRelation(relationType);
+
+        // order (ordered assemblies and manufacturing steps)
+        // BX-21132 extension of manufacturing_step
+        if (relationType == rexsapi::TRelationType::ORDERED_ASSEMBLY ||
+            relationType == rexsapi::TRelationType::MANUFACTURING_STEP) {
+          // TODO: find "part" component and don't use array subscription
+          // TODO: make sure that the import creates the correct order of "assembly" and "part" or "workpiece" and
+          // "tool"
+          auto order = static_cast<uint32_t>(intermediateLayerRelation->Comps[1]->ObjectIndex);
+          ASSERT_OTHERWISE_THROW((order >= 0) && (order < 1000000), "");
+
+          builder.order(order + 1);
+        }
+
+        for (uint8_t n = 0; n < intermediateLayerRelation->Comps.size(); ++n) {
+          auto componentId = intermediateLayerRelation->Comps[n]->Object->getUniqueID();
+          builder.addRef(rexsapi::relationRoleFromString(relationRule->getParameter(n)), componentId);
+          builder.hint(idToTypeMapping[componentId]);
         }
       }
     }
